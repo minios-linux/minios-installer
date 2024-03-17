@@ -1,0 +1,14 @@
+Source: minios-installer
+Section: utils
+Priority: optional
+Maintainer: crims0n <crims0n@minios.dev>
+Build-Depends: debhelper (>= 11), gettext
+Standards-Version: 4.1.3
+Homepage: https://minios.dev
+
+Package: minios-installer
+Architecture: amd64 arm64
+Depends: bash (>= 4.0), util-linux (>= 2.37.2), gettext, polkitd, pkexec, sudo, jq, parted, dosfstools, e2fsprogs, btrfs-progs, ntfs-3g, yad, ${misc:Depends}
+Description: MiniOS Linux installation utility.
+ MiniOS Installer is a utility specially designed for quick and easy
+ install MiniOS on a USB flash drive.

@@ -1,0 +1,73 @@
+# Russian translations for minios-install package.
+# Copyright (C) 2024 MiniOS Linux.
+# This file is distributed under the same license as the minios-install package.
+# crims0n <crims0n@minios.dev>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 1.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-03-17 13:59+0300\n"
+"PO-Revision-Date: 2024-03-17 14:43+0300\n"
+"Last-Translator: crims0n <crims0n@minios.dev>, 2024.\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+msgid "MiniOS Installer"
+msgstr "Установщик MiniOS"
+
+msgid "Select installation options for MiniOS:"
+msgstr "Выберите варианты установки для MiniOS:"
+
+msgid "Select device"
+msgstr "Выберите устройство"
+
+msgid "Select file system"
+msgstr "Выберите файловую систему"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Install"
+msgstr "Установить"
+
+msgid "Reload"
+msgstr "Перезагрузить"
+
+msgid "Installing..."
+msgstr "Установка..."
+
+msgid "WARNING!"
+msgstr "ВНИМАНИЕ!"
+
+msgid "All data on the selected device will be lost!"
+msgstr "Все данные на выбранном устройстве будут утеряны!"
+
+msgid "Selected device:"
+msgstr "Выбранное устройство:"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "An error occurred during the installation of MiniOS on disk"
+msgstr "Произошла ошибка при установке MiniOS на диск"
+
+msgid "Thank you for installing MiniOS."
+msgstr "Спасибо за установку MiniOS."
+
+msgid "Return"
+msgstr "Вернуться"
+
+msgid "Continue"
+msgstr "Продолжить"
+
+msgid "Finish"
+msgstr "Завершить"
+
+msgid "Reboot"
+msgstr "Перезагрузить"
