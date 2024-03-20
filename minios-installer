@@ -2,19 +2,6 @@
 
 # This script is used for installing MiniOS on a disk.
 
-# This function is designed to read a configuration file and assign values to
-# variables.
-#
-# Usage:
-#   read_config CONFIG_FILE VAR_NAME...
-#
-# Arguments:
-#   CONFIG_FILE
-#     Specify the configuration file.
-#
-#   VAR_NAME
-#     Specify the names of the variables to look for.
-#
 read_config() {
     # Enable extended globbing. This is required for the pattern matching of variable names.
     shopt -s extglob

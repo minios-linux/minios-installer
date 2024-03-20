@@ -1,4 +1,4 @@
-# Spanish translations for minios-install package.
+# French translations for minios-install package.
 # Copyright (C) 2024 MiniOS Linux.
 # This file is distributed under the same license as the minios-install package.
 # crims0n <crims0n@minios.dev>, 2024.
@@ -10,63 +10,63 @@ msgstr ""
 "POT-Creation-Date: 2024-03-17 13:59+0300\n"
 "PO-Revision-Date: 2024-03-17 14:43+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2024.\n"
-"Language-Team: Spanish\n"
-"Language: es\n"
+"Language-Team: French\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
 
 msgid "MiniOS Installer"
-msgstr "Instalador de MiniOS"
+msgstr "Installateur MiniOS"
 
-msgid "Select installation options for MiniOS"
-msgstr "Seleccione las opciones de instalación para MiniOS:"
+msgid "Select installation options for MiniOS:"
+msgstr "Sélectionnez les options d'installation pour MiniOS:"
 
 msgid "Select device"
-msgstr "Seleccionar dispositivo"
+msgstr "Sélectionnez le périphérique"
 
 msgid "Select file system"
-msgstr "Seleccionar sistema de archivos"
+msgstr "Sélectionnez le système de fichiers"
 
 msgid "Cancel"
-msgstr "Cancelar"
+msgstr "Annuler"
 
 msgid "Install"
-msgstr "Instalar"
+msgstr "Installer"
 
 msgid "Reload"
-msgstr "Recargar"
+msgstr "Recharger"
 
 msgid "Installing..."
-msgstr "Instalando..."
+msgstr "En cours d'installation..."
 
 msgid "WARNING!"
-msgstr "¡ADVERTENCIA!"
+msgstr "AVERTISSEMENT!"
 
 msgid "All data on the selected device will be lost!"
-msgstr "¡Se perderán todos los datos del dispositivo seleccionado!"
+msgstr "Toutes les données sur le périphérique sélectionné seront perdues!"
 
 msgid "Selected device:"
-msgstr "Dispositivo seleccionado:"
+msgstr "Périphérique sélectionné:"
 
 msgid "Error"
-msgstr "Error"
+msgstr "Erreur"
 
 msgid "An error occurred during the installation of MiniOS on disk"
-msgstr "Ocurrió un error durante la instalación de MiniOS en el disco"
+msgstr "Une erreur s'est produite lors de l'installation de MiniOS sur le disque"
 
 msgid "Thank you for installing MiniOS."
-msgstr "Gracias por instalar MiniOS."
+msgstr "Merci d'avoir installé MiniOS."
 
 msgid "Return"
-msgstr "Regresar"
+msgstr "Retour"
 
 msgid "Continue"
-msgstr "Continuar"
+msgstr "Continuer"
 
 msgid "Finish"
-msgstr "Finalizar"
+msgstr "Terminer"
 
 msgid "Reboot"
-msgstr "Reiniciar"
+msgstr "Redémarrer"
