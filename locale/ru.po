@@ -19,7 +19,7 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 msgid "MiniOS Installer"
-msgstr "Установщик MiniOS"
+msgstr "Установка MiniOS"
 
 msgid "Select installation options for MiniOS:"
 msgstr "Выберите варианты установки для MiniOS:"

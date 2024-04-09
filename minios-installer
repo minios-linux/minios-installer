@@ -2,54 +2,7 @@
 
 # This script is used for installing MiniOS on a disk.
 
-read_config() {
-    # Enable extended globbing. This is required for the pattern matching of variable names.
-    shopt -s extglob
-
-    # The first argument is the configuration file.
-    local CONFIG_FILE="${1?No configuration file given}"
-
-    # All other arguments are the variable names to look for.
-    local KEYLIST="${@:2}"
-
-    # Check if the configuration file exists and is readable.
-    if [[ ! -f "${CONFIG_FILE}" ]]; then
-        echo >&2 "\"${CONFIG_FILE}\" is not a file!"
-        exit 1
-    fi
-    if [[ ! -r "${CONFIG_FILE}" ]]; then
-        echo >&2 "\"${CONFIG_FILE}\" is not readable!"
-        exit 1
-    fi
-
-    # Convert the list of variable names to a regex pattern.
-    KEYLIST="${KEYLIST// /|}"
-
-    # Read each line of the file.
-    while IFS='= ' read -r LHS RHS; do
-        # If the variable name is in our list and the value is not empty...
-        if [[ "${LHS}" =~ ^(${KEYLIST})$ ]] && [[ -n ${RHS} ]]; then
-            # Remove any quotes around the value.
-            RHS="${RHS%\"*}"
-            RHS="${RHS#\"*}"
-            RHS="${RHS%\'*}"
-            RHS="${RHS#\'*}"
-
-            # If the value is an array (surrounded by parentheses)...
-            if [[ "${RHS}" =~ ^\((.*)\)$ ]]; then
-                # Assign the array to the variable.
-                eval ${LHS}=\("${BASH_REMATCH[1]}"\)
-            else
-                # Otherwise, assign the value to the variable.
-                eval ${LHS}=\"${RHS}\"
-            fi
-        fi
-    done <<<"$(tr -d '\r' <${CONFIG_FILE})"
-
-    # Disable extended globbing after we're done using it.
-    shopt -u extglob
-}
-
+# --- Variable Declarations ---
 # Set the version number and current working directory
 VERSION="1.0"
 CWD="$(pwd)"
@@ -57,17 +10,15 @@ CWD="$(pwd)"
 # Set text domain
 export TEXTDOMAIN="minios-installer"
 
-# Read the configuration from /etc/minios/config for LIVEKITNAME and SYSTEMNAME variables
-read_config /etc/minios/config "LIVEKITNAME"
-LIVEKITNAME="${LIVEKITNAME:-"minios"}"
-read_config /etc/minios/config "SYSTEMNAME"
-SYSTEMNAME="${SYSTEMNAME:-"MiniOS"}"
+LIVEKITNAME="minios"
+SYSTEMNAME="MiniOS"
 
 # Regular expression pattern for filtering disks
 REGEX='^$'
 
+# --- Functions ---
 # Check if the script is running as root, if not, run with root privileges using pkexec
-check_root() {
+check_root_permissions() {
     if [[ "${EUID}" -ne 0 ]]; then
         pkexec "$0"
         exit 0
@@ -339,6 +290,7 @@ install_minios() {
     echo "100"
     final_question
 }
+
 # Display the main menu for selecting installation options
 main_menu() {
     list_disks
@@ -420,7 +372,7 @@ final_question() {
 }
 
 # Check if the script is running as root, if not, run with root privileges using pkexec
-check_root
+check_root_permissions
 
 # Start the installation process by displaying the main menu
 main_menu
