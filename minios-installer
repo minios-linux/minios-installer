@@ -231,7 +231,7 @@ install_boot_record() {
 # Show error message
 show_error_message() {
     local ERROR_MESSAGE="${1}"
-    yad --borders=10 \
+    yad --center --borders=10 \
         --window-icon="ubiquity" \
         --title="$(gettext 'Error')" \
         --error \
@@ -242,7 +242,7 @@ show_error_message() {
 # Confirmation question for installation
 installation_warning() {
     INSTALLATION_WARNING=$(
-        yad --form \
+        yad --form --center \
             --borders=10 \
             --window-icon="ubiquity" \
             --title="$(gettext 'WARNING!')" \
@@ -262,7 +262,7 @@ installation_warning() {
         main_menu
         ;;
     121) # Continue installation
-        install_minios | yad --borders=10 --window-icon="ubiquity" --progress --width=250 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill
+        install_minios | yad --center --borders=10 --window-icon="ubiquity" --progress --width=250 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill
         ;;
     esac
 }
@@ -295,7 +295,7 @@ install_minios() {
 main_menu() {
     list_disks
     MAIN_FORM=$(
-        yad --form \
+        yad --form --center \
             --borders=10 \
             --window-icon="ubiquity" \
             --title="$(gettext 'MiniOS Installer')" \
@@ -347,7 +347,7 @@ main_menu() {
 #
 final_question() {
     FINAL_FORM=$(
-        yad --form \
+        yad --form --center \
             --borders=10 \
             --window-icon="ubiquity" \
             --title="$(gettext 'MiniOS Installer')" \

@@ -8,7 +8,7 @@ Homepage: https://minios.dev
 
 Package: minios-installer
 Architecture: all
-Depends: bash (>= 4.0), util-linux (>= 2.33), gettext, polkitd, pkexec, sudo, jq, parted, dosfstools, e2fsprogs, btrfs-progs, ntfs-3g, yad, ${misc:Depends}
+Depends: bash (>= 4.0), util-linux (>= 2.33), gettext, polkitd, pkexec, sudo, parted, dosfstools, e2fsprogs, btrfs-progs, ntfs-3g, yad, ${misc:Depends}
 Description: MiniOS Linux installation utility.
  MiniOS Installer is a utility specially designed for quick and easy
  install MiniOS on a USB flash drive.
