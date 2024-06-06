@@ -123,7 +123,7 @@ Comment[zh_CN]=将这个系统永久安装在您的硬盘上
 Comment[zh_TW]=將此系統安裝到您的硬碟中
 Keywords=install;
 Exec=sudo --preserve-env=DBUS_SESSION_BUS_ADDRESS,XDG_RUNTIME_DIR sh -c 'minios-installer'
-Icon=ubiquity
+Icon=usb-creator-gtk
 Terminal=false
 Categories=GTK;System;Settings;
 NotShowIn=KDE;
