@@ -232,7 +232,7 @@ install_boot_record() {
 show_error_message() {
     local ERROR_MESSAGE="${1}"
     yad --center --borders=10 \
-        --window-icon="ubiquity" \
+        --window-icon="usb-creator-gtk" \
         --title="$(gettext 'Error')" \
         --error \
         --text="$(gettext 'An error occurred during the installation of MiniOS on disk.')"
@@ -244,7 +244,7 @@ installation_warning() {
     INSTALLATION_WARNING=$(
         yad --form --center \
             --borders=10 \
-            --window-icon="ubiquity" \
+            --window-icon="usb-creator-gtk" \
             --title="$(gettext 'WARNING!')" \
             --text="<span foreground=\"red\" font=\"Bold\" font-size=\"large\">$(gettext 'All data on the selected device will be lost!')</span>\n<span font-size=\"large\">$(gettext 'Selected device:')</span><span font=\"Bold\" font-size=\"large\">${DEV}</span>" \
             --text-align="center" \
@@ -262,7 +262,7 @@ installation_warning() {
         main_menu
         ;;
     121) # Continue installation
-        install_minios | yad --center --borders=10 --window-icon="ubiquity" --progress --width=250 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill
+        install_minios | yad --center --borders=10 --window-icon="usb-creator-gtk" --progress --width=250 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill
         ;;
     esac
 }
@@ -297,7 +297,7 @@ main_menu() {
     MAIN_FORM=$(
         yad --form --center \
             --borders=10 \
-            --window-icon="ubiquity" \
+            --window-icon="usb-creator-gtk" \
             --title="$(gettext 'MiniOS Installer')" \
             --text="<span font-size=\"large\">$(gettext 'Select installation options for MiniOS:')</span>\n" \
             --text-align="center" \
@@ -309,7 +309,7 @@ main_menu() {
             --field="$(gettext 'Select file system'):CB" "${FILESYSTEMS}" \
             --field="$(gettext 'EFI'):CHK" \
             --button="$(gettext 'Cancel')!gtk-cancel":101 \
-            --button="$(gettext 'Install')!ubiquity":102 \
+            --button="$(gettext 'Install')!usb-creator-gtk":102 \
             --button="$(gettext 'Reload')!gtk-refresh":103
     )
     local BUTTON=$?
@@ -349,7 +349,7 @@ final_question() {
     FINAL_FORM=$(
         yad --form --center \
             --borders=10 \
-            --window-icon="ubiquity" \
+            --window-icon="usb-creator-gtk" \
             --title="$(gettext 'MiniOS Installer')" \
             --text="$(gettext 'Thank you for installing MiniOS.')" \
             --width=200 --height=100 \
