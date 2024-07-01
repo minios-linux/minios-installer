@@ -122,7 +122,8 @@ Comment[vi]=Cài hệ thống vào đĩa cứng
 Comment[zh_CN]=将这个系统永久安装在您的硬盘上
 Comment[zh_TW]=將此系統安裝到您的硬碟中
 Keywords=install;
-Exec=sudo --preserve-env=DBUS_SESSION_BUS_ADDRESS,XDG_RUNTIME_DIR sh -c 'minios-installer'
+#Exec=sudo --preserve-env=DBUS_SESSION_BUS_ADDRESS,XDG_RUNTIME_DIR sh -c 'minios-installer'
+Exec=pkexec /usr/bin/minios-installer
 Icon=usb-creator-gtk
 Terminal=false
 Categories=GTK;System;Settings;

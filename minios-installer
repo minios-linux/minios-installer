@@ -4,14 +4,11 @@
 
 # --- Variable Declarations ---
 # Set the version number and current working directory
-VERSION="1.0"
+VERSION="1.1"
 CWD="$(pwd)"
 
 # Set text domain
 export TEXTDOMAIN="minios-installer"
-
-LIVEKITNAME="minios"
-SYSTEMNAME="MiniOS"
 
 # Regular expression pattern for filtering disks
 REGEX='^$'
@@ -20,16 +17,58 @@ REGEX='^$'
 # Check if the script is running as root, if not, run with root privileges using pkexec
 check_root_permissions() {
     if [[ "${EUID}" -ne 0 ]]; then
-        pkexec "$0"
-        exit 0
+        if command -v yad &>/dev/null || [[ -n "${DISPLAY}" ]]; then
+            pkexec "$0"
+            exit 0
+        else
+            echo "This script should be run as 'root'!"
+            exit 1
+        fi
     fi
+}
+
+# Show help message
+show_help() {
+    echo "$(gettext "Usage"): $0 [options]"
+    echo "$(gettext "Options"):"
+    echo "  -d, --device DEVICE        $(gettext "Set the device to install MiniOS on")"
+    echo "  -f, --filesystem FS        $(gettext "Set the filesystem to use (e.g., ext4, btrfs, etc.)")"
+    echo "  -e, --efi                  $(gettext "Enable EFI support")"
+    echo "      --help                 $(gettext "Show this help message")"
+}
+
+# Parse command-line options
+parse_options() {
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+        -d | --device)
+            DEV="/dev/$2"
+            shift
+            ;;
+        -f | --filesystem)
+            FS="$2"
+            shift
+            ;;
+        -e | --efi) EFI_SUPPORT="TRUE" ;;
+        --help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo "$(gettext "Unknown parameter passed"): $1"
+            show_help
+            exit 1
+            ;;
+        esac
+        shift
+    done
 }
 
 # List available disks
 list_disks() {
     DISKS="$(lsblk -Jo NAME,SIZE -n -d -I 3,8,259,252 | jq -r '.blockdevices[] | .name + "(" + .size + ")"')"
     DISKS="$(echo ${DISKS} | tr ' ' '!')"
-    FILESYSTEMS="btrfs!ext2!ext3!ext4!fat32!ntfs"
+    FILESYSTEMS="ext4!ext2!btrfs!fat32!ntfs"
 }
 
 # Get disk size in MiBs
@@ -127,14 +166,14 @@ copy_files() {
     elif [ -d /memory ]; then
         SOURCE="/memory"
     fi
-    if [ -e "${SOURCE}/data/${LIVEKITNAME}/boot/vmlinuz" ]; then
-        MINIOS="${SOURCE}/data/${LIVEKITNAME}"
-    elif [ -e "${SOURCE}/iso/${LIVEKITNAME}/boot/vmlinuz" ]; then
-        MINIOS="${SOURCE}/iso/${LIVEKITNAME}"
+    if [ -e "${SOURCE}/data/minios/boot/vmlinuz" ]; then
+        MINIOS="${SOURCE}/data/minios"
+    elif [ -e "${SOURCE}/iso/minios/boot/vmlinuz" ]; then
+        MINIOS="${SOURCE}/iso/minios"
     elif [ -e "${SOURCE}/toram/boot/vmlinuz" ]; then
         MINIOS="${SOURCE}/toram"
-    elif [ -e "${SOURCE}/data/from/0/${LIVEKITNAME}/boot/vmlinuz" ]; then
-        MINIOS="${SOURCE}/data/from/0/${LIVEKITNAME}"
+    elif [ -e "${SOURCE}/data/from/0/minios/boot/vmlinuz" ]; then
+        MINIOS="${SOURCE}/data/from/0/minios"
     fi
 
     if [ "${MINIOS}" = "" ]; then
@@ -142,25 +181,22 @@ copy_files() {
         exit 2
     fi
     EFI="${MINIOS}/boot/EFI"
-    echo "${SYSTEMNAME}" >/tmp/info
+    echo "MiniOS" >/tmp/info
     cat <<EOF >/tmp/README
-# README file contents
-
 * To install MiniOS, copy the contents of the ISO to the root of the media,
   then run minios\boot\bootinst.bat on Windows, or minios/boot/bootinst.sh
   on Linux.
 * When installed on media with fat32 and ntfs file systems, changes in
   persistent changes mode will be saved in the minios\changes\changes.dat.x
   files, the files expands dynamically, the maximum size of each file is 4 GB.
-* When installed on media with ext2-ext4, xfs, btrfs file systems, changes in
+* When installed on media with ext2-ext4, btrfs file systems, changes in
   the persistent changes mode will be saved in the minios\changes folder with
   no size limit.
 EOF
     GRAFT=$(
         cd "${MINIOS}"
-        #find . -type f | sed -r "s:^[.]/::" | egrep -v "^boot/isolinux.(bin|boot)$" | egrep -v "^boot/isohdpfx.(bin|boot)$" | egrep -v "^changes/" | egrep -v "$REGEX" | while read LINE; do
         find . -type f | sed -r "s:^[.]/::" | egrep -v "^changes/" | egrep -v "$REGEX" | while read LINE; do
-            echo "${LIVEKITNAME}/${LINE}=${MINIOS}/${LINE}"
+            echo "minios/${LINE}=${MINIOS}/${LINE}"
         done
         cd "${EFI}"
         find . -type f | sed -r "s:^[.]/::" | egrep -v "$REGEX" | while read LINE; do
@@ -168,16 +204,16 @@ EOF
         done
         echo ".disk/info=/tmp/info"
         echo "README=/tmp/README"
-        echo "${LIVEKITNAME}/${LIVEKITNAME}.conf=/etc/${LIVEKITNAME}/${LIVEKITNAME}.conf"
-        echo "${LIVEKITNAME}/boot/grub/grub.cfg=/etc/${LIVEKITNAME}/grub.cfg"
-        echo "${LIVEKITNAME}/boot/syslinux.cfg=/etc/${LIVEKITNAME}/syslinux.cfg"
+        echo "minios/minios.conf=/etc/minios/minios.conf"
+        echo "minios/boot/grub/grub.cfg=/etc/minios/grub.cfg"
+        echo "minios/boot/syslinux.cfg=/etc/minios/syslinux.cfg"
     )
     while IFS='=' read -r DESTINATION_FILE SOURCE_FILE; do
         echo "Copying ${SOURCE_FILE} to ${DESTINATION}/${DESTINATION_FILE}"
         mkdir -p "${DESTINATION}/$(dirname "${DESTINATION_FILE}")"
         cp "${SOURCE_FILE}" "${DESTINATION}/${DESTINATION_FILE}"
     done <<<"${GRAFT}"
-    mkdir -p "${DESTINATION}/${LIVEKITNAME}"/{boot,modules,changes,scripts}
+    mkdir -p "${DESTINATION}/minios"/{boot,modules,changes,scripts}
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
         GRAFT=$(
             cd "${EFI}"
@@ -195,7 +231,7 @@ EOF
 
 # Install the boot record
 install_boot_record() {
-    BOOT="${DESTINATION}/${LIVEKITNAME}/boot"
+    BOOT="${DESTINATION}/minios/boot"
     cd "${BOOT}"
     ARCH=$(uname -m)
     if [ "${ARCH}" = "x86_64" ]; then ARCH=64; else ARCH=32; fi
@@ -373,6 +409,16 @@ final_question() {
 
 # Check if the script is running as root, if not, run with root privileges using pkexec
 check_root_permissions
+
+# Parse command-line options
+parse_options "$@"
+
+# Check if graphical environment is available and yad is installed
+if ! command -v yad &>/dev/null || [[ -z "${DISPLAY}" ]]; then
+    echo "Graphical environment or yad is not available. Running in text mode."
+    show_help
+    exit 1
+fi
 
 # Start the installation process by displaying the main menu
 main_menu
