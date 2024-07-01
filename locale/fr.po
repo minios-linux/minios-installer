@@ -29,6 +29,9 @@ msgstr "Sélectionnez le périphérique"
 msgid "Select file system"
 msgstr "Sélectionnez le système de fichiers"
 
+msgid "Enable EFI support?"
+msgstr "Activer le support EFI ?"
+
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -42,13 +45,13 @@ msgid "Installing..."
 msgstr "En cours d'installation..."
 
 msgid "WARNING!"
-msgstr "AVERTISSEMENT!"
+msgstr "AVERTISSEMENT !"
 
 msgid "All data on the selected device will be lost!"
-msgstr "Toutes les données sur le périphérique sélectionné seront perdues!"
+msgstr "Toutes les données sur le périphérique sélectionné seront perdues !"
 
 msgid "Selected device:"
-msgstr "Périphérique sélectionné:"
+msgstr "Périphérique sélectionné :"
 
 msgid "Error"
 msgstr "Erreur"
@@ -58,6 +61,9 @@ msgstr "Une erreur s'est produite lors de l'installation de MiniOS sur le disque
 
 msgid "Thank you for installing MiniOS."
 msgstr "Merci d'avoir installé MiniOS."
+
+msgid "Would you like to reboot now?"
+msgstr "Souhaitez-vous redémarrer maintenant ?"
 
 msgid "Return"
 msgstr "Retour"

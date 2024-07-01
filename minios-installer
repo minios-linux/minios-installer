@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # This script is used for installing MiniOS on a disk.
 
 # --- Variable Declarations ---
@@ -17,55 +16,17 @@ REGEX='^$'
 # Check if the script is running as root, if not, run with root privileges using pkexec
 check_root_permissions() {
     if [[ "${EUID}" -ne 0 ]]; then
-        if command -v yad &>/dev/null || [[ -n "${DISPLAY}" ]]; then
-            pkexec "$0"
+        if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
+            pkexec "$0" "$@"
             exit 0
         else
-            echo "This script should be run as 'root'!"
-            exit 1
+            error_dialog "$(gettext 'This script should be run as "root"!')"
         fi
     fi
 }
 
-# Show help message
-show_help() {
-    echo "$(gettext "Usage"): $0 [options]"
-    echo "$(gettext "Options"):"
-    echo "  -d, --device DEVICE        $(gettext "Set the device to install MiniOS on")"
-    echo "  -f, --filesystem FS        $(gettext "Set the filesystem to use (e.g., ext4, btrfs, etc.)")"
-    echo "  -e, --efi                  $(gettext "Enable EFI support")"
-    echo "      --help                 $(gettext "Show this help message")"
-}
-
-# Parse command-line options
-parse_options() {
-    while [[ "$#" -gt 0 ]]; do
-        case $1 in
-        -d | --device)
-            DEV="/dev/$2"
-            shift
-            ;;
-        -f | --filesystem)
-            FS="$2"
-            shift
-            ;;
-        -e | --efi) EFI_SUPPORT="TRUE" ;;
-        --help)
-            show_help
-            exit 0
-            ;;
-        *)
-            echo "$(gettext "Unknown parameter passed"): $1"
-            show_help
-            exit 1
-            ;;
-        esac
-        shift
-    done
-}
-
-# List available disks
-list_disks() {
+# Find available disks
+find_disks() {
     DISKS="$(lsblk -Jo NAME,SIZE -n -d -I 3,8,259,252 | jq -r '.blockdevices[] | .name + "(" + .size + ")"')"
     DISKS="$(echo ${DISKS} | tr ' ' '!')"
     FILESYSTEMS="ext4!ext2!btrfs!fat32!ntfs"
@@ -104,21 +65,21 @@ partition_disk() {
 }
 
 # Wipe the disk
-wipe_disk() {
-    dd if=/dev/zero of="${DEV}" bs=4096 count=273
+erase_disk() {
+    dd if=/dev/zero of="${DEV}" bs=4096 count=273 status=none
 }
 
 # Format the partition
-format_partition() {
+format_part() {
     if [ "${FS}" = "fat32" ]; then
-        mkfs.vfat "${PART}"
+        mkfs.vfat "${PART}" >/dev/null 2>&1
     elif [ "${FS}" = "btrfs" ] || [ "${FS}" = "ntfs" ]; then
-        mkfs."${FS}" -f "${PART}"
+        mkfs."${FS}" -f "${PART}" >/dev/null 2>&1
     else
-        mkfs."${FS}" "${PART}"
+        mkfs."${FS}" "${PART}" >/dev/null 2>&1
     fi
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
-        mkfs.vfat "${EFI_PART}"
+        mkfs.vfat "${EFI_PART}" >/dev/null 2>&1
     fi
 }
 
@@ -177,8 +138,7 @@ copy_files() {
     fi
 
     if [ "${MINIOS}" = "" ]; then
-        echo "Cannot find boot/vmlinuz in MiniOS data" >&2
-        exit 2
+        error_dialog "$(gettext 'Cannot find boot/vmlinuz in MiniOS data.')" >&2
     fi
     EFI="${MINIOS}/boot/EFI"
     echo "MiniOS" >/tmp/info
@@ -208,10 +168,14 @@ EOF
         echo "minios/boot/grub/grub.cfg=/etc/minios/grub.cfg"
         echo "minios/boot/syslinux.cfg=/etc/minios/syslinux.cfg"
     )
+    TOTAL_FILES=$(echo "${GRAFT}" | wc -l)
+    COMPLETED_FILES=0
     while IFS='=' read -r DESTINATION_FILE SOURCE_FILE; do
-        echo "Copying ${SOURCE_FILE} to ${DESTINATION}/${DESTINATION_FILE}"
         mkdir -p "${DESTINATION}/$(dirname "${DESTINATION_FILE}")"
         cp "${SOURCE_FILE}" "${DESTINATION}/${DESTINATION_FILE}"
+        ((COMPLETED_FILES++))
+        PROGRESS=$((18 + 78 * COMPLETED_FILES / TOTAL_FILES))
+        echo "${PROGRESS}"
     done <<<"${GRAFT}"
     mkdir -p "${DESTINATION}/minios"/{boot,modules,changes,scripts}
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
@@ -222,186 +186,256 @@ EOF
             done
         )
         while IFS='=' read -r DESTINATION_FILE SOURCE_FILE; do
-            echo "Copying ${SOURCE_FILE} to ${EFI_DESTINATION}/${DESTINATION_FILE}"
             mkdir -p "${EFI_DESTINATION}/$(dirname "${DESTINATION_FILE}")"
             cp "${SOURCE_FILE}" "${EFI_DESTINATION}/${DESTINATION_FILE}"
         done <<<"${GRAFT}"
     fi
 }
 
-# Install the boot record
-install_boot_record() {
+
+# Setup bootloader
+setup_bootloader() {
     BOOT="${DESTINATION}/minios/boot"
     cd "${BOOT}"
     ARCH=$(uname -m)
     if [ "${ARCH}" = "x86_64" ]; then ARCH=64; else ARCH=32; fi
     EXTLINUX="extlinux.x${ARCH}"
     if [ ! -x "./${EXTLINUX}" ]; then
-        mount -o remount,exec "${DEV}"
-        chmod a+x "./${EXTLINUX}"
+        mount -o remount,exec "${DEV}" >/dev/null 2>&1
+        chmod a+x "./${EXTLINUX}" >/dev/null 2>&1
     fi
     if [ ! -x "./${EXTLINUX}" ]; then
-        cp -f "./${EXTLINUX}" ./extlinux.exe
+        cp -f "./${EXTLINUX}" ./extlinux.exe >/dev/null 2>&1
         EXTLINUX=extlinux.exe
     fi
-    "./${EXTLINUX}" --install "${BOOT}"
+    "./${EXTLINUX}" --install "${BOOT}" >/dev/null 2>&1
     if [ $? -ne 0 ]; then
-        echo "Error installing boot loader."
-        exit 1
+        error_dialog "$(gettext 'Error installing boot loader.')"
     fi
     if [ "${DEV}" != "${PART}" ]; then
         dd bs=440 count=1 conv=notrunc if="${BOOT}/mbr.bin" of="${DEV}" 2>/dev/null
-        PART="$(echo "${PART}" | sed -r "s:.*[^0-9]::")"
+        PARTNUM="$(echo "${PART}" | sed -r "s:.*[^0-9]::")"
         (
             fdisk -l "${DEV}" | fgrep "*" | fgrep "${DEV}" | cut -d " " -f 1 |
                 sed -r "s:.*[^0-9]::" | xargs -I '{}' echo -ne "a\n{}\n"
             echo a
-            echo "${PART}"
+            echo "${PARTNUM}"
             echo w
         ) | fdisk "${DEV}" >/dev/null 2>&1
     fi
-    echo "Boot installation finished."
     cd "${CWD}"
 }
 
-# Show error message
-show_error_message() {
+# Error dialog
+error_dialog() {
     local ERROR_MESSAGE="${1}"
-    yad --center --borders=10 \
-        --window-icon="usb-creator-gtk" \
-        --title="$(gettext 'Error')" \
-        --error \
-        --text="$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
+        yad --center --borders=10 \
+            --window-icon="usb-creator-gtk" \
+            --title="$(gettext 'Error')" \
+            --error \
+            --text="${ERROR_MESSAGE}"
+    else
+        whiptail --title "$(gettext 'Error')" --msgbox "${ERROR_MESSAGE}" 10 60
+    fi
     exit 1
 }
 
 # Confirmation question for installation
 installation_warning() {
-    INSTALLATION_WARNING=$(
-        yad --form --center \
-            --borders=10 \
-            --window-icon="usb-creator-gtk" \
-            --title="$(gettext 'WARNING!')" \
-            --text="<span foreground=\"red\" font=\"Bold\" font-size=\"large\">$(gettext 'All data on the selected device will be lost!')</span>\n<span font-size=\"large\">$(gettext 'Selected device:')</span><span font=\"Bold\" font-size=\"large\">${DEV}</span>" \
-            --text-align="center" \
-            --width=400 \
-            --buttons-layout="center" \
-            --on-top \
-            --form \
-            --button="$(gettext 'Return')!edit-undo":120 \
-            --button="$(gettext 'Continue')!gtk-ok":121
-    )
-    local BUTTON=$?
+    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
+        INSTALLATION_WARNING=$(
+            yad --form --center \
+                --borders=10 \
+                --window-icon="usb-creator-gtk" \
+                --title="$(gettext 'WARNING!')" \
+                --text="<span foreground=\"red\" font=\"Bold\" font-size=\"large\">$(gettext 'All data on the selected device will be lost!')</span>\n<span font-size=\"large\">$(gettext 'Selected device:')</span><span font=\"Bold\" font-size=\"large\">${DEV}</span>" \
+                --text-align="center" \
+                --width=400 \
+                --buttons-layout="center" \
+                --on-top \
+                --form \
+                --button="$(gettext 'Return')!edit-undo":120 \
+                --button="$(gettext 'Continue')!gtk-ok":121
+        )
+        local BUTTON=$?
 
-    case "${BUTTON}" in
-    120) # Return Main Menu
-        main_menu
-        ;;
-    121) # Continue installation
-        install_minios | yad --center --borders=10 --window-icon="usb-creator-gtk" --progress --width=250 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill
-        ;;
-    esac
+        case "${BUTTON}" in
+        120) # Return Main Menu
+            main_menu
+            ;;
+        121) # Continue installation
+            install_minios | yad --center --borders=10 --window-icon="usb-creator-gtk" --progress --width=250 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill
+            ;;
+        esac
+    else
+        if whiptail --title "WARNING!" --yesno "$(gettext 'All data on the selected device will be lost!')\n$(gettext 'Selected device:') ${DEV}" 20 60; then
+            install_minios | whiptail --gauge "$(gettext 'Installing...')" 6 60 0
+        fi
+    fi
+    post_install_prompt
 }
 
 # Perform the MiniOS installation process
 install_minios() {
     echo "0"
-    umount_part || show_error_message
-    echo "5"
-    wipe_disk || show_error_message
-    echo "10"
-    partition_disk || show_error_message
+    umount_part || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    echo "2"
+    erase_disk || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    echo "4"
+    partition_disk || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    echo "8"
+    format_part || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
     echo "15"
-    format_partition || show_error_message
-    echo "20"
-    mount_part || show_error_message
-    echo "25"
-    copy_files || show_error_message
-    echo "90"
+    mount_part || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    echo "18"
+    copy_files || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    echo "96"
     if [ "${GPT_SUPPORT}" != "TRUE" ] && [ "${FS}" != "exfat" ]; then
-        install_boot_record || show_error_message
+        setup_bootloader || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
     fi
-    echo "95"
-    umount_part || show_error_message
+    echo "98"
+    umount_part || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
     echo "100"
-    final_question
 }
 
 # Display the main menu for selecting installation options
 main_menu() {
-    list_disks
-    MAIN_FORM=$(
-        yad --form --center \
-            --borders=10 \
-            --window-icon="usb-creator-gtk" \
-            --title="$(gettext 'MiniOS Installer')" \
-            --text="<span font-size=\"large\">$(gettext 'Select installation options for MiniOS:')</span>\n" \
-            --text-align="center" \
-            --width=300 --height=200 \
-            --buttons-layout="center" \
-            --on-top \
-            --form \
-            --field="$(gettext 'Select device'):CB" "${DISKS}" \
-            --field="$(gettext 'Select file system'):CB" "${FILESYSTEMS}" \
-            --field="$(gettext 'EFI'):CHK" \
-            --button="$(gettext 'Cancel')!gtk-cancel":101 \
-            --button="$(gettext 'Install')!usb-creator-gtk":102 \
-            --button="$(gettext 'Reload')!gtk-refresh":103
-    )
-    local BUTTON=$?
-    echo "${BUTTON}" "${MAIN_FORM}"
-    DEV_DESC=$(echo "${MAIN_FORM}" | cut -d"|" -f1)
-    DEV_NAME=$(echo "${DEV_DESC}" | cut -d "(" -f 1)
-    if [[ "${DEV_NAME}" == "nvme"* ]]; then
-        PART_NAME="${DEV_NAME}p1"
-        EFI_PART_NAME="${DEV_NAME}p2"
-    else
-        PART_NAME="${DEV_NAME}1"
-        EFI_PART_NAME="${DEV_NAME}2"
-    fi
-    DEV="/dev/${DEV_NAME}"
-    PART="/dev/${PART_NAME}"
-    EFI_PART="/dev/${EFI_PART_NAME}"
-    FS=$(echo "${MAIN_FORM}" | cut -d "|" -f2)
-    EFI_SUPPORT=$(echo "${MAIN_FORM}" | cut -d "|" -f3)
-    DESTINATION="/mnt/install/${PART_NAME}"
-    EFI_DESTINATION="/mnt/install/${EFI_PART_NAME}"
+    find_disks
 
-    case "${BUTTON}" in
-    101)
-        exit 0
-        ;;
-    102)
+    if [[ -z "${DISKS}" ]]; then
+        error_dialog "$(gettext 'No available devices found.')"
+        return
+    fi
+
+    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
+        MAIN_FORM=$(
+            yad --form --center \
+                --borders=10 \
+                --window-icon="usb-creator-gtk" \
+                --title="$(gettext 'MiniOS Installer')" \
+                --text="<span font-size=\"large\">$(gettext 'Select installation options for MiniOS:')</span>\n" \
+                --text-align="center" \
+                --width=300 --height=200 \
+                --buttons-layout="center" \
+                --on-top \
+                --form \
+                --field="$(gettext 'Select device'):CB" "${DISKS}" \
+                --field="$(gettext 'Select file system'):CB" "${FILESYSTEMS}" \
+                --field="$(gettext 'EFI'):CHK" \
+                --button="$(gettext 'Cancel')!gtk-cancel":101 \
+                --button="$(gettext 'Install')!usb-creator-gtk":102 \
+                --button="$(gettext 'Reload')!gtk-refresh":103
+        )
+        local BUTTON=$?
+        echo "${BUTTON}" "${MAIN_FORM}"
+        DEV_DESC=$(echo "${MAIN_FORM}" | cut -d"|" -f1)
+        DEV_NAME=$(echo "${DEV_DESC}" | cut -d "(" -f 1)
+        if [[ "${DEV_NAME}" == "nvme"* ]]; then
+            PART_NAME="${DEV_NAME}p1"
+            EFI_PART_NAME="${DEV_NAME}p2"
+        else
+            PART_NAME="${DEV_NAME}1"
+            EFI_PART_NAME="${DEV_NAME}2"
+        fi
+        DEV="/dev/${DEV_NAME}"
+        PART="/dev/${PART_NAME}"
+        EFI_PART="/dev/${EFI_PART_NAME}"
+        FS=$(echo "${MAIN_FORM}" | cut -d "|" -f2)
+        EFI_SUPPORT=$(echo "${MAIN_FORM}" | cut -d "|" -f3)
+        DESTINATION="/mnt/install/${PART_NAME}"
+        EFI_DESTINATION="/mnt/install/${EFI_PART_NAME}"
+
+        case "${BUTTON}" in
+        101)
+            exit 0
+            ;;
+        102)
+            installation_warning
+            ;;
+        103)
+            main_menu
+            ;;
+        esac
+    else
+        DISK_OPTIONS=()
+        for disk in ${DISKS//!/ }; do
+            DISK_OPTIONS+=("${disk}" "")
+        done
+
+        FS_OPTIONS=()
+        for fs in ${FILESYSTEMS//!/ }; do
+            FS_OPTIONS+=("${fs}" "")
+        done
+
+        DEV_DESC=$(whiptail --title "$(gettext 'MiniOS Installer')" --menu "$(gettext 'Select device'):" 20 60 10 "${DISK_OPTIONS[@]}" 3>&1 1>&2 2>&3)
+        DEV_NAME=$(echo "${DEV_DESC}" | cut -d "(" -f 1)
+
+        if [[ -z "${DEV_NAME}" ]]; then
+            main_menu
+            return
+        fi
+
+        if [[ "${DEV_NAME}" == "nvme"* ]]; then
+            PART_NAME="${DEV_NAME}p1"
+            EFI_PART_NAME="${DEV_NAME}p2"
+        else
+            PART_NAME="${DEV_NAME}1"
+            EFI_PART_NAME="${DEV_NAME}2"
+        fi
+        DEV="/dev/${DEV_NAME}"
+        PART="/dev/${PART_NAME}"
+        EFI_PART="/dev/${EFI_PART_NAME}"
+
+        FS=$(whiptail --title "$(gettext 'MiniOS Installer')" --menu "$(gettext 'Select file system'):" 20 60 10 "${FS_OPTIONS[@]}" 3>&1 1>&2 2>&3)
+
+        if [[ -z "${FS}" ]]; then
+            main_menu
+            return
+        fi
+
+        if whiptail --title "$(gettext 'MiniOS Installer')" --yesno "$(gettext 'Enable EFI support?')" 8 60; then
+            EFI_SUPPORT="TRUE"
+        else
+            EFI_SUPPORT="FALSE"
+        fi
+
+        DESTINATION="/mnt/install/${PART_NAME}"
+        EFI_DESTINATION="/mnt/install/${EFI_PART_NAME}"
+
         installation_warning
-        ;;
-    103)
-        main_menu
-        ;;
-    esac
+    fi
 }
 
 #
-final_question() {
-    FINAL_FORM=$(
-        yad --form --center \
-            --borders=10 \
-            --window-icon="usb-creator-gtk" \
-            --title="$(gettext 'MiniOS Installer')" \
-            --text="$(gettext 'Thank you for installing MiniOS.')" \
-            --width=200 --height=100 \
-            --buttons-layout="center" \
-            --on-top \
-            --form \
-            --button="$(gettext 'Finish')!gtk-ok":101 \
-            --button="$(gettext 'Reboot')!gtk-refresh":102
-    )
-    local BUTTON=$?
+post_install_prompt() {
+    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
+        FINAL_FORM=$(
+            yad --form --center \
+                --borders=10 \
+                --window-icon="usb-creator-gtk" \
+                --title="$(gettext 'MiniOS Installer')" \
+                --text="$(gettext 'Thank you for installing MiniOS.')" \
+                --width=200 --height=100 \
+                --buttons-layout="center" \
+                --on-top \
+                --form \
+                --button="$(gettext 'Finish')!gtk-ok":101 \
+                --button="$(gettext 'Reboot')!gtk-refresh":102
+        )
+    else
+        if whiptail --title "$(gettext 'MiniOS Installer')" --yesno "$(gettext 'Thank you for installing MiniOS.') $(gettext 'Would you like to reboot now?')" 10 60; then
+            BUTTON=102 # Reboot
+        else
+            BUTTON=101 # Finish
+        fi
+    fi
 
     case "${BUTTON}" in
     101) # Finish MiniOS Installer
         exit
         ;;
-    102) # Restart the Computer
+    102) # Reboot the Computer
         reboot
         ;;
     esac
@@ -409,16 +443,6 @@ final_question() {
 
 # Check if the script is running as root, if not, run with root privileges using pkexec
 check_root_permissions
-
-# Parse command-line options
-parse_options "$@"
-
-# Check if graphical environment is available and yad is installed
-if ! command -v yad &>/dev/null || [[ -z "${DISPLAY}" ]]; then
-    echo "Graphical environment or yad is not available. Running in text mode."
-    show_help
-    exit 1
-fi
 
 # Start the installation process by displaying the main menu
 main_menu

@@ -29,6 +29,9 @@ msgstr "Seleziona dispositivo"
 msgid "Select file system"
 msgstr "Seleziona sistema di file"
 
+msgid "Enable EFI support?"
+msgstr "Abilitare il supporto EFI?"
+
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -58,6 +61,9 @@ msgstr "Si è verificato un errore durante l'installazione di MiniOS sul disco"
 
 msgid "Thank you for installing MiniOS."
 msgstr "Grazie per aver installato il MiniOS."
+
+msgid "Would you like to reboot now?"
+msgstr "Desideri riavviare ora?"
 
 msgid "Return"
 msgstr "Ritorno"
