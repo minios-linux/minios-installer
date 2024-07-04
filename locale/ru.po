@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-17 13:59+0300\n"
+"POT-Creation-Date: 2024-07-03 21:10+0300\n"
 "PO-Revision-Date: 2024-03-17 14:43+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2024.\n"
 "Language-Team: Russian\n"
@@ -15,64 +15,186 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-msgid "MiniOS Installer"
-msgstr "Установка MiniOS"
-
-msgid "Select installation options for MiniOS:"
-msgstr "Выберите варианты установки для MiniOS:"
-
-msgid "Select device"
-msgstr "Выберите устройство"
-
-msgid "Select file system"
-msgstr "Выберите файловую систему"
-
-msgid "Enable EFI support?"
-msgstr "Включить поддержку EFI?"
-
-msgid "Cancel"
-msgstr "Отмена"
-
-msgid "Install"
-msgstr "Установить"
-
-msgid "Reload"
-msgstr "Перезагрузить"
-
-msgid "Installing..."
-msgstr "Установка..."
-
-msgid "WARNING!"
-msgstr "ВНИМАНИЕ!"
-
-msgid "All data on the selected device will be lost!"
-msgstr "Все данные на выбранном устройстве будут утеряны!"
-
-msgid "Selected device:"
-msgstr "Выбранное устройство:"
-
+#: minios-installer:20 minios-installer:22
 msgid "Error"
 msgstr "Ошибка"
 
-msgid "An error occurred during the installation of MiniOS on disk"
-msgstr "Произошла ошибка при установке MiniOS на диск"
+#: minios-installer:35
+msgid "This script should be run as \"root\"!"
+msgstr "Этот скрипт должен быть запущен от имени \"root\"!"
 
-msgid "Thank you for installing MiniOS."
-msgstr "Спасибо за установку MiniOS."
+#: minios-installer:103 minios-installer:107
+msgid "Warning"
+msgstr "Предупреждение"
 
-msgid "Would you like to reboot now?"
-msgstr "Хотите перезагрузить сейчас?"
+#: minios-installer:103 minios-installer:107
+msgid "Directory"
+msgstr "Каталог"
 
+#: minios-installer:103 minios-installer:107
+msgid "is not empty. Do you want to delete it?"
+msgstr "не пуст. Вы хотите удалить его?"
+
+#: minios-installer:103
+msgid "Yes"
+msgstr "Да"
+
+#: minios-installer:103
+msgid "No"
+msgstr "Нет"
+
+#: minios-installer:119
+msgid "Destination"
+msgstr "Назначение"
+
+#: minios-installer:119 minios-installer:130
+msgid "is already mounted"
+msgstr "уже смонтировано"
+
+#: minios-installer:123 minios-installer:134
+msgid "Failed to mount"
+msgstr "Не удалось смонтировать"
+
+#: minios-installer:123 minios-installer:134
+msgid "to"
+msgstr "в"
+
+#: minios-installer:130
+msgid "EFI destination"
+msgstr "EFI-раздел"
+
+#: minios-installer:162
+msgid "Failed to unmount"
+msgstr "Не удалось размонтировать"
+
+#: minios-installer:194
+msgid "Cannot find boot/vmlinuz in MiniOS data."
+msgstr "Не удается найти boot/vmlinuz в данных MiniOS."
+
+#: minios-installer:266
+msgid "Error installing boot loader."
+msgstr "Ошибка при установке загрузчика."
+
+#: minios-installer:289 minios-installer:321
+msgid "WARNING!"
+msgstr "ВНИМАНИЕ!"
+
+#: minios-installer:290 minios-installer:321
+msgid "All data on the selected device will be lost!"
+msgstr "Все данные на выбранном устройстве будут утеряны!"
+
+#: minios-installer:290 minios-installer:321
+msgid "Selected device:"
+msgstr "Выбранное устройство:"
+
+#: minios-installer:296
 msgid "Return"
 msgstr "Вернуться"
 
+#: minios-installer:297
 msgid "Continue"
 msgstr "Продолжить"
 
+#: minios-installer:307 minios-installer:392 minios-installer:456
+#: minios-installer:474 minios-installer:480 minios-installer:502
+#: minios-installer:511
+msgid "MiniOS Installer"
+msgstr "Установка MiniOS"
+
+#: minios-installer:307 minios-installer:322 minios-installer:337
+msgid "Installing..."
+msgstr "Установка..."
+
+#: minios-installer:311 minios-installer:345 minios-installer:348
+#: minios-installer:351 minios-installer:354 minios-installer:357
+#: minios-installer:360 minios-installer:364 minios-installer:373
+msgid "An error occurred during the installation of MiniOS on disk."
+msgstr "Произошла ошибка при установке MiniOS на диск."
+
+#: minios-installer:344 minios-installer:372
+msgid "Unmounting disk"
+msgstr "Размонтирование диска"
+
+#: minios-installer:347
+msgid "Erasing disk"
+msgstr "Стирание диска"
+
+#: minios-installer:350
+msgid "Partitioning disk"
+msgstr "Разделение диска"
+
+#: minios-installer:353
+msgid "Formatting partition"
+msgstr "Форматирование раздела"
+
+#: minios-installer:356
+msgid "Mounting partition"
+msgstr "Монтирование раздела"
+
+#: minios-installer:359
+msgid "Copying files"
+msgstr "Копирование файлов"
+
+#: minios-installer:363
+msgid "Setting up bootloader"
+msgstr "Настройка загрузчика"
+
+#: minios-installer:383
+msgid "No available devices found."
+msgstr "Доступные устройства не найдены."
+
+#: minios-installer:393
+msgid "Select installation options for MiniOS:"
+msgstr "Выберите параметры установки для MiniOS:"
+
+#: minios-installer:399 minios-installer:456
+msgid "Select device"
+msgstr "Выберите устройство"
+
+#: minios-installer:400 minios-installer:474
+msgid "Select file system"
+msgstr "Выберите файловую систему"
+
+#: minios-installer:401
+msgid "EFI"
+msgstr "EFI"
+
+#: minios-installer:402
+msgid "Cancel"
+msgstr "Отмена"
+
+#: minios-installer:403
+msgid "Install"
+msgstr "Установить"
+
+#: minios-installer:404
+msgid "Reload"
+msgstr "Обновить окно"
+
+#: minios-installer:413
+msgid "No device selected."
+msgstr "Устройство не выбрано."
+
+#: minios-installer:480
+msgid "Enable EFI support?"
+msgstr "Включить поддержку EFI?"
+
+#: minios-installer:503 minios-installer:511
+msgid "Installation complete. Please restart your computer to apply the changes."
+msgstr "Установка завершена. Пожалуйста, перезагрузите компьютер для применения изменений."
+
+#: minios-installer:508
 msgid "Finish"
 msgstr "Завершить"
 
-msgid "Reboot"
-msgstr "Перезагрузить"
+#~ msgid "Thank you for installing MiniOS."
+#~ msgstr "Спасибо за установку MiniOS."
+
+#~ msgid "Would you like to reboot now?"
+#~ msgstr "Хотите перезагрузить сейчас?"
+
+#~ msgid "Reboot"
+#~ msgstr "Перезагрузить"

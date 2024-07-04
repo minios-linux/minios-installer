@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-17 13:59+0300\n"
+"POT-Creation-Date: 2024-07-03 21:10+0300\n"
 "PO-Revision-Date: 2024-03-17 14:43+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2024.\n"
 "Language-Team: German\n"
@@ -17,62 +17,183 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-msgid "MiniOS Installer"
-msgstr "MiniOS Installer"
-
-msgid "Select installation options for MiniOS:"
-msgstr "Wählen Sie die Installationsoptionen für MiniOS:"
-
-msgid "Select device"
-msgstr "Gerät auswählen"
-
-msgid "Select file system"
-msgstr "Dateisystem auswählen"
-
-msgid "Enable EFI support?"
-msgstr "EFI-Unterstützung aktivieren?"
-
-msgid "Cancel"
-msgstr "Abbrechen"
-
-msgid "Install"
-msgstr "Installieren"
-
-msgid "Reload"
-msgstr "Neu laden"
-
-msgid "Installing..."
-msgstr "Installiert..."
-
-msgid "WARNING!"
-msgstr "WARNUNG!"
-
-msgid "All data on the selected device will be lost!"
-msgstr "Alle Daten auf dem ausgewählten Gerät gehen verloren!"
-
-msgid "Selected device:"
-msgstr "Ausgewähltes Gerät:"
-
+#: minios-installer:20 minios-installer:22
 msgid "Error"
 msgstr "Fehler"
 
-msgid "An error occurred during the installation of MiniOS on disk"
-msgstr "Bei der Installation von MiniOS auf die Festplatte ist ein Fehler aufgetreten"
+#: minios-installer:35
+msgid "This script should be run as \"root\"!"
+msgstr "Dieses Skript sollte als \"root\" ausgeführt werden!"
 
-msgid "Thank you for installing MiniOS."
-msgstr "Vielen Dank für die Installation von MiniOS."
+#: minios-installer:103 minios-installer:107
+msgid "Warning"
+msgstr "Warnung"
 
-msgid "Would you like to reboot now?"
-msgstr "Möchten Sie jetzt neu starten?"
+#: minios-installer:103 minios-installer:107
+msgid "Directory"
+msgstr "Verzeichnis"
 
+#: minios-installer:103 minios-installer:107
+msgid "is not empty. Do you want to delete it?"
+msgstr "ist nicht leer. Möchten Sie es löschen?"
+
+#: minios-installer:103
+msgid "Yes"
+msgstr "Ja"
+
+#: minios-installer:103
+msgid "No"
+msgstr "Nein"
+
+#: minios-installer:119
+msgid "Destination"
+msgstr "Ziel"
+
+#: minios-installer:119 minios-installer:130
+msgid "is already mounted"
+msgstr "ist bereits eingehängt"
+
+#: minios-installer:123 minios-installer:134
+msgid "Failed to mount"
+msgstr "Fehler beim Einhängen"
+
+#: minios-installer:123 minios-installer:134
+msgid "to"
+msgstr "nach"
+
+#: minios-installer:130
+msgid "EFI destination"
+msgstr "EFI-Ziel"
+
+#: minios-installer:162
+msgid "Failed to unmount"
+msgstr "Fehler beim Aushängen"
+
+#: minios-installer:194
+msgid "Cannot find boot/vmlinuz in MiniOS data."
+msgstr "Kann boot/vmlinuz in MiniOS-Daten nicht finden."
+
+#: minios-installer:266
+msgid "Error installing boot loader."
+msgstr "Fehler bei der Installation des Bootloaders."
+
+#: minios-installer:289 minios-installer:321
+msgid "WARNING!"
+msgstr "WARNUNG!"
+
+#: minios-installer:290 minios-installer:321
+msgid "All data on the selected device will be lost!"
+msgstr "Alle Daten auf dem ausgewählten Gerät gehen verloren!"
+
+#: minios-installer:290 minios-installer:321
+msgid "Selected device:"
+msgstr "Ausgewähltes Gerät:"
+
+#: minios-installer:296
 msgid "Return"
 msgstr "Zurück"
 
+#: minios-installer:297
 msgid "Continue"
 msgstr "Fortsetzen"
 
+#: minios-installer:307 minios-installer:392 minios-installer:456
+#: minios-installer:474 minios-installer:480 minios-installer:502
+#: minios-installer:511
+msgid "MiniOS Installer"
+msgstr "MiniOS-Installer"
+
+#: minios-installer:307 minios-installer:322 minios-installer:337
+msgid "Installing..."
+msgstr "Installiert..."
+
+#: minios-installer:311 minios-installer:345 minios-installer:348
+#: minios-installer:351 minios-installer:354 minios-installer:357
+#: minios-installer:360 minios-installer:364 minios-installer:373
+msgid "An error occurred during the installation of MiniOS on disk."
+msgstr "Bei der Installation von MiniOS auf die Festplatte ist ein Fehler aufgetreten."
+
+#: minios-installer:344 minios-installer:372
+msgid "Unmounting disk"
+msgstr "Aushängen der Festplatte"
+
+#: minios-installer:347
+msgid "Erasing disk"
+msgstr "Löschen der Festplatte"
+
+#: minios-installer:350
+msgid "Partitioning disk"
+msgstr "Partitionierung der Festplatte"
+
+#: minios-installer:353
+msgid "Formatting partition"
+msgstr "Formatieren der Partition"
+
+#: minios-installer:356
+msgid "Mounting partition"
+msgstr "Einhängen der Partition"
+
+#: minios-installer:359
+msgid "Copying files"
+msgstr "Kopieren von Dateien"
+
+#: minios-installer:363
+msgid "Setting up bootloader"
+msgstr "Einrichten des Bootloaders"
+
+#: minios-installer:383
+msgid "No available devices found."
+msgstr "Keine verfügbaren Geräte gefunden."
+
+#: minios-installer:393
+msgid "Select installation options for MiniOS:"
+msgstr "Wählen Sie die Installationsoptionen für MiniOS:"
+
+#: minios-installer:399 minios-installer:456
+msgid "Select device"
+msgstr "Gerät auswählen"
+
+#: minios-installer:400 minios-installer:474
+msgid "Select file system"
+msgstr "Dateisystem auswählen"
+
+#: minios-installer:401
+msgid "EFI"
+msgstr "EFI"
+
+#: minios-installer:402
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: minios-installer:403
+msgid "Install"
+msgstr "Installieren"
+
+#: minios-installer:404
+msgid "Reload"
+msgstr "Neu laden"
+
+#: minios-installer:413
+msgid "No device selected."
+msgstr "Kein Gerät ausgewählt."
+
+#: minios-installer:480
+msgid "Enable EFI support?"
+msgstr "EFI-Unterstützung aktivieren?"
+
+#: minios-installer:503 minios-installer:511
+msgid "Installation complete. Please restart your computer to apply the changes."
+msgstr "Installation abgeschlossen. Bitte starten Sie Ihren Computer neu, um die Änderungen zu übernehmen."
+
+#: minios-installer:508
 msgid "Finish"
 msgstr "Beenden"
 
-msgid "Reboot"
-msgstr "Neustart"
+#~ msgid "Thank you for installing MiniOS."
+#~ msgstr "Vielen Dank für die Installation von MiniOS."
+
+#~ msgid "Would you like to reboot now?"
+#~ msgstr "Möchten Sie jetzt neu starten?"
+
+#~ msgid "Reboot"
+#~ msgstr "Neustart"
