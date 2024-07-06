@@ -139,37 +139,29 @@ mount_part() {
 
 # Unmount the disk
 umount_disk() {
-    echo "${DESTINATION}" "${EFI_DESTINATION}"
-    # Define the mount points to check
-    MOUNT_POINTS=("${DESTINATION}" "${EFI_DESTINATION}")
+    # Define the partitions and their corresponding mount points
+    declare -A PARTITIONS_MOUNT_POINTS=(["${PART}"]="${DESTINATION}" ["${EFI_PART}"]="${EFI_DESTINATION}")
 
-    for MOUNT_POINT in "${MOUNT_POINTS[@]}"; do
-        # Check if the mount point is currently mounted
-        if mountpoint -q "${MOUNT_POINT}"; then
-            # Get the disk that is mounted at this mount point
-            DISK=$(df -h "${MOUNT_POINT}" | tail -1 | awk '{print $1}' | sed 's/[0-9]*$//')
-
-            # Get all partitions of the disk
-            PARTITIONS=$(ls ${DISK}* | grep -P "${DISK}[0-9]+")
-
-            for PARTITION in ${PARTITIONS}; do
-                # Check if the partition is mounted
-                if grep -qs "${PARTITION}" /proc/mounts; then
-                    # Unmount the partition
-                    if ! umount "${PARTITION}"; then
-                        # If unmounting failed, try again
-                        sleep 1
-                        if ! umount "${PARTITION}"; then
-                            error_dialog "$(gettext 'Failed to unmount') ${PARTITION}"
-                        fi
-                    fi
+    for PARTITION in "${!PARTITIONS_MOUNT_POINTS[@]}"; do
+        MOUNT_POINT=${PARTITIONS_MOUNT_POINTS[$PARTITION]}
+        # Check if the partition is mounted
+        if grep -qs "${PARTITION}" /proc/mounts; then
+            # Unmount the partition
+            if ! umount "${PARTITION}"; then
+                # If unmounting failed, try again
+                sleep 1
+                if ! umount "${PARTITION}"; then
+                    error_dialog "$(gettext 'Failed to unmount') ${PARTITION}"
                 fi
-            done
-
-            # Remove the directory if it is empty
-            if [ -z "$(ls -A "${MOUNT_POINT}")" ]; then
-                rmdir "${MOUNT_POINT}"
             fi
+        fi
+
+        # Check if the mount point exists and is empty
+        if [ -d "${MOUNT_POINT}" ] && [ -z "$(ls -A "${MOUNT_POINT}")" ]; then
+            # Remove the directory
+            rmdir "${MOUNT_POINT}"
+        elif [ -d "${MOUNT_POINT}" ]; then
+            error_dialog "$(gettext 'Failed to remove mount point') ${MOUNT_POINT}"
         fi
     done
 }
