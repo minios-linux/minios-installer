@@ -139,6 +139,7 @@ mount_part() {
 
 # Unmount the disk
 umount_disk() {
+    echo "${DESTINATION}" "${EFI_DESTINATION}"
     # Define the mount points to check
     MOUNT_POINTS=("${DESTINATION}" "${EFI_DESTINATION}")
 
