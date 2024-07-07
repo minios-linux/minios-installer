@@ -4,7 +4,7 @@
   <vendor>MiniOS</vendor>
   <vendor_url>https://minios.dev/</vendor_url>
   <icon_name>usb-creator-gtk</icon_name>
-  <action id="org.minios.installer.install">
+  <action id="dev.minios.installer.install">
     <description>Install MiniOS</description>
     <message>Authentication is required to run MiniOS Installer</message>
     <defaults>

@@ -1,6 +1,6 @@
 EXECUTABLES = minios-installer
 APPLICATIONS = minios-installer.desktop
-POLICIES = org.minios.installer.policy
+POLICIES = dev.minios.installer.policy
 
 BINDIR = usr/bin
 APPLICATIONSDIR = usr/share/applications
