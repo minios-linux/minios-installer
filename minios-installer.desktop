@@ -126,6 +126,6 @@ Keywords=install;
 Exec=pkexec /usr/bin/minios-installer
 Icon=usb-creator-gtk
 Terminal=false
-Categories=GTK;System;Settings;
+Categories=GTK;System;
 NotShowIn=KDE;
 X-Ayatana-Appmenu-Show-Stubs=False

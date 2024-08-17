@@ -39,7 +39,7 @@ check_root_permissions() {
 
 # Find available disks
 find_disks() {
-    DISKS="$(lsblk -Jo NAME,SIZE -n -d -I 3,8,259,252 | jq -r '.blockdevices[] | .name + "(" + .size + ")"')"
+    DISKS=$(lsblk -Jo NAME,SIZE -n -d -I 3,8,179,259,252 | jq -r '.blockdevices[] | .name + "(" + .size + ")"')
     DISKS="$(echo ${DISKS} | tr ' ' '!')"
     FILESYSTEMS="ext4!ext2!btrfs!fat32!ntfs!exfat"
 }
@@ -83,13 +83,18 @@ erase_disk() {
 
 # Format the partition
 format_part() {
-    if [ "${FS}" = "fat32" ]; then
+    case "${FS}" in
+    fat32)
         mkfs.vfat "${PART}" >/dev/null 2>&1
-    elif [ "${FS}" = "btrfs" ] || [ "${FS}" = "ntfs" ] || [ "${FS}" = "exfat" ]; then
+        ;;
+    btrfs | ntfs | exfat)
         mkfs."${FS}" -f "${PART}" >/dev/null 2>&1
-    else
+        ;;
+    *)
         mkfs."${FS}" "${PART}" >/dev/null 2>&1
-    fi
+        ;;
+    esac
+
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
         mkfs.vfat "${EFI_PART}" >/dev/null 2>&1
     fi
@@ -274,6 +279,43 @@ setup_bootloader() {
 
 # Confirmation question for installation
 installation() {
+    # Check if the selected disk is mounted at /run/initramfs/memory/data
+    if mount | grep -q "/run/initramfs/memory/data" | grep -q "${DEV}"; then
+        if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
+            INVALID_DISK_WARNING=$(
+                yad --form --center \
+                    --borders=10 \
+                    --window-icon="usb-creator-gtk" \
+                    --title="$(gettext 'WARNING!')" \
+                    --text="<span foreground=\"red\" font=\"Bold\" font-size=\"large\">$(gettext 'Cannot install on the same disk from which the system is running.')</span>" \
+                    --text-align="center" \
+                    --width=400 \
+                    --buttons-layout="center" \
+                    --on-top \
+                    --form \
+                    --button="$(gettext 'Return')!edit-undo":120
+            )
+            local RESULT=$?
+
+            case "${RESULT}" in
+            120) # Return Main Menu
+                main_menu
+                return
+                ;;
+            252)
+                exit 1
+                ;;
+            esac
+        else
+            if whiptail --title "$(gettext 'WARNING!')" --msgbox "$(gettext 'Cannot install on the same disk from which the system is running.')" 20 60; then
+                main_menu
+                return
+            else
+                exit 1
+            fi
+        fi
+    fi
+
     if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
         INSTALLATION_WARNING=$(
             yad --form --center \
@@ -302,7 +344,6 @@ installation() {
             case "${INSTALLATION_RESULT}" in
             252)
                 error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
-                exit 1
                 ;;
             esac
             ;;
@@ -357,7 +398,7 @@ install_minios() {
         setup_bootloader || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
     fi
     echo "98"
-    if command -v yad &>/dev/null || [[ -n "${DISPLAY}" ]]; then
+    if command -v yad &>/dev/null && command -v minios-configurator &>/dev/null && [[ -n "${DISPLAY}" ]]; then
         if [ -f "${DESTINATION}/minios/minios.conf" ]; then
             minios-configurator ${DESTINATION}/minios/minios.conf
         fi
@@ -407,7 +448,7 @@ main_menu() {
                 continue
             fi
 
-            if [[ "${DEV_NAME}" == "nvme"* ]]; then
+            if [[ "${DEV_NAME}" == "nvme"* ]] || [[ "${DEV_NAME}" == "mmcblk"* ]]; then
                 PART_NAME="${DEV_NAME}p1"
                 EFI_PART_NAME="${DEV_NAME}p2"
             else
