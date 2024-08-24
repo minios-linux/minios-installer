@@ -41,7 +41,7 @@ check_root_permissions() {
 find_disks() {
     DISKS=$(lsblk -Jo NAME,SIZE -n -d -I 3,8,179,259,252 | jq -r '.blockdevices[] | .name + "(" + .size + ")"')
     DISKS="$(echo ${DISKS} | tr ' ' '!')"
-    FILESYSTEMS="ext4!ext2!btrfs!fat32!ntfs!exfat"
+    FILESYSTEMS="ext4!ext2!btrfs!fat32!ntfs"
 }
 
 # Get disk size in MiBs
