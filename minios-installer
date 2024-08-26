@@ -274,6 +274,9 @@ setup_bootloader() {
             echo w
         ) | fdisk "${DEV}" >/dev/null 2>&1
     fi
+    if [ -f ./extlinux.exe ]; then
+        rm -f ./extlinux.exe
+    fi
     cd "${CWD}"
 }
 
