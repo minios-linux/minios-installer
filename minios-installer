@@ -39,9 +39,32 @@ check_root_permissions() {
 
 # Find available disks
 find_disks() {
-    DISKS=$(lsblk -Jo NAME,SIZE -n -d -I 3,8,179,259,252 | jq -r '.blockdevices[] | .name + "(" + .size + ")"')
+    # Get the list of disks
+    DISKS=$(lsblk -o NAME,SIZE -n -d -I 3,8,179,259,252 | awk '{print $1 "(" $2 ")"}')
     DISKS="$(echo ${DISKS} | tr ' ' '!')"
-    FILESYSTEMS="ext4!ext2!btrfs!fat32!ntfs"
+
+    # Initialize FILESYSTEMS variable
+    FILESYSTEMS=""
+
+    # Check for the presence of filesystem utilities and add to FILESYSTEMS if available
+    if command -v mkfs.ext4 &>/dev/null; then
+        FILESYSTEMS+="ext4!"
+    fi
+    if command -v mkfs.ext2 &>/dev/null; then
+        FILESYSTEMS+="ext2!"
+    fi
+    if command -v mkfs.btrfs &>/dev/null; then
+        FILESYSTEMS+="btrfs!"
+    fi
+    if command -v mkfs.vfat &>/dev/null; then
+        FILESYSTEMS+="fat32!"
+    fi
+    if command -v mkfs.ntfs &>/dev/null; then
+        FILESYSTEMS+="ntfs!"
+    fi
+
+    # Remove the trailing exclamation mark
+    FILESYSTEMS="${FILESYSTEMS%!}"
 }
 
 # Get disk size in MiBs

@@ -8,7 +8,7 @@ Homepage: https://minios.dev
 
 Package: minios-installer
 Architecture: all
-Depends: bash (>= 4.4), util-linux (>= 2.31), gettext-base, polkitd | policykit-1, pkexec | policykit-1, sudo, parted, dosfstools, e2fsprogs, btrfs-progs, ntfs-3g, whiptail, ${misc:Depends}
+Depends: ${misc:Depends}, bash (>= 4.4), util-linux (>= 2.31), gettext-base, polkitd | policykit-1, pkexec | policykit-1, sudo, parted, dosfstools, e2fsprogs, btrfs-progs, ntfs-3g, whiptail
 Suggests: yad
 Description: MiniOS Linux installation utility.
  MiniOS Installer is a utility specially designed for quick and easy
