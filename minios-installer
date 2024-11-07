@@ -6,22 +6,21 @@
 # Author: FershoUno. <https://github.com/FershoUno>
 
 # --- Variable Declarations ---
-CWD="$(pwd)" # Current working directory
-REGEX='^$'   # Regular expression pattern for filtering disks
+CWD="$(pwd)"
+REGEX='^$'
 export ERROR="false"
-export TEXTDOMAIN="minios-installer" # Set text domain for localization
+export TEXTDOMAIN="minios-installer"
 
 # --- Functions ---
 
-# Display an error dialog
+# Display an error dialog and exit
 error_dialog() {
     local ERROR_MESSAGE="${1}"
     if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-        yad --center --borders=10 --window-icon="usb-creator-gtk" --title="$(gettext 'Error')" --error --text="${ERROR_MESSAGE}"
+        yad --center --borders=10 --window-icon="usb-creator-gtk" --title="$(gettext 'Error')" --warning --text="${ERROR_MESSAGE}" --button="OK:0"
     else
         whiptail --title "$(gettext 'Error')" --msgbox "${ERROR_MESSAGE}" 10 60
     fi
-    ERROR="true"
     exit 1
 }
 
@@ -39,14 +38,11 @@ check_root_permissions() {
 
 # Find available disks
 find_disks() {
-    # Get the list of disks
     DISKS=$(lsblk -o NAME,SIZE -n -d -I 3,8,179,259,252 | awk '{print $1 "(" $2 ")"}')
     DISKS="$(echo ${DISKS} | tr ' ' '!')"
 
-    # Initialize FILESYSTEMS variable
     FILESYSTEMS=""
 
-    # Check for the presence of filesystem utilities and add to FILESYSTEMS if available
     if command -v mkfs.ext4 &>/dev/null; then
         FILESYSTEMS+="ext4!"
     fi
@@ -63,7 +59,6 @@ find_disks() {
         FILESYSTEMS+="ntfs!"
     fi
 
-    # Remove the trailing exclamation mark
     FILESYSTEMS="${FILESYSTEMS%!}"
 }
 
@@ -77,49 +72,50 @@ partition_disk() {
     if [ "${FS}" = "exfat" ]; then
         EFI_SUPPORT="TRUE"
     fi
+
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
         if [ "${GPT_SUPPORT}" = "TRUE" ]; then
-            parted -s "${DEV}" mklabel gpt
+            parted -s "${DEV}" mklabel gpt || error_dialog "$(gettext 'Failed to set GPT label on') ${DEV}"
             DISK_SIZE="$(get_disk_size ${DEV})"
             ESP_START="$((DISK_SIZE - 100))"
-            parted -s "${DEV}" mkpart primary 1MiB ${ESP_START}MiB
-            parted -s "${DEV}" mkpart ESP fat32 ${ESP_START}MiB 100%
-            parted -s "${DEV}" set 2 boot on
+            parted -s "${DEV}" mkpart primary "${FS}" 1MiB ${ESP_START}MiB || error_dialog "$(gettext 'Failed to create primary partition on') ${DEV}"
+            parted -s "${DEV}" mkpart ESP fat32 ${ESP_START}MiB 100% || error_dialog "$(gettext 'Failed to create ESP partition on') ${DEV}"
+            parted -s "${DEV}" set 2 boot on || error_dialog "$(gettext 'Failed to set boot flag on ESP partition of') ${DEV}"
         else
-            parted -s "${DEV}" mklabel msdos
+            parted -s "${DEV}" mklabel msdos || error_dialog "$(gettext 'Failed to set MSDOS label on') ${DEV}"
             DISK_SIZE="$(get_disk_size ${DEV})"
             ESP_START="$((DISK_SIZE - 100))"
-            parted -s "${DEV}" mkpart primary fat32 1MiB ${ESP_START}MiB
-            parted -s "${DEV}" mkpart primary fat32 ${ESP_START}MiB 100%
-            parted -s "${DEV}" set 1 boot on
+            parted -s "${DEV}" mkpart primary "${FS}" 1MiB ${ESP_START}MiB || error_dialog "$(gettext 'Failed to create primary partition on') ${DEV}"
+            parted -s "${DEV}" mkpart primary fat32 ${ESP_START}MiB 100% || error_dialog "$(gettext 'Failed to create second primary partition on') ${DEV}"
+            parted -s "${DEV}" set 1 boot on || error_dialog "$(gettext 'Failed to set boot flag on primary partition of') ${DEV}"
         fi
     else
-        parted -s "${DEV}" mklabel msdos
-        parted -s "${DEV}" mkpart primary ext2 1MiB 100%
+        parted -s "${DEV}" mklabel msdos || error_dialog "$(gettext 'Failed to set MSDOS label on') ${DEV}"
+        parted -s "${DEV}" mkpart primary "${FS}" 1MiB 100% || error_dialog "$(gettext 'Failed to create primary partition on') ${DEV}"
     fi
 }
 
 # Wipe the disk
 erase_disk() {
-    dd if=/dev/zero of="${DEV}" bs=4096 count=273 status=none
+    dd if=/dev/zero of="${DEV}" bs=4096 count=273 status=none || error_dialog "$(gettext 'Failed to erase') ${DEV}"
 }
 
 # Format the partition
 format_part() {
     case "${FS}" in
     fat32)
-        mkfs.vfat "${PART}" >/dev/null 2>&1
+        mkfs.vfat "${PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${PART} $(gettext 'as') ${FS}"
         ;;
     btrfs | ntfs | exfat)
-        mkfs."${FS}" -f "${PART}" >/dev/null 2>&1
+        mkfs."${FS}" -f "${PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${PART} $(gettext 'as') ${FS}"
         ;;
     *)
-        mkfs."${FS}" "${PART}" >/dev/null 2>&1
+        mkfs."${FS}" -F "${PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${PART} $(gettext 'as') ${FS}"
         ;;
     esac
 
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
-        mkfs.vfat "${EFI_PART}" >/dev/null 2>&1
+        mkfs.vfat "${EFI_PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${EFI_PART} $(gettext 'as fat32')"
     fi
 }
 
@@ -129,54 +125,62 @@ check_and_clear() {
     if ! mountpoint -q "${DIR}" && [ "$(ls -A "${DIR}" 2>/dev/null)" ]; then
         if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
             if yad --center --borders=10 --window-icon="warning" --image="dialog-warning" --title="$(gettext 'Warning')" --text="$(gettext 'Directory') ${DIR} $(gettext 'is not empty. Do you want to delete it?')" --button="$(gettext 'Yes'):0" --button="$(gettext 'No'):1" --buttons-layout="center" --on-top; then
-                rm -r "${DIR}"
+                rm -rf "${DIR}" || error_dialog "$(gettext 'Failed to clear directory') ${DIR}"
             fi
         else
             if whiptail --title "$(gettext 'Warning')" --yesno "$(gettext 'Directory') ${DIR} $(gettext 'is not empty. Do you want to delete it?')" 8 78; then
-                rm -r "${DIR}"
+                rm -rf "${DIR}" || error_dialog "$(gettext 'Failed to clear directory') ${DIR}"
             fi
         fi
     fi
-    mkdir -p "${DIR}"
+    mkdir -p "${DIR}" || error_dialog "$(gettext 'Failed to create directory') ${DIR}"
 }
 
 # Mount the partition
 mount_part() {
-    # Check if the destination is already mounted
     if mountpoint -q "${DESTINATION}"; then
         error_dialog "$(gettext 'Destination') ${DESTINATION} $(gettext 'is already mounted')"
-    else
-        check_and_clear "${DESTINATION}"
-        if ! mount "${PART}" "${DESTINATION}"; then
-            error_dialog "$(gettext 'Failed to mount') ${PART} $(gettext 'to') ${DESTINATION}"
-        fi
+    fi
+
+    check_and_clear "${DESTINATION}"
+
+    FS_TYPE=$(blkid -o value -s TYPE "${PART}")
+
+    if [[ -z "${FS_TYPE}" ]]; then
+        error_dialog "$(gettext 'Could not determine filesystem type of') ${PART}"
+    fi
+
+    if ! mount -t "${FS_TYPE}" "${PART}" "${DESTINATION}"; then
+        error_dialog "$(gettext 'Failed to mount') ${PART} $(gettext 'to') ${DESTINATION} $(gettext 'with type') ${FS_TYPE}"
     fi
 
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
-        # Check if the EFI destination is already mounted
         if mountpoint -q "${EFI_DESTINATION}"; then
             error_dialog "$(gettext 'EFI destination') ${EFI_DESTINATION} $(gettext 'is already mounted')"
-        else
-            check_and_clear "${EFI_DESTINATION}"
-            if ! mount "${EFI_PART}" "${EFI_DESTINATION}"; then
-                error_dialog "$(gettext 'Failed to mount') ${EFI_PART} $(gettext 'to') ${EFI_DESTINATION}"
-            fi
+        fi
+
+        check_and_clear "${EFI_DESTINATION}"
+
+        EFI_FS_TYPE=$(blkid -o value -s TYPE "${EFI_PART}")
+
+        if [[ -z "${EFI_FS_TYPE}" ]]; then
+            error_dialog "$(gettext 'Could not determine filesystem type of') ${EFI_PART}"
+        fi
+
+        if ! mount -t "${EFI_FS_TYPE}" "${EFI_PART}" "${EFI_DESTINATION}"; then
+            error_dialog "$(gettext 'Failed to mount') ${EFI_PART} $(gettext 'to') ${EFI_DESTINATION} $(gettext 'with type') ${EFI_FS_TYPE}"
         fi
     fi
 }
 
 # Unmount the disk
 umount_disk() {
-    # Define the partitions and their corresponding mount points
     declare -A PARTITIONS_MOUNT_POINTS=(["${PART}"]="${DESTINATION}" ["${EFI_PART}"]="${EFI_DESTINATION}")
 
     for PARTITION in "${!PARTITIONS_MOUNT_POINTS[@]}"; do
         MOUNT_POINT=${PARTITIONS_MOUNT_POINTS[$PARTITION]}
-        # Check if the partition is mounted
         if grep -qs "${PARTITION}" /proc/mounts; then
-            # Unmount the partition
             if ! umount "${PARTITION}"; then
-                # If unmounting failed, try again
                 sleep 1
                 if ! umount "${PARTITION}"; then
                     error_dialog "$(gettext 'Failed to unmount') ${PARTITION}"
@@ -184,12 +188,8 @@ umount_disk() {
             fi
         fi
 
-        # Check if the mount point exists and is empty
-        if [ -d "${MOUNT_POINT}" ] && [ -z "$(ls -A "${MOUNT_POINT}")" ]; then
-            # Remove the directory
-            rmdir "${MOUNT_POINT}"
-        elif [ -d "${MOUNT_POINT}" ]; then
-            error_dialog "$(gettext 'Failed to remove mount point') ${MOUNT_POINT}"
+        if [ -d "${MOUNT_POINT}" ]; then
+            rmdir "${MOUNT_POINT}" || true
         fi
     done
 }
@@ -201,6 +201,7 @@ copy_files() {
     elif [ -d /memory ]; then
         SOURCE="/memory"
     fi
+
     if [ -e "${SOURCE}/data/minios/boot/vmlinuz" ]; then
         MINIOS="${SOURCE}/data/minios"
     elif [ -e "${SOURCE}/iso/minios/boot/vmlinuz" ]; then
@@ -212,57 +213,49 @@ copy_files() {
     fi
 
     if [ "${MINIOS}" = "" ]; then
-        error_dialog "$(gettext 'Cannot find boot/vmlinuz in MiniOS data.')" >&2
+        error_dialog "$(gettext 'Cannot find boot/vmlinuz in MiniOS data.')"
     fi
+
     EFI="${MINIOS}/boot/EFI"
     echo "MiniOS" >/tmp/info
-    cat <<EOF >/tmp/README
-* To install MiniOS, copy the contents of the ISO to the root of the media,
-  then run minios\boot\bootinst.bat on Windows, or minios/boot/bootinst.sh
-  on Linux.
-* When installed on media with fat32 and ntfs file systems, changes in
-  persistent changes mode will be saved in the minios\changes\changes.dat.x
-  files, the files expands dynamically, the maximum size of each file is 4 GB.
-* When installed on media with ext2-ext4, btrfs file systems, changes in
-  the persistent changes mode will be saved in the minios\changes folder with
-  no size limit.
-EOF
+
     GRAFT=$(
-        cd "${MINIOS}"
+        cd "${MINIOS}" || error_dialog "$(gettext 'Failed to change directory to') ${MINIOS}"
         find . -type f | sed -r "s:^[.]/::" | egrep -v "^changes/" | egrep -v "$REGEX" | while read LINE; do
             echo "minios/${LINE}=${MINIOS}/${LINE}"
         done
-        cd "${EFI}"
+        cd "${EFI}" || error_dialog "$(gettext 'Failed to change directory to') ${EFI}"
         find . -type f | sed -r "s:^[.]/::" | egrep -v "$REGEX" | while read LINE; do
             echo "EFI/${LINE}=${EFI}/${LINE}"
         done
         echo ".disk/info=/tmp/info"
-        echo "README=/tmp/README"
         echo "minios/minios.conf=/etc/minios/minios.conf"
         echo "minios/boot/grub/grub.cfg=/etc/minios/grub.cfg"
         echo "minios/boot/syslinux.cfg=/etc/minios/syslinux.cfg"
     )
+
     TOTAL_SIZE=$(du -b -s "${MINIOS}" | cut -f1)
     COMPLETED_SIZE=0
     while IFS='=' read -r DESTINATION_FILE SOURCE_FILE; do
-        mkdir -p "${DESTINATION}/$(dirname "${DESTINATION_FILE}")"
-        cp "${SOURCE_FILE}" "${DESTINATION}/${DESTINATION_FILE}"
+        mkdir -p "${DESTINATION}/$(dirname "${DESTINATION_FILE}")" || error_dialog "$(gettext 'Failed to create directory') ${DESTINATION}/$(dirname "${DESTINATION_FILE}")"
+        cp "${SOURCE_FILE}" "${DESTINATION}/${DESTINATION_FILE}" || error_dialog "$(gettext 'Failed to copy file') ${SOURCE_FILE} $(gettext 'to') ${DESTINATION}/${DESTINATION_FILE}"
         FILE_SIZE=$(du -b "${SOURCE_FILE}" | cut -f1)
         COMPLETED_SIZE=$((COMPLETED_SIZE + FILE_SIZE))
         PROGRESS=$((18 + 78 * COMPLETED_SIZE / TOTAL_SIZE))
         echo "${PROGRESS}"
     done <<<"${GRAFT}"
-    mkdir -p "${DESTINATION}/minios"/{boot,modules,changes,scripts}
+    mkdir -p "${DESTINATION}/minios"/{boot,modules,changes,scripts} || error_dialog "$(gettext 'Failed to create MiniOS directories')"
+
     if [ "${EFI_SUPPORT}" = "TRUE" ]; then
         GRAFT=$(
-            cd "${EFI}"
+            cd "${EFI}" || error_dialog "$(gettext 'Failed to change directory to') ${EFI}"
             find . -type f | sed -r "s:^[.]/::" | egrep -v "$REGEX" | while read LINE; do
                 echo "EFI/${LINE}=${EFI}/${LINE}"
             done
         )
         while IFS='=' read -r DESTINATION_FILE SOURCE_FILE; do
-            mkdir -p "${EFI_DESTINATION}/$(dirname "${DESTINATION_FILE}")"
-            cp "${SOURCE_FILE}" "${EFI_DESTINATION}/${DESTINATION_FILE}"
+            mkdir -p "${EFI_DESTINATION}/$(dirname "${DESTINATION_FILE}")" || error_dialog "$(gettext 'Failed to create EFI directory') ${EFI_DESTINATION}/$(dirname "${DESTINATION_FILE}")"
+            cp "${SOURCE_FILE}" "${EFI_DESTINATION}/${DESTINATION_FILE}" || error_dialog "$(gettext 'Failed to copy EFI file') ${SOURCE_FILE} $(gettext 'to') ${EFI_DESTINATION}/${DESTINATION_FILE}"
         done <<<"${GRAFT}"
     fi
 }
@@ -270,7 +263,7 @@ EOF
 # Setup bootloader
 setup_bootloader() {
     BOOT="${DESTINATION}/minios/boot"
-    cd "${BOOT}"
+    cd "${BOOT}" || error_dialog "$(gettext 'Failed to change directory to') ${BOOT}"
     ARCH=$(uname -m)
     if [ "${ARCH}" = "x86_64" ]; then ARCH=64; else ARCH=32; fi
     EXTLINUX="extlinux.x${ARCH}"
@@ -287,7 +280,7 @@ setup_bootloader() {
         error_dialog "$(gettext 'Error installing boot loader.')"
     fi
     if [ "${DEV}" != "${PART}" ]; then
-        dd bs=440 count=1 conv=notrunc if="${BOOT}/mbr.bin" of="${DEV}" 2>/dev/null
+        dd bs=440 count=1 conv=notrunc if="${BOOT}/mbr.bin" of="${DEV}" 2>/dev/null || error_dialog "$(gettext 'Failed to write MBR to') ${DEV}"
         PARTNUM="$(echo "${PART}" | sed -r "s:.*[^0-9]::")"
         (
             fdisk -l "${DEV}" | fgrep "*" | fgrep "${DEV}" | cut -d " " -f 1 |
@@ -295,7 +288,7 @@ setup_bootloader() {
             echo a
             echo "${PARTNUM}"
             echo w
-        ) | fdisk "${DEV}" >/dev/null 2>&1
+        ) | fdisk "${DEV}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to set active partition on') ${DEV}"
     fi
     if [ -f ./extlinux.exe ]; then
         rm -f ./extlinux.exe
@@ -305,7 +298,6 @@ setup_bootloader() {
 
 # Confirmation question for installation
 installation() {
-    # Check if the selected disk is mounted at /run/initramfs/memory/data
     if mount | grep -q "/run/initramfs/memory/data" | grep -q "${DEV}"; then
         if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
             INVALID_DISK_WARNING=$(
@@ -324,7 +316,7 @@ installation() {
             local RESULT=$?
 
             case "${RESULT}" in
-            120) # Return Main Menu
+            120)
                 main_menu
                 return
                 ;;
@@ -360,18 +352,16 @@ installation() {
         local RESULT=$?
 
         case "${RESULT}" in
-        120) # Return Main Menu
+        120)
             main_menu
             return
             ;;
-        121) # Continue installation
+        121)
             install_minios | yad --center --borders=10 --window-icon="usb-creator-gtk" --progress --width=400 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill --no-buttons
             INSTALLATION_RESULT=$?
-            case "${INSTALLATION_RESULT}" in
-            252)
+            if [[ $INSTALLATION_RESULT -ne 0 ]]; then
                 error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
-                ;;
-            esac
+            fi
             ;;
         252)
             exit 1
@@ -380,15 +370,22 @@ installation() {
     else
         if whiptail --title "$(gettext 'WARNING!')" --yesno "$(gettext 'All data on the selected device will be lost!')\n$(gettext 'Selected device:') ${DEV}" 20 60; then
             install_minios | while IFS= read -r line; do echo "$line" | grep -Eo '^[0-9]+$' | tail -1; done | whiptail --gauge "$(gettext 'Installing...')" 6 60 0
+            INSTALLATION_RESULT=$?
+            if [[ $INSTALLATION_RESULT -ne 0 ]]; then
+                error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+            fi
         else
             exit 1
         fi
     fi
+
     if [ "${ERROR}" = "false" ]; then
         post_install_prompt
     fi
+
 }
 
+# Update progress
 update_progress() {
     local MESSAGE="$1"
     if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
@@ -400,37 +397,40 @@ update_progress() {
 
 # Perform the MiniOS installation process
 install_minios() {
+    ERROR="false"
     echo "0"
     update_progress "$(gettext 'Unmounting disk')"
-    umount_disk || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    umount_disk
     echo "2"
     update_progress "$(gettext 'Erasing disk')"
-    erase_disk || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    erase_disk
     echo "4"
     update_progress "$(gettext 'Partitioning disk')"
-    partition_disk || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    partition_disk
+    partprobe "${DEV}" || udevadm settle
+    sleep 2
     echo "8"
     update_progress "$(gettext 'Formatting partition')"
-    format_part || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    format_part
     echo "15"
     update_progress "$(gettext 'Mounting partition')"
-    mount_part || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    mount_part
     echo "18"
     update_progress "$(gettext 'Copying files')"
-    copy_files || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    copy_files
     echo "96"
     if [ "${GPT_SUPPORT}" != "TRUE" ] && [ "${FS}" != "exfat" ]; then
         update_progress "$(gettext 'Setting up bootloader')"
-        setup_bootloader || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+        setup_bootloader
     fi
     echo "98"
     if command -v yad &>/dev/null && command -v minios-configurator &>/dev/null && [[ -n "${DISPLAY}" ]]; then
         if [ -f "${DESTINATION}/minios/minios.conf" ]; then
-            minios-configurator ${DESTINATION}/minios/minios.conf
+            minios-configurator "${DESTINATION}/minios/minios.conf"
         fi
     fi
     update_progress "$(gettext 'Unmounting disk')"
-    umount_disk || error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
+    umount_disk
     echo "100"
 }
 
@@ -464,13 +464,13 @@ main_menu() {
                     --button="$(gettext 'Reload')!gtk-refresh":103
             )
             local RESULT=$?
-            echo "${RESULT}" "${MAIN_FORM}"
+
             DEV_DESC=$(echo "${MAIN_FORM}" | cut -d"|" -f1)
             DEV_NAME=$(echo "${DEV_DESC}" | cut -d "(" -f 1)
 
-            # Check if a disk was selected
             if [[ -z "${DEV_NAME}" && "${RESULT}" != 101 && "${RESULT}" != 103 && "${RESULT}" != 252 ]]; then
                 error_dialog "$(gettext 'No device selected.')"
+
                 continue
             fi
 
@@ -481,6 +481,7 @@ main_menu() {
                 PART_NAME="${DEV_NAME}1"
                 EFI_PART_NAME="${DEV_NAME}2"
             fi
+
             DEV="/dev/${DEV_NAME}"
             PART="/dev/${PART_NAME}"
             EFI_PART="/dev/${EFI_PART_NAME}"
@@ -502,7 +503,9 @@ main_menu() {
                 continue
                 ;;
             esac
+
         else
+
             DISK_OPTIONS=()
             for disk in ${DISKS//!/ }; do
                 DISK_OPTIONS+=("${disk}" "")
@@ -527,12 +530,12 @@ main_menu() {
                 PART_NAME="${DEV_NAME}1"
                 EFI_PART_NAME="${DEV_NAME}2"
             fi
+
             DEV="/dev/${DEV_NAME}"
             PART="/dev/${PART_NAME}"
             EFI_PART="/dev/${EFI_PART_NAME}"
 
             FS=$(whiptail --title "$(gettext 'MiniOS Installer')" --menu "$(gettext 'Select file system'):" 20 60 10 "${FS_OPTIONS[@]}" 3>&1 1>&2 2>&3)
-
             if [[ -z "${FS}" ]]; then
                 exit 1
             fi
@@ -548,12 +551,18 @@ main_menu() {
             trap "umount_disk" EXIT
 
             installation
+
         fi
     done
+
 }
 
 # Display the final prompt after installation
 post_install_prompt() {
+    if [ "${ERROR}" = "true" ]; then
+        return
+    fi
+
     if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
         FINAL_FORM=$(
             yad --form --center \
@@ -567,19 +576,29 @@ post_install_prompt() {
                 --form \
                 --button="$(gettext 'Finish')!gtk-ok":101
         )
+        local RESULT=$?
+
     else
         whiptail --title "$(gettext 'MiniOS Installer')" --msgbox "$(gettext 'Installation complete. Please restart your computer to apply the changes.')" 10 60
-        RESULT=101 # Finish
+        RESULT=101
     fi
 
     case "${RESULT}" in
-    101) # Finish MiniOS Installer
-        exit
+    101)
+        exit 0
         ;;
     esac
+
 }
 
-# Check if the script is running as root, if not, run with root privileges using pkexec
+# Trap for cleanup on exit
+cleanup() {
+    umount_disk
+}
+
+trap cleanup EXIT
+
+# Check if the script is running as root
 check_root_permissions
 
 # Start the installation process by displaying the main menu
