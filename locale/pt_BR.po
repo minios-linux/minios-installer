@@ -1,285 +1,289 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Brazilian Portuguese translations for minios-install package.
+# Copyright (C) 2024 MiniOS Linux.
+# This file is distributed under the same license as the minios-install package.
+# crims0n <crims0n@minios.dev>, 2024.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: minios-installer 1.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-11-07 15:46+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2024-03-17 14:43+0300\n"
+"Last-Translator: crims0n <crims0n@minios.dev>, 2024.\n"
+"Language-Team: Brazilian Portuguese\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
 
 #: minios-installer:20 minios-installer:22
 msgid "Error"
-msgstr ""
+msgstr "Erro"
 
 #: minios-installer:34
 msgid "This script should be run as \"root\"!"
-msgstr ""
+msgstr "Este script deve ser executado como \"root\"!"
 
 #: minios-installer:78
 msgid "Failed to set GPT label on"
-msgstr ""
+msgstr "Falha ao definir a etiqueta GPT em"
 
 #: minios-installer:81 minios-installer:88 minios-installer:94
 msgid "Failed to create primary partition on"
-msgstr ""
+msgstr "Falha ao criar a partição primária em"
 
 #: minios-installer:82
 msgid "Failed to create ESP partition on"
-msgstr ""
+msgstr "Falha ao criar a partição ESP em"
 
 #: minios-installer:83
 msgid "Failed to set boot flag on ESP partition of"
-msgstr ""
+msgstr "Falha ao definir o sinalizador de inicialização na partição ESP de"
 
 #: minios-installer:85 minios-installer:93
 msgid "Failed to set MSDOS label on"
-msgstr ""
+msgstr "Falha ao definir a etiqueta MSDOS em"
 
 #: minios-installer:89
 msgid "Failed to create second primary partition on"
-msgstr ""
+msgstr "Falha ao criar a segunda partição primária em"
 
 #: minios-installer:90
 msgid "Failed to set boot flag on primary partition of"
-msgstr ""
+msgstr "Falha ao definir o sinalizador de inicialização na partição primária de"
 
 #: minios-installer:100
+#, fuzzy
 msgid "Failed to erase"
-msgstr ""
+msgstr "Falha ao apagar"
 
 #: minios-installer:107 minios-installer:110 minios-installer:113
 #: minios-installer:118
+#, fuzzy
 msgid "Failed to format"
-msgstr ""
+msgstr "Falha ao formatar"
 
 #: minios-installer:107 minios-installer:110 minios-installer:113
 msgid "as"
-msgstr ""
+msgstr "como"
 
 #: minios-installer:118
 msgid "as fat32"
-msgstr ""
+msgstr "como fat32"
 
 #: minios-installer:127 minios-installer:131
 msgid "Warning"
-msgstr ""
+msgstr "Aviso"
 
 #: minios-installer:127 minios-installer:131
 msgid "Directory"
-msgstr ""
+msgstr "Diretório"
 
 #: minios-installer:127 minios-installer:131
 msgid "is not empty. Do you want to delete it?"
-msgstr ""
+msgstr "não está vazio. Deseja excluí-lo?"
 
 #: minios-installer:127
 msgid "Yes"
-msgstr ""
+msgstr "Sim"
 
 #: minios-installer:127
 msgid "No"
-msgstr ""
+msgstr "Não"
 
 #: minios-installer:128 minios-installer:132
 msgid "Failed to clear directory"
-msgstr ""
+msgstr "Falha ao limpar o diretório"
 
 #: minios-installer:136 minios-installer:240
 msgid "Failed to create directory"
-msgstr ""
+msgstr "Falha ao criar o diretório"
 
 #: minios-installer:142
 msgid "Destination"
-msgstr ""
+msgstr "Destino"
 
 #: minios-installer:142 minios-installer:159
 msgid "is already mounted"
-msgstr ""
+msgstr "já está montado"
 
 #: minios-installer:150 minios-installer:167
 msgid "Could not determine filesystem type of"
-msgstr ""
+msgstr "Não foi possível determinar o tipo de sistema de arquivos de"
 
 #: minios-installer:154 minios-installer:171
 msgid "Failed to mount"
-msgstr ""
+msgstr "Falha ao montar"
 
 #: minios-installer:154 minios-installer:171 minios-installer:241
 #: minios-installer:258
 msgid "to"
-msgstr ""
+msgstr "para"
 
 #: minios-installer:154 minios-installer:171
 msgid "with type"
-msgstr ""
+msgstr "com o tipo"
 
 #: minios-installer:159
 msgid "EFI destination"
-msgstr ""
+msgstr "Destino EFI"
 
 #: minios-installer:186
 msgid "Failed to unmount"
-msgstr ""
+msgstr "Falha ao desmontar"
 
 #: minios-installer:216
 msgid "Cannot find boot/vmlinuz in MiniOS data."
-msgstr ""
+msgstr "Não foi possível encontrar boot/vmlinuz nos dados do MiniOS."
 
 #: minios-installer:223 minios-installer:227 minios-installer:251
 #: minios-installer:266
 msgid "Failed to change directory to"
-msgstr ""
+msgstr "Falha ao mudar para o diretório"
 
 #: minios-installer:241
+#, fuzzy
 msgid "Failed to copy file"
-msgstr ""
+msgstr "Falha ao copiar o arquivo"
 
 #: minios-installer:247
 msgid "Failed to create MiniOS directories"
-msgstr ""
+msgstr "Falha ao criar os diretórios do MiniOS"
 
 #: minios-installer:257
 msgid "Failed to create EFI directory"
-msgstr ""
+msgstr "Falha ao criar o diretório EFI"
 
 #: minios-installer:258
 msgid "Failed to copy EFI file"
-msgstr ""
+msgstr "Falha ao copiar o arquivo EFI"
 
 #: minios-installer:280
 msgid "Error installing boot loader."
-msgstr ""
+msgstr "Erro ao instalar o gerenciador de inicialização."
 
 #: minios-installer:283
 msgid "Failed to write MBR to"
-msgstr ""
+msgstr "Falha ao gravar o MBR em"
 
 #: minios-installer:291
 msgid "Failed to set active partition on"
-msgstr ""
+msgstr "Falha ao definir a partição ativa em"
 
 #: minios-installer:307 minios-installer:328 minios-installer:342
 #: minios-installer:371
 msgid "WARNING!"
-msgstr ""
+msgstr "ATENÇÃO!"
 
 #: minios-installer:308 minios-installer:328
 msgid "Cannot install on the same disk from which the system is running."
-msgstr ""
+msgstr "Não é possível instalar no mesmo disco em que o sistema está sendo executado."
 
 #: minios-installer:314 minios-installer:349
 msgid "Return"
-msgstr ""
+msgstr "Voltar"
 
 #: minios-installer:343 minios-installer:371
 msgid "All data on the selected device will be lost!"
-msgstr ""
+msgstr "Todos os dados no dispositivo selecionado serão perdidos!"
 
 #: minios-installer:343 minios-installer:371
 msgid "Selected device:"
-msgstr ""
+msgstr "Dispositivo selecionado:"
 
 #: minios-installer:350
 msgid "Continue"
-msgstr ""
+msgstr "Continuar"
 
 #: minios-installer:360 minios-installer:452 minios-installer:519
 #: minios-installer:538 minios-installer:543 minios-installer:571
 #: minios-installer:582
 msgid "MiniOS Installer"
-msgstr ""
+msgstr "Instalador do MiniOS"
 
 #: minios-installer:360 minios-installer:372 minios-installer:394
 msgid "Installing..."
-msgstr ""
+msgstr "Instalando..."
 
 #: minios-installer:363 minios-installer:375
 msgid "An error occurred during the installation of MiniOS on disk."
-msgstr ""
+msgstr "Ocorreu um erro durante a instalação do MiniOS no disco."
 
 #: minios-installer:402 minios-installer:432
 msgid "Unmounting disk"
-msgstr ""
+msgstr "Desmontando o disco"
 
 #: minios-installer:405
 msgid "Erasing disk"
-msgstr ""
+msgstr "Apagando o disco"
 
 #: minios-installer:408
 msgid "Partitioning disk"
-msgstr ""
+msgstr "Particionando o disco"
 
 #: minios-installer:413
 msgid "Formatting partition"
-msgstr ""
+msgstr "Formatando a partição"
 
 #: minios-installer:416
 msgid "Mounting partition"
-msgstr ""
+msgstr "Montando a partição"
 
 #: minios-installer:419
 msgid "Copying files"
-msgstr ""
+msgstr "Copiando arquivos"
 
 #: minios-installer:423
 msgid "Setting up bootloader"
-msgstr ""
+msgstr "Configurando o gerenciador de inicialização"
 
 #: minios-installer:443
 msgid "No available devices found."
-msgstr ""
+msgstr "Nenhum dispositivo disponível encontrado."
 
 #: minios-installer:453
 msgid "Select installation options for MiniOS:"
-msgstr ""
+msgstr "Selecione as opções de instalação para o MiniOS:"
 
 #: minios-installer:459 minios-installer:519
 msgid "Select device"
-msgstr ""
+msgstr "Selecionar dispositivo"
 
 #: minios-installer:460 minios-installer:538
 msgid "Select file system"
-msgstr ""
+msgstr "Selecionar sistema de arquivos"
 
 #: minios-installer:461
 msgid "EFI"
-msgstr ""
+msgstr "EFI"
 
 #: minios-installer:462
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
 #: minios-installer:463
 msgid "Install"
-msgstr ""
+msgstr "Instalar"
 
 #: minios-installer:464
 msgid "Reload"
-msgstr ""
+msgstr "Recarregar"
 
 #: minios-installer:472
 msgid "No device selected."
-msgstr ""
+msgstr "Nenhum dispositivo selecionado."
 
 #: minios-installer:543
 msgid "Enable EFI support?"
-msgstr ""
+msgstr "Ativar suporte a EFI?"
 
 #: minios-installer:572 minios-installer:582
 msgid ""
 "Installation complete. Please restart your computer to apply the changes."
 msgstr ""
+"Instalação concluída. Reinicie o computador para aplicar as alterações."
 
 #: minios-installer:577
 msgid "Finish"
-msgstr ""
+msgstr "Concluir"
