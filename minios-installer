@@ -175,7 +175,10 @@ mount_part() {
 
 # Unmount the disk
 umount_disk() {
-    declare -A PARTITIONS_MOUNT_POINTS=(["${PART}"]="${DESTINATION}" ["${EFI_PART}"]="${EFI_DESTINATION}")
+    declare -A PARTITIONS_MOUNT_POINTS
+
+    [[ -n "$PART" ]] && PARTITIONS_MOUNT_POINTS["${PART}"]="${DESTINATION}"
+    [[ -n "$EFI_PART" ]] && PARTITIONS_MOUNT_POINTS["${EFI_PART}"]="${EFI_DESTINATION}"
 
     for PARTITION in "${!PARTITIONS_MOUNT_POINTS[@]}"; do
         MOUNT_POINT=${PARTITIONS_MOUNT_POINTS[$PARTITION]}
