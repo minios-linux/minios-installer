@@ -68,7 +68,9 @@ get_disk_size() {
 
 # Partition the disk
 partition_disk() {
-    if [ "${FS}" = "exfat" ]; then
+    if [ "${FS}" = "vfat" ]; then
+        EFI_SUPPORT="FALSE"
+    else
         EFI_SUPPORT="TRUE"
     fi
 
@@ -460,7 +462,6 @@ main_menu() {
                     --form \
                     --field="$(gettext 'Select device'):CB" "${DISKS}" \
                     --field="$(gettext 'Select file system'):CB" "${FILESYSTEMS}" \
-                    --field="$(gettext 'EFI'):CHK" \
                     --button="$(gettext 'Cancel')!gtk-cancel":101 \
                     --button="$(gettext 'Install')!usb-creator-gtk":102 \
                     --button="$(gettext 'Reload')!gtk-refresh":103
@@ -488,7 +489,6 @@ main_menu() {
             PART="/dev/${PART_NAME}"
             EFI_PART="/dev/${EFI_PART_NAME}"
             FS=$(echo "${MAIN_FORM}" | cut -d "|" -f2)
-            EFI_SUPPORT=$(echo "${MAIN_FORM}" | cut -d "|" -f3)
             DESTINATION="/mnt/install/${PART_NAME}"
             EFI_DESTINATION="/mnt/install/${EFI_PART_NAME}"
             trap "umount_disk" EXIT
@@ -540,12 +540,6 @@ main_menu() {
             FS=$(whiptail --title "$(gettext 'MiniOS Installer')" --menu "$(gettext 'Select file system'):" 20 60 10 "${FS_OPTIONS[@]}" 3>&1 1>&2 2>&3)
             if [[ -z "${FS}" ]]; then
                 exit 1
-            fi
-
-            if whiptail --title "$(gettext 'MiniOS Installer')" --yesno "$(gettext 'Enable EFI support?')" 8 60; then
-                EFI_SUPPORT="TRUE"
-            else
-                EFI_SUPPORT="FALSE"
             fi
 
             DESTINATION="/mnt/install/${PART_NAME}"
