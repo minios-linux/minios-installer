@@ -1,3 +1,10 @@
+minios-installer (1.2) unstable; urgency=medium
+
+  * The EFI checkbox has been removed from the interface. By default, an additional ESP partition is created for all file systems except FAT32.
+  * Removed the option to install on ext2 and btrfs, as they are not very popular.
+
+ -- crims0n <crims0n@minios.dev>  Sun, 09 Feb 2025 04:23:55 +0300
+
 minios-installer (1.1) unstable; urgency=medium
 
   * Initial release
