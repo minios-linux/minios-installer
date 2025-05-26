@@ -7,7 +7,7 @@ BINDIR = usr/bin
 APPLICATIONSDIR = usr/share/applications
 POLKITACTIONSDIR = usr/share/polkit-1/actions
 LOCALEDIR = usr/share/locale
-SHAREDIR = usr/share/minios-configurator
+SHAREDIR = usr/share/minios-installer
 
 PO_FILES = $(shell find po -name "*.po" -maxdepth 1)
 MO_FILES = $(patsubst %.po,%.mo,$(PO_FILES))
