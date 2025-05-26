@@ -1,3 +1,10 @@
+minios-installer (2.0) unstable; urgency=medium
+
+  * The installer is completely rewritten in python3.
+  * The ncurses interface has been removed.
+
+ -- crims0n <crims0n@minios.dev>  Mon, 26 May 2025 17:35:21 +0300
+
 minios-installer (1.2) unstable; urgency=medium
 
   * The EFI checkbox has been removed from the interface. By default, an additional ESP partition is created for all file systems except FAT32.

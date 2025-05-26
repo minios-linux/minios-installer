@@ -1,0 +1,34 @@
+button.suggested-action {
+    background-color: #8FA1B3;
+    color: white;
+}
+
+button.suggested-action:hover {
+    background-color: #7B93A7;
+}
+
+entry.error {
+    border: 2px solid #CC6666;
+}
+
+.error-tab {
+    background-color: #CC6666;
+    color: white;
+}
+
+entry,
+comboboxtext {
+    border: solid #BBB;
+}
+
+button.suggested-action {
+    padding: 10px 16px;
+}
+
+button.destructive-action {
+    padding: 10px 16px;
+}
+
+button.destructive-action:disabled {
+    padding: 10px 16px;
+}

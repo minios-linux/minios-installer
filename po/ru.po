@@ -1,0 +1,352 @@
+# Russian translations for minios-installer package.
+# Copyright (C) 2025 MiniOS Linux.
+# This file is distributed under the same license as the minios-installer package.
+# crims0n <crims0n@minios.dev>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-26 23:01+0300\n"
+"PO-Revision-Date: 2025-05-26 17:08+0300\n"
+"Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
+"Language-Team: Russian <gnu@d07.ru>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: minios-installer:70
+msgid "Failed to retrieve disk list."
+msgstr "Не удалось получить список дисков."
+
+#: minios-installer:127
+msgid "Failed to get disk size."
+msgstr "Не удалось определить размер диска."
+
+#: minios-installer:134
+msgid "Could not parse disk size."
+msgstr "Не удалось распознать размер диска."
+
+#: minios-installer:143
+msgid "Failed to set GPT label on "
+msgstr "Не удалось установить метку GPT на "
+
+#: minios-installer:147 minios-installer:159 minios-installer:170
+msgid "Failed to create primary partition on "
+msgstr "Не удалось создать основной раздел на "
+
+#: minios-installer:151
+msgid "Failed to create EFI partition on "
+msgstr "Не удалось создать раздел EFI на "
+
+#: minios-installer:153 minios-installer:165
+msgid "Failed to set boot flag."
+msgstr "Не удалось установить загрузочный флаг."
+
+#: minios-installer:155 minios-installer:167
+msgid "Failed to set MSDOS label on "
+msgstr "Не удалось установить метку MSDOS на "
+
+#: minios-installer:163
+msgid "Failed to create second partition on "
+msgstr "Не удалось создать второй раздел на "
+
+#: minios-installer:184
+msgid "Failed to erase "
+msgstr "Не удалось стереть "
+
+#: minios-installer:192 minios-installer:194 minios-installer:196
+msgid "Failed to format "
+msgstr "Не удалось отформатировать "
+
+#: minios-installer:199
+msgid "Failed to format EFI "
+msgstr "Не удалось отформатировать EFI "
+
+#: minios-installer:207
+msgid "Destination "
+msgstr "Путь назначения "
+
+#: minios-installer:207
+msgid " is already mounted."
+msgstr " уже смонтирован."
+
+#: minios-installer:214
+msgid "Could not determine filesystem type of "
+msgstr "Не удалось определить тип файловой системы для "
+
+#: minios-installer:217
+msgid "Failed to mount "
+msgstr "Не удалось смонтировать "
+
+#: minios-installer:239
+msgid "Failed to get size of "
+msgstr "Не удалось определить размер "
+
+#: minios-installer:271 minios-installer:272 minios-installer:314
+#: minios-installer:657
+msgid "Installation canceled by user."
+msgstr "Установка отменена пользователем."
+
+#: minios-installer:276
+msgid "Copied file: "
+msgstr "Скопирован файл: "
+
+#: minios-installer:280
+msgid "Copying MiniOS files: "
+msgstr "Копирование файлов MiniOS: "
+
+#: minios-installer:286
+msgid "Created directory: "
+msgstr "Создан каталог: "
+
+#: minios-installer:304
+msgid "Copied EFI file: "
+msgstr "Скопирован файл EFI: "
+
+#: minios-installer:317
+msgid "Entering bootloader directory: "
+msgstr "Переход в каталог загрузчика: "
+
+#: minios-installer:319
+msgid "Setting up bootloader."
+msgstr "Настройка загрузчика."
+
+#: minios-installer:326
+msgid "Made extlinux executable."
+msgstr "Сделан extlinux исполняемым."
+
+#: minios-installer:329
+msgid "Ran extlinux installer."
+msgstr "Выполнена установка extlinux."
+
+#: minios-installer:337
+msgid "Wrote MBR to "
+msgstr "Записан MBR на "
+
+#: minios-installer:342
+msgid "Set partition active: "
+msgstr "Раздел отмечен как активный: "
+
+#: minios-installer:410
+msgid "Please select a target disk and filesystem:"
+msgstr "Пожалуйста, выберите целевой диск и файловую систему:"
+
+#: minios-installer:419
+msgid "Select Target Disk:"
+msgstr "Выберите целевой диск:"
+
+#: minios-installer:449
+msgid "Select Filesystem Type:"
+msgstr "Выберите тип файловой системы:"
+
+#: minios-installer:463
+msgid ""
+"<b>ext4</b> (best choice)\n"
+"  + Stable and has journaling.\n"
+"  + Fast performance with large-file support.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>ext2</b>\n"
+"  + Minimal write overhead preserves flash lifespan.\n"
+"  + Simple structure is easy to recover.\n"
+"  - No journaling increases risk of data loss if unplugged.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>btrfs</b>\n"
+"  + Snapshots enable easy rollback.\n"
+"  + Built-in compression saves space.\n"
+"  - Complex configuration may be needed.\n"
+"  - Additional metadata can slow transfers on USB drives.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>FAT32</b>\n"
+"  + Universally readable by Windows, macOS, and Linux.\n"
+"  + No extra drivers or setup needed.\n"
+"  - 4 GiB file size limit.\n"
+"  - No journaling increases risk of data loss if unplugged.\n"
+"  - FUSE-based persistence reduce performance.\n"
+"\n"
+"<b>NTFS</b>\n"
+"  + Supports large files and has journaling.\n"
+"  + Native Windows support; fast read/write in Linux via ntfs3.\n"
+"  - Not compatible with Mac and most hardware devices.\n"
+"  - FUSE-based persistence reduce performance.\n"
+"\n"
+msgstr ""
+"<b>ext4</b> (лучший выбор)\n"
+"  + Стабильная и поддерживает журналирование.\n"
+"  + Высокая производительность и поддержка больших файлов.\n"
+"  - Не совместима с Windows, Mac и большинством устройств.\n"
+"\n"
+"<b>ext2</b>\n"
+"  + Минимальная нагрузка на запись, продлевает срок службы флеш-памяти.\n"
+"  + Простая структура, легко восстановить.\n"
+"  - Нет журналирования, повышен риск потери данных при отключении.\n"
+"  - Не совместима с Windows, Mac и большинством устройств.\n"
+"\n"
+"<b>btrfs</b>\n"
+"  + Снимки позволяют легко откатываться к предыдущему состоянию.\n"
+"  + Встроенное сжатие экономит место.\n"
+"  - Может потребоваться сложная настройка.\n"
+"  - Дополнительные метаданные могут замедлять работу на USB-накопителях.\n"
+"  - Не совместима с Windows, Mac и большинством устройств.\n"
+"\n"
+"<b>FAT32</b>\n"
+"  + Универсально читается Windows, macOS и Linux.\n"
+"  + Не требует дополнительных драйверов или настроек.\n"
+"  - Ограничение размера файла 4 ГиБ.\n"
+"  - Нет журналирования, повышен риск потери данных при отключении.\n"
+"  - Производительность с постоянством на базе FUSE снижена.\n"
+"\n"
+"<b>NTFS</b>\n"
+"  + Поддерживает большие файлы и журналирование.\n"
+"  + Родная поддержка в Windows; быстрая работа в Linux через ntfs3.\n"
+"  - Не совместима с Mac и большинством устройств.\n"
+"  - Производительность с постоянством на базе FUSE снижена.\n"
+"\n"
+
+#: minios-installer:495
+msgid "Install"
+msgstr "Установить"
+
+#: minios-installer:505
+msgid "Configure MiniOS before installation"
+msgstr "Настроить MiniOS перед установкой"
+
+#: minios-installer:569
+msgid "selected device"
+msgstr "выбранное устройство"
+
+#: minios-installer:586
+msgid "Go Back"
+msgstr "Назад"
+
+#: minios-installer:591
+msgid "Continue"
+msgstr "Продолжить"
+
+#: minios-installer:607
+msgid "Preparing to install…"
+msgstr "Подготовка к установке…"
+
+#: minios-installer:617 minios-installer:647
+msgid "Show Log"
+msgstr "Показать журнал"
+
+#: minios-installer:622
+msgid "Cancel"
+msgstr "Отмена"
+
+#: minios-installer:643
+msgid "Hide Log"
+msgstr "Скрыть журнал"
+
+#: minios-installer:656
+msgid "Installation canceled."
+msgstr "Установка отменена."
+
+#: minios-installer:699 minios-installer:792
+msgid "Unmounting disk…"
+msgstr "Размонтирование диска…"
+
+#: minios-installer:700
+msgid "Erasing disk…"
+msgstr "Стирание диска…"
+
+#: minios-installer:701
+msgid "Partitioning disk…"
+msgstr "Разметка диска…"
+
+#: minios-installer:702
+msgid "Formatting partitions…"
+msgstr "Форматирование разделов…"
+
+#: minios-installer:703
+msgid "Mounting partition…"
+msgstr "Монтирование раздела…"
+
+#: minios-installer:717
+msgid "Error at step “"
+msgstr "Ошибка на этапе «"
+
+#: minios-installer:717
+msgid "”:"
+msgstr "»:"
+
+#: minios-installer:719 minios-installer:733 minios-installer:769
+#: minios-installer:788 minios-installer:802
+msgid "Installation failed: "
+msgstr "Установка не удалась: "
+
+#: minios-installer:723
+msgid "Mounting EFI partition…"
+msgstr "Монтирование раздела EFI…"
+
+#: minios-installer:731
+msgid "Error mounting EFI partition:"
+msgstr "Ошибка при монтировании раздела EFI:"
+
+#: minios-installer:737
+msgid "Copying files…"
+msgstr "Копирование файлов…"
+
+#: minios-installer:752
+msgid "Cannot find MiniOS image."
+msgstr "Не удалось найти образ MiniOS."
+
+#: minios-installer:757
+msgid "Copying EFI files to root…"
+msgstr "Копирование EFI-файлов в корень…"
+
+#: minios-installer:760
+msgid "Copying EFI files to ESP…"
+msgstr "Копирование EFI-файлов на ESP…"
+
+#: minios-installer:767
+msgid "Error during file copy:"
+msgstr "Ошибка при копировании файлов:"
+
+#: minios-installer:773
+msgid "Setting up bootloader…"
+msgstr "Настройка загрузчика…"
+
+#: minios-installer:786
+msgid "Error setting up bootloader:"
+msgstr "Ошибка при настройке загрузчика:"
+
+#: minios-installer:800
+msgid "Error during unmount:"
+msgstr "Ошибка при размонтировании:"
+
+#: minios-installer:804
+msgid "Installation complete!"
+msgstr "Установка завершена!"
+
+#: minios-installer:817
+msgid "Installation Error"
+msgstr "Ошибка установки"
+
+#: minios-installer:841
+msgid "Config file not found"
+msgstr "Файл конфигурации не найден"
+
+#: minios-installer:843
+#, python-brace-format
+msgid "Standard config file not found at {src_config}."
+msgstr "Стандартный файл конфигурации не найден по пути {src_config}."
+
+#: minios-installer:862
+msgid "Launch Error"
+msgstr "Ошибка запуска"
+
+#: minios-installer:889
+msgid "Root Privileges Required"
+msgstr "Требуются права администратора"
+
+#: minios-installer:891
+msgid "This installer must be run as root."
+msgstr "Этот установщик должен быть запущен от имени root."

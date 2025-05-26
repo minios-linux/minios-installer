@@ -1,0 +1,351 @@
+# Italian translations for minios-installer package.
+# Copyright (C) 2025 MiniOS Linux.
+# This file is distributed under the same license as the minios-installer package.
+# crims0n <crims0n@minios.dev>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-26 23:01+0300\n"
+"PO-Revision-Date: 2025-05-26 17:26+0300\n"
+"Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
+"Language-Team: Italian <tp@lists.linux.it>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: minios-installer:70
+msgid "Failed to retrieve disk list."
+msgstr "Impossibile recuperare l'elenco dei dischi."
+
+#: minios-installer:127
+msgid "Failed to get disk size."
+msgstr "Impossibile ottenere la dimensione del disco."
+
+#: minios-installer:134
+msgid "Could not parse disk size."
+msgstr "Impossibile interpretare la dimensione del disco."
+
+#: minios-installer:143
+msgid "Failed to set GPT label on "
+msgstr "Impossibile impostare l'etichetta GPT su "
+
+#: minios-installer:147 minios-installer:159 minios-installer:170
+msgid "Failed to create primary partition on "
+msgstr "Impossibile creare la partizione primaria su "
+
+#: minios-installer:151
+msgid "Failed to create EFI partition on "
+msgstr "Impossibile creare la partizione EFI su "
+
+#: minios-installer:153 minios-installer:165
+msgid "Failed to set boot flag."
+msgstr "Impossibile impostare il flag di avvio."
+
+#: minios-installer:155 minios-installer:167
+msgid "Failed to set MSDOS label on "
+msgstr "Impossibile impostare l'etichetta MSDOS su "
+
+#: minios-installer:163
+msgid "Failed to create second partition on "
+msgstr "Impossibile creare la seconda partizione su "
+
+#: minios-installer:184
+msgid "Failed to erase "
+msgstr "Impossibile cancellare "
+
+#: minios-installer:192 minios-installer:194 minios-installer:196
+msgid "Failed to format "
+msgstr "Impossibile formattare "
+
+#: minios-installer:199
+msgid "Failed to format EFI "
+msgstr "Impossibile formattare EFI "
+
+#: minios-installer:207
+msgid "Destination "
+msgstr "Destinazione "
+
+#: minios-installer:207
+msgid " is already mounted."
+msgstr " è già montato."
+
+#: minios-installer:214
+msgid "Could not determine filesystem type of "
+msgstr "Impossibile determinare il tipo di filesystem di "
+
+#: minios-installer:217
+msgid "Failed to mount "
+msgstr "Impossibile montare "
+
+#: minios-installer:239
+msgid "Failed to get size of "
+msgstr "Impossibile ottenere la dimensione di "
+
+#: minios-installer:271 minios-installer:272 minios-installer:314
+#: minios-installer:657
+msgid "Installation canceled by user."
+msgstr "Installazione annullata dall'utente."
+
+#: minios-installer:276
+msgid "Copied file: "
+msgstr "File copiato: "
+
+#: minios-installer:280
+msgid "Copying MiniOS files: "
+msgstr "Copia dei file MiniOS: "
+
+#: minios-installer:286
+msgid "Created directory: "
+msgstr "Cartella creata: "
+
+#: minios-installer:304
+msgid "Copied EFI file: "
+msgstr "File EFI copiato: "
+
+#: minios-installer:317
+msgid "Entering bootloader directory: "
+msgstr "Entrata nella cartella del bootloader: "
+
+#: minios-installer:319
+msgid "Setting up bootloader."
+msgstr "Configurazione del bootloader."
+
+#: minios-installer:326
+msgid "Made extlinux executable."
+msgstr "Reso extlinux eseguibile."
+
+#: minios-installer:329
+msgid "Ran extlinux installer."
+msgstr "Eseguito l'installer extlinux."
+
+#: minios-installer:337
+msgid "Wrote MBR to "
+msgstr "MBR scritto su "
+
+#: minios-installer:342
+msgid "Set partition active: "
+msgstr "Partizione impostata come attiva: "
+
+#: minios-installer:410
+msgid "Please select a target disk and filesystem:"
+msgstr "Seleziona un disco di destinazione e un filesystem:"
+
+#: minios-installer:419
+msgid "Select Target Disk:"
+msgstr "Seleziona disco di destinazione:"
+
+#: minios-installer:449
+msgid "Select Filesystem Type:"
+msgstr "Seleziona tipo di filesystem:"
+
+#: minios-installer:463
+msgid ""
+"<b>ext4</b> (best choice)\n"
+"  + Stable and has journaling.\n"
+"  + Fast performance with large-file support.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>ext2</b>\n"
+"  + Minimal write overhead preserves flash lifespan.\n"
+"  + Simple structure is easy to recover.\n"
+"  - No journaling increases risk of data loss if unplugged.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>btrfs</b>\n"
+"  + Snapshots enable easy rollback.\n"
+"  + Built-in compression saves space.\n"
+"  - Complex configuration may be needed.\n"
+"  - Additional metadata can slow transfers on USB drives.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>FAT32</b>\n"
+"  + Universally readable by Windows, macOS, and Linux.\n"
+"  + No extra drivers or setup needed.\n"
+"  - 4 GiB file size limit.\n"
+"  - No journaling increases risk of data loss if unplugged.\n"
+"  - FUSE-based persistence reduce performance.\n"
+"\n"
+"<b>NTFS</b>\n"
+"  + Supports large files and has journaling.\n"
+"  + Native Windows support; fast read/write in Linux via ntfs3.\n"
+"  - Not compatible with Mac and most hardware devices.\n"
+"  - FUSE-based persistence reduce performance.\n"
+"\n"
+msgstr ""
+"<b>ext4</b> (scelta migliore)\n"
+"  + Stabile e con journaling.\n"
+"  + Alte prestazioni con supporto per file di grandi dimensioni.\n"
+"  - Non compatibile con Windows, Mac e la maggior parte dei dispositivi hardware.\n"
+"\n"
+"<b>ext2</b>\n"
+"  + Scritture minime, preserva la durata della memoria flash.\n"
+"  + Struttura semplice, facile da recuperare.\n"
+"  - Nessun journaling, maggiore rischio di perdita dati se scollegato.\n"
+"  - Non compatibile con Windows, Mac e la maggior parte dei dispositivi hardware.\n"
+"\n"
+"<b>btrfs</b>\n"
+"  + Gli snapshot permettono un facile rollback.\n"
+"  + Compressione integrata per risparmiare spazio.\n"
+"  - Potrebbe essere necessaria una configurazione complessa.\n"
+"  - Metadati aggiuntivi possono rallentare i trasferimenti su USB.\n"
+"  - Non compatibile con Windows, Mac e la maggior parte dei dispositivi hardware.\n"
+"\n"
+"<b>FAT32</b>\n"
+"  + Universalmente leggibile da Windows, macOS e Linux.\n"
+"  + Nessun driver o configurazione extra necessari.\n"
+"  - Limite di dimensione file di 4 GiB.\n"
+"  - Nessun journaling, maggiore rischio di perdita dati se scollegato.\n"
+"  - La persistenza basata su FUSE riduce le prestazioni.\n"
+"\n"
+"<b>NTFS</b>\n"
+"  + Supporta file di grandi dimensioni e ha journaling.\n"
+"  + Supporto nativo Windows; lettura/scrittura veloce in Linux tramite ntfs3.\n"
+"  - Non compatibile con Mac e la maggior parte dei dispositivi hardware.\n"
+"  - La persistenza basata su FUSE riduce le prestazioni.\n"
+"\n"
+
+#: minios-installer:495
+msgid "Install"
+msgstr "Installa"
+
+#: minios-installer:505
+msgid "Configure MiniOS before installation"
+msgstr "Configura MiniOS prima dell'installazione"
+
+#: minios-installer:569
+msgid "selected device"
+msgstr "dispositivo selezionato"
+
+#: minios-installer:586
+msgid "Go Back"
+msgstr "Indietro"
+
+#: minios-installer:591
+msgid "Continue"
+msgstr "Continua"
+
+#: minios-installer:607
+msgid "Preparing to install…"
+msgstr "Preparazione all'installazione…"
+
+#: minios-installer:617 minios-installer:647
+msgid "Show Log"
+msgstr "Mostra log"
+
+#: minios-installer:622
+msgid "Cancel"
+msgstr "Annulla"
+
+#: minios-installer:643
+msgid "Hide Log"
+msgstr "Nascondi log"
+
+#: minios-installer:656
+msgid "Installation canceled."
+msgstr "Installazione annullata."
+
+#: minios-installer:699 minios-installer:792
+msgid "Unmounting disk…"
+msgstr "Smontaggio disco…"
+
+#: minios-installer:700
+msgid "Erasing disk…"
+msgstr "Cancellazione disco…"
+
+#: minios-installer:701
+msgid "Partitioning disk…"
+msgstr "Partizionamento disco…"
+
+#: minios-installer:702
+msgid "Formatting partitions…"
+msgstr "Formattazione partizioni…"
+
+#: minios-installer:703
+msgid "Mounting partition…"
+msgstr "Montaggio partizione…"
+
+#: minios-installer:717
+msgid "Error at step “"
+msgstr "Errore al passaggio \""
+
+#: minios-installer:717
+msgid "”:"
+msgstr "\":"
+
+#: minios-installer:719 minios-installer:733 minios-installer:769
+#: minios-installer:788 minios-installer:802
+msgid "Installation failed: "
+msgstr "Installazione non riuscita: "
+
+#: minios-installer:723
+msgid "Mounting EFI partition…"
+msgstr "Montaggio partizione EFI…"
+
+#: minios-installer:731
+msgid "Error mounting EFI partition:"
+msgstr "Errore durante il montaggio della partizione EFI:"
+
+#: minios-installer:737
+msgid "Copying files…"
+msgstr "Copia dei file…"
+
+#: minios-installer:752
+msgid "Cannot find MiniOS image."
+msgstr "Impossibile trovare l'immagine MiniOS."
+
+#: minios-installer:757
+msgid "Copying EFI files to root…"
+msgstr "Copia dei file EFI nella root…"
+
+#: minios-installer:760
+msgid "Copying EFI files to ESP…"
+msgstr "Copia dei file EFI su ESP…"
+
+#: minios-installer:767
+msgid "Error during file copy:"
+msgstr "Errore durante la copia dei file:"
+
+#: minios-installer:773
+msgid "Setting up bootloader…"
+msgstr "Configurazione del bootloader…"
+
+#: minios-installer:786
+msgid "Error setting up bootloader:"
+msgstr "Errore durante la configurazione del bootloader:"
+
+#: minios-installer:800
+msgid "Error during unmount:"
+msgstr "Errore durante lo smontaggio:"
+
+#: minios-installer:804
+msgid "Installation complete!"
+msgstr "Installazione completata!"
+
+#: minios-installer:817
+msgid "Installation Error"
+msgstr "Errore di installazione"
+
+#: minios-installer:841
+msgid "Config file not found"
+msgstr "File di configurazione non trovato"
+
+#: minios-installer:843
+#, python-brace-format
+msgid "Standard config file not found at {src_config}."
+msgstr "File di configurazione standard non trovato in {src_config}."
+
+#: minios-installer:862
+msgid "Launch Error"
+msgstr "Errore di avvio"
+
+#: minios-installer:889
+msgid "Root Privileges Required"
+msgstr "Privilegi di root richiesti"
+
+#: minios-installer:891
+msgid "This installer must be run as root."
+msgstr "Questo programma di installazione deve essere eseguito come root."

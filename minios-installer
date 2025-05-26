@@ -1,601 +1,906 @@
-#!/bin/bash
-# MiniOS Installer
-# This script is used for installing MiniOS on a disk.
-# Author: crims0n <https://minios.dev>
-# Author: FershoUno. <https://github.com/FershoUno>
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+MiniOS Installer
+A graphical tool for installing MiniOS onto a disk via GTK.
 
-# --- Variable Declarations ---
-CWD="$(pwd)"
-REGEX='^$'
-export ERROR="false"
-export TEXTDOMAIN="minios-installer"
+Usage:
+    minios-installer
 
-# --- Functions ---
+Copyright (C) 2025 MiniOS Linux
+Author: crims0n <crims0n@minios.dev>
+Original idea: FershoUno <https://github.com/FershoUno>
+"""
 
-# Display an error dialog and exit
-error_dialog() {
-    local ERROR_MESSAGE="${1}"
-    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-        yad --center --borders=10 --window-icon="usb-creator-gtk" --title="$(gettext 'Error')" --warning --text="${ERROR_MESSAGE}" --button="OK:0"
-    else
-        whiptail --title "$(gettext 'Error')" --msgbox "${ERROR_MESSAGE}" 10 60
-    fi
-    exit 1
-}
+import os
+import re
+import sys
+import gi
+import gettext
+import subprocess
+import threading
+import shutil
+import tempfile
 
-# Check if the script is running as root, if not, run with root privileges using pkexec
-check_root_permissions() {
-    if [[ "${EUID}" -ne 0 ]]; then
-        if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-            pkexec "$0" "$@"
-            exit 0
-        else
-            error_dialog "$(gettext 'This script should be run as "root"!')"
-        fi
-    fi
-}
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gio', '2.0')
+gi.require_version('Gdk', '3.0')
+from gi.repository import Gtk, GLib, Gio, Gdk, Pango
 
-# Find available disks
-find_disks() {
-    DISKS=$(lsblk -o NAME,SIZE -n -d -I 3,8,179,259,252 | awk '{print $1 "(" $2 ")"}')
-    DISKS="$(echo ${DISKS} | tr ' ' '!')"
+# ──────────────────────────────────────────────────────────────────────────────
+# Constants
+# ──────────────────────────────────────────────────────────────────────────────
+APPLICATION_ID   = 'org.minios.installer'
+APP_NAME         = 'minios-installer'
+APP_TITLE        = 'MiniOS Installer'
+LOCALE_DIRECTORY = '/usr/share/locale'
+CSS_FILE_PATH    = '/usr/share/minios-installer/style.css'
 
-    FILESYSTEMS=""
+ICON_WINDOW      = 'usb-creator-gtk'
+ICON_INSTALL     = 'document-save-symbolic'
+ICON_CONFIGURE   = 'preferences-system-symbolic'
 
-    if command -v mkfs.ext4 &>/dev/null; then
-        FILESYSTEMS+="ext4!"
-    fi
-    if command -v mkfs.ext2 &>/dev/null; then
-        FILESYSTEMS+="ext2!"
-    fi
-    if command -v mkfs.btrfs &>/dev/null; then
-        FILESYSTEMS+="btrfs!"
-    fi
-    if command -v mkfs.vfat &>/dev/null; then
-        FILESYSTEMS+="fat32!"
-    fi
-    if command -v mkfs.ntfs &>/dev/null; then
-        FILESYSTEMS+="ntfs!"
-    fi
+# ──────────────────────────────────────────────────────────────────────────────
+# Internationalization
+# ──────────────────────────────────────────────────────────────────────────────
+gettext.bindtextdomain(APP_NAME, LOCALE_DIRECTORY)
+gettext.textdomain(APP_NAME)
+_ = gettext.gettext
 
-    FILESYSTEMS="${FILESYSTEMS%!}"
-}
+# ──────────────────────────────────────────────────────────────────────────────
+# Helper Functions
+# ──────────────────────────────────────────────────────────────────────────────
 
-# Get disk size in MiBs
-get_disk_size() {
-    parted -s "${1}" unit MiB print 2>/dev/null | grep "${1}" | cut -d' ' -f3 | tr -d "MiB"
-}
+def run_command(cmd: list[str], error_message: str) -> str:
+    """
+    Run subprocess.check_output(cmd). On failure, raise RuntimeError(error_message).
+    """
+    try:
+        return subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        raise RuntimeError(error_message)
 
-# Partition the disk
-partition_disk() {
-    if [ "${FS}" = "vfat" ]; then
-        EFI_SUPPORT="FALSE"
-    else
-        EFI_SUPPORT="TRUE"
-    fi
 
-    if [ "${EFI_SUPPORT}" = "TRUE" ]; then
-        if [ "${GPT_SUPPORT}" = "TRUE" ]; then
-            parted -s "${DEV}" mklabel gpt || error_dialog "$(gettext 'Failed to set GPT label on') ${DEV}"
-            DISK_SIZE="$(get_disk_size ${DEV})"
-            ESP_START="$((DISK_SIZE - 100))"
-            parted -s "${DEV}" mkpart primary "${FS}" 1MiB ${ESP_START}MiB || error_dialog "$(gettext 'Failed to create primary partition on') ${DEV}"
-            parted -s "${DEV}" mkpart ESP fat32 ${ESP_START}MiB 100% || error_dialog "$(gettext 'Failed to create ESP partition on') ${DEV}"
-            parted -s "${DEV}" set 2 boot on || error_dialog "$(gettext 'Failed to set boot flag on ESP partition of') ${DEV}"
-        else
-            parted -s "${DEV}" mklabel msdos || error_dialog "$(gettext 'Failed to set MSDOS label on') ${DEV}"
-            DISK_SIZE="$(get_disk_size ${DEV})"
-            ESP_START="$((DISK_SIZE - 100))"
-            parted -s "${DEV}" mkpart primary "${FS}" 1MiB ${ESP_START}MiB || error_dialog "$(gettext 'Failed to create primary partition on') ${DEV}"
-            parted -s "${DEV}" mkpart primary fat32 ${ESP_START}MiB 100% || error_dialog "$(gettext 'Failed to create second primary partition on') ${DEV}"
-            parted -s "${DEV}" set 1 boot on || error_dialog "$(gettext 'Failed to set boot flag on primary partition of') ${DEV}"
-        fi
-    else
-        parted -s "${DEV}" mklabel msdos || error_dialog "$(gettext 'Failed to set MSDOS label on') ${DEV}"
-        parted -s "${DEV}" mkpart primary "${FS}" 1MiB 100% || error_dialog "$(gettext 'Failed to create primary partition on') ${DEV}"
-    fi
-}
-
-# Wipe the disk
-erase_disk() {
-    dd if=/dev/zero of="${DEV}" bs=4096 count=273 status=none || error_dialog "$(gettext 'Failed to erase') ${DEV}"
-}
-
-# Format the partition
-format_part() {
-    case "${FS}" in
-    fat32)
-        mkfs.vfat "${PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${PART} $(gettext 'as') ${FS}"
-        ;;
-    btrfs | ntfs | exfat)
-        mkfs."${FS}" -f "${PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${PART} $(gettext 'as') ${FS}"
-        ;;
-    *)
-        mkfs."${FS}" -F "${PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${PART} $(gettext 'as') ${FS}"
-        ;;
-    esac
-
-    if [ "${EFI_SUPPORT}" = "TRUE" ]; then
-        mkfs.vfat "${EFI_PART}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to format') ${EFI_PART} $(gettext 'as fat32')"
-    fi
-}
-
-# Check and clear the directory
-check_and_clear() {
-    local DIR=$1
-    if ! mountpoint -q "${DIR}" && [ "$(ls -A "${DIR}" 2>/dev/null)" ]; then
-        if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-            if yad --center --borders=10 --window-icon="warning" --image="dialog-warning" --title="$(gettext 'Warning')" --text="$(gettext 'Directory') ${DIR} $(gettext 'is not empty. Do you want to delete it?')" --button="$(gettext 'Yes'):0" --button="$(gettext 'No'):1" --buttons-layout="center" --on-top; then
-                rm -rf "${DIR}" || error_dialog "$(gettext 'Failed to clear directory') ${DIR}"
-            fi
-        else
-            if whiptail --title "$(gettext 'Warning')" --yesno "$(gettext 'Directory') ${DIR} $(gettext 'is not empty. Do you want to delete it?')" 8 78; then
-                rm -rf "${DIR}" || error_dialog "$(gettext 'Failed to clear directory') ${DIR}"
-            fi
-        fi
-    fi
-    mkdir -p "${DIR}" || error_dialog "$(gettext 'Failed to create directory') ${DIR}"
-}
-
-# Mount the partition
-mount_part() {
-    if mountpoint -q "${DESTINATION}"; then
-        error_dialog "$(gettext 'Destination') ${DESTINATION} $(gettext 'is already mounted')"
-    fi
-
-    check_and_clear "${DESTINATION}"
-
-    FS_TYPE=$(blkid -o value -s TYPE "${PART}")
-
-    if [[ -z "${FS_TYPE}" ]]; then
-        error_dialog "$(gettext 'Could not determine filesystem type of') ${PART}"
-    fi
-
-    if ! mount -t "${FS_TYPE}" "${PART}" "${DESTINATION}"; then
-        error_dialog "$(gettext 'Failed to mount') ${PART} $(gettext 'to') ${DESTINATION} $(gettext 'with type') ${FS_TYPE}"
-    fi
-
-    if [ "${EFI_SUPPORT}" = "TRUE" ]; then
-        if mountpoint -q "${EFI_DESTINATION}"; then
-            error_dialog "$(gettext 'EFI destination') ${EFI_DESTINATION} $(gettext 'is already mounted')"
-        fi
-
-        check_and_clear "${EFI_DESTINATION}"
-
-        EFI_FS_TYPE=$(blkid -o value -s TYPE "${EFI_PART}")
-
-        if [[ -z "${EFI_FS_TYPE}" ]]; then
-            error_dialog "$(gettext 'Could not determine filesystem type of') ${EFI_PART}"
-        fi
-
-        if ! mount -t "${EFI_FS_TYPE}" "${EFI_PART}" "${EFI_DESTINATION}"; then
-            error_dialog "$(gettext 'Failed to mount') ${EFI_PART} $(gettext 'to') ${EFI_DESTINATION} $(gettext 'with type') ${EFI_FS_TYPE}"
-        fi
-    fi
-}
-
-# Unmount the disk
-umount_disk() {
-    declare -A PARTITIONS_MOUNT_POINTS
-
-    [[ -n "$PART" ]] && PARTITIONS_MOUNT_POINTS["${PART}"]="${DESTINATION}"
-    [[ -n "$EFI_PART" ]] && PARTITIONS_MOUNT_POINTS["${EFI_PART}"]="${EFI_DESTINATION}"
-
-    for PARTITION in "${!PARTITIONS_MOUNT_POINTS[@]}"; do
-        MOUNT_POINT=${PARTITIONS_MOUNT_POINTS[$PARTITION]}
-        if grep -qs "${PARTITION}" /proc/mounts; then
-            if ! umount "${PARTITION}"; then
-                sleep 1
-                if ! umount "${PARTITION}"; then
-                    error_dialog "$(gettext 'Failed to unmount') ${PARTITION}"
-                fi
-            fi
-        fi
-
-        if [ -d "${MOUNT_POINT}" ]; then
-            rmdir "${MOUNT_POINT}" || true
-        fi
-    done
-}
-
-# Copy MiniOS files to the destination partition
-copy_files() {
-    if [ -d /run/initramfs/memory ]; then
-        SOURCE="/run/initramfs/memory"
-    elif [ -d /memory ]; then
-        SOURCE="/memory"
-    fi
-
-    if [ -e "${SOURCE}/data/minios/boot/vmlinuz" ]; then
-        MINIOS="${SOURCE}/data/minios"
-    elif [ -e "${SOURCE}/iso/minios/boot/vmlinuz" ]; then
-        MINIOS="${SOURCE}/iso/minios"
-    elif [ -e "${SOURCE}/toram/boot/vmlinuz" ]; then
-        MINIOS="${SOURCE}/toram"
-    elif [ -e "${SOURCE}/data/from/0/minios/boot/vmlinuz" ]; then
-        MINIOS="${SOURCE}/data/from/0/minios"
-    fi
-
-    if [ "${MINIOS}" = "" ]; then
-        error_dialog "$(gettext 'Cannot find boot/vmlinuz in MiniOS data.')"
-    fi
-
-    EFI="${MINIOS}/boot/EFI"
-    echo "MiniOS" >/tmp/info
-
-    GRAFT=$(
-        cd "${MINIOS}" || error_dialog "$(gettext 'Failed to change directory to') ${MINIOS}"
-        find . -type f | sed -r "s:^[.]/::" | egrep -v "^changes/" | egrep -v "$REGEX" | while read LINE; do
-            echo "minios/${LINE}=${MINIOS}/${LINE}"
-        done
-        cd "${EFI}" || error_dialog "$(gettext 'Failed to change directory to') ${EFI}"
-        find . -type f | sed -r "s:^[.]/::" | egrep -v "$REGEX" | while read LINE; do
-            echo "EFI/${LINE}=${EFI}/${LINE}"
-        done
-        echo ".disk/info=/tmp/info"
-        echo "minios/minios.conf=/etc/minios/minios.conf"
-        echo "minios/boot/grub/grub.cfg=/etc/minios/grub.cfg"
-        echo "minios/boot/syslinux.cfg=/etc/minios/syslinux.cfg"
+def find_available_disks() -> list[dict]:
+    """
+    Return a list of available block devices with name, size, model, serial, transport, icon.
+    """
+    output = run_command(
+        ['lsblk','-P','-o','NAME,SIZE,MODEL,SERIAL,ROTA,TRAN','-d','-n','-I','3,8,179,259,252'],
+        _("Failed to retrieve disk list.")
     )
+    devices = []
+    for line in output.splitlines():
+        props = {k.lower(): v for k, v in re.findall(r'(\w+)="([^"]*)"', line)}
+        name = props.get('name')
+        if not name or name.startswith(('loop','nbd')):
+            continue
 
-    TOTAL_SIZE=$(du -b -s "${MINIOS}" | cut -f1)
-    COMPLETED_SIZE=0
-    while IFS='=' read -r DESTINATION_FILE SOURCE_FILE; do
-        mkdir -p "${DESTINATION}/$(dirname "${DESTINATION_FILE}")" || error_dialog "$(gettext 'Failed to create directory') ${DESTINATION}/$(dirname "${DESTINATION_FILE}")"
-        cp "${SOURCE_FILE}" "${DESTINATION}/${DESTINATION_FILE}" || error_dialog "$(gettext 'Failed to copy file') ${SOURCE_FILE} $(gettext 'to') ${DESTINATION}/${DESTINATION_FILE}"
-        FILE_SIZE=$(du -b "${SOURCE_FILE}" | cut -f1)
-        COMPLETED_SIZE=$((COMPLETED_SIZE + FILE_SIZE))
-        PROGRESS=$((18 + 78 * COMPLETED_SIZE / TOTAL_SIZE))
-        echo "${PROGRESS}"
-    done <<<"${GRAFT}"
-    mkdir -p "${DESTINATION}/minios"/{boot,modules,changes,scripts} || error_dialog "$(gettext 'Failed to create MiniOS directories')"
+        size   = props.get('size','')
+        model  = props.get('model','')
+        serial = props.get('serial','')
+        rota   = props.get('rota','0') == '1'
+        tran   = props.get('tran','')
 
-    if [ "${EFI_SUPPORT}" = "TRUE" ]; then
-        GRAFT=$(
-            cd "${EFI}" || error_dialog "$(gettext 'Failed to change directory to') ${EFI}"
-            find . -type f | sed -r "s:^[.]/::" | egrep -v "$REGEX" | while read LINE; do
-                echo "EFI/${LINE}=${EFI}/${LINE}"
-            done
+        if tran == 'usb':
+            icon = 'drive-removable-media-usb'
+        elif rota:
+            icon = 'drive-harddisk-symbolic'
+        else:
+            icon = 'media-flash-symbolic'
+
+        devices.append({
+            'name': name,
+            'size': size,
+            'model': model,
+            'serial': serial,
+            'transport': tran or ('rotational' if rota else 'non‑rotational'),
+            'icon': icon
+        })
+    return devices
+
+
+def detect_filesystem_tools() -> list[str]:
+    """
+    Detect which mkfs.* tools are available and return filesystem types.
+    """
+    fss = []
+    if shutil.which('mkfs.ext4'):
+        fss.append('ext4')
+    if shutil.which('mkfs.ext2'):
+        fss.append('ext2')
+    if shutil.which('mkfs.btrfs'):
+        fss.append('btrfs')
+    if shutil.which('mkfs.vfat'):
+        fss.append('fat32')
+    if shutil.which('mkfs.ntfs'):
+        fss.append('ntfs')
+    return fss
+
+
+def get_disk_size_mib(device: str) -> int:
+    """
+    Return disk size in MiB (integer) by parsing parted output.
+    """
+    output = run_command(
+        ['parted','-s',device,'unit','MiB','print'],
+        _("Failed to get disk size.")
+    )
+    for line in output.splitlines():
+        if device in line:
+            m = re.search(r'(\d+(?:\.\d+)?)MiB', line)
+            if m:
+                return int(float(m.group(1)))
+    raise RuntimeError(_("Could not parse disk size."))
+
+
+def partition_disk(device: str, fs: str, use_gpt: bool) -> None:
+    """
+    Partition the disk; if fs is not 'fat32', create an EFI partition.
+    """
+    efi = (fs != 'fat32')
+    if efi and use_gpt:
+        run_command(['parted','-s',device,'mklabel','gpt'], _("Failed to set GPT label on ") + device + ".")
+        size = get_disk_size_mib(device) - 100
+        run_command(
+            ['parted','-s',device,'mkpart','primary',fs,'1MiB',f'{size}MiB'],
+            _("Failed to create primary partition on ") + device + "."
         )
-        while IFS='=' read -r DESTINATION_FILE SOURCE_FILE; do
-            mkdir -p "${EFI_DESTINATION}/$(dirname "${DESTINATION_FILE}")" || error_dialog "$(gettext 'Failed to create EFI directory') ${EFI_DESTINATION}/$(dirname "${DESTINATION_FILE}")"
-            cp "${SOURCE_FILE}" "${EFI_DESTINATION}/${DESTINATION_FILE}" || error_dialog "$(gettext 'Failed to copy EFI file') ${SOURCE_FILE} $(gettext 'to') ${EFI_DESTINATION}/${DESTINATION_FILE}"
-        done <<<"${GRAFT}"
-    fi
-}
-
-# Setup bootloader
-setup_bootloader() {
-    BOOT="${DESTINATION}/minios/boot"
-    cd "${BOOT}" || error_dialog "$(gettext 'Failed to change directory to') ${BOOT}"
-    ARCH=$(uname -m)
-    if [ "${ARCH}" = "x86_64" ]; then ARCH=64; else ARCH=32; fi
-    EXTLINUX="extlinux.x${ARCH}"
-    if [ ! -x "./${EXTLINUX}" ]; then
-        mount -o remount,exec "${DEV}" >/dev/null 2>&1
-        chmod a+x "./${EXTLINUX}" >/dev/null 2>&1
-    fi
-    if [ ! -x "./${EXTLINUX}" ]; then
-        cp -f "./${EXTLINUX}" ./extlinux.exe >/dev/null 2>&1
-        EXTLINUX=extlinux.exe
-    fi
-    "./${EXTLINUX}" --install "${BOOT}" >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        error_dialog "$(gettext 'Error installing boot loader.')"
-    fi
-    if [ "${DEV}" != "${PART}" ]; then
-        dd bs=440 count=1 conv=notrunc if="${BOOT}/mbr.bin" of="${DEV}" 2>/dev/null || error_dialog "$(gettext 'Failed to write MBR to') ${DEV}"
-        PARTNUM="$(echo "${PART}" | sed -r "s:.*[^0-9]::")"
-        (
-            fdisk -l "${DEV}" | fgrep "*" | fgrep "${DEV}" | cut -d " " -f 1 |
-                sed -r "s:.*[^0-9]::" | xargs -I '{}' echo -ne "a\n{}\n"
-            echo a
-            echo "${PARTNUM}"
-            echo w
-        ) | fdisk "${DEV}" >/dev/null 2>&1 || error_dialog "$(gettext 'Failed to set active partition on') ${DEV}"
-    fi
-    if [ -f ./extlinux.exe ]; then
-        rm -f ./extlinux.exe
-    fi
-    cd "${CWD}"
-}
-
-# Confirmation question for installation
-installation() {
-    if mount | grep -q "/run/initramfs/memory/data" | grep -q "${DEV}"; then
-        if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-            INVALID_DISK_WARNING=$(
-                yad --form --center \
-                    --borders=10 \
-                    --window-icon="usb-creator-gtk" \
-                    --title="$(gettext 'WARNING!')" \
-                    --text="<span foreground=\"red\" font=\"Bold\" font-size=\"large\">$(gettext 'Cannot install on the same disk from which the system is running.')</span>" \
-                    --text-align="center" \
-                    --width=400 \
-                    --buttons-layout="center" \
-                    --on-top \
-                    --form \
-                    --button="$(gettext 'Return')!edit-undo":120
-            )
-            local RESULT=$?
-
-            case "${RESULT}" in
-            120)
-                main_menu
-                return
-                ;;
-            252)
-                exit 1
-                ;;
-            esac
-        else
-            if whiptail --title "$(gettext 'WARNING!')" --msgbox "$(gettext 'Cannot install on the same disk from which the system is running.')" 20 60; then
-                main_menu
-                return
-            else
-                exit 1
-            fi
-        fi
-    fi
-
-    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-        INSTALLATION_WARNING=$(
-            yad --form --center \
-                --borders=10 \
-                --window-icon="usb-creator-gtk" \
-                --title="$(gettext 'WARNING!')" \
-                --text="<span foreground=\"red\" font=\"Bold\" font-size=\"large\">$(gettext 'All data on the selected device will be lost!')</span>\n<span font-size=\"large\">$(gettext 'Selected device:')</span><span font=\"Bold\" font-size=\"large\">${DEV}</span>" \
-                --text-align="center" \
-                --width=400 \
-                --buttons-layout="center" \
-                --on-top \
-                --form \
-                --button="$(gettext 'Return')!edit-undo":120 \
-                --button="$(gettext 'Continue')!gtk-ok":121
+        run_command(
+            ['parted','-s',device,'mkpart','ESP','fat32',f'{size}MiB','100%'],
+            _("Failed to create EFI partition on ") + device + "."
         )
-        local RESULT=$?
+        run_command(['parted','-s',device,'set','2','boot','on'], _("Failed to set boot flag."))
+    elif efi:
+        run_command(['parted','-s',device,'mklabel','msdos'], _("Failed to set MSDOS label on ") + device + ".")
+        size = get_disk_size_mib(device) - 100
+        run_command(
+            ['parted','-s',device,'mkpart','primary',fs,'1MiB',f'{size}MiB'],
+            _("Failed to create primary partition on ") + device + "."
+        )
+        run_command(
+            ['parted','-s',device,'mkpart','primary','fat32',f'{size}MiB','100%'],
+            _("Failed to create second partition on ") + device + "."
+        )
+        run_command(['parted','-s',device,'set','1','boot','on'], _("Failed to set boot flag."))
+    else:
+        run_command(['parted','-s',device,'mklabel','msdos'], _("Failed to set MSDOS label on ") + device + ".")
+        run_command(
+            ['parted','-s',device,'mkpart','primary',fs,'1MiB','100%'],
+            _("Failed to create primary partition on ") + device + "."
+        )
 
-        case "${RESULT}" in
-        120)
-            main_menu
-            return
-            ;;
-        121)
-            install_minios | yad --center --borders=10 --window-icon="usb-creator-gtk" --progress --width=400 --height=100 --title="$(gettext 'MiniOS Installer')" --text="$(gettext 'Installing...')" --auto-close --auto-kill --no-buttons
-            INSTALLATION_RESULT=$?
-            if [[ $INSTALLATION_RESULT -ne 0 ]]; then
-                error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
-            fi
-            ;;
-        252)
-            exit 1
-            ;;
-        esac
-    else
-        if whiptail --title "$(gettext 'WARNING!')" --yesno "$(gettext 'All data on the selected device will be lost!')\n$(gettext 'Selected device:') ${DEV}" 20 60; then
-            install_minios | while IFS= read -r line; do echo "$line" | grep -Eo '^[0-9]+$' | tail -1; done | whiptail --gauge "$(gettext 'Installing...')" 6 60 0
-            INSTALLATION_RESULT=$?
-            if [[ $INSTALLATION_RESULT -ne 0 ]]; then
-                error_dialog "$(gettext 'An error occurred during the installation of MiniOS on disk.')"
-            fi
-        else
-            exit 1
-        fi
-    fi
 
-    if [ "${ERROR}" = "false" ]; then
-        post_install_prompt
-    fi
+def zero_fill_disk(device: str) -> None:
+    """
+    Overwrite the beginning of the disk with zeros.
+    """
+    try:
+        subprocess.check_call(
+            ['dd','if=/dev/zero',f'of={device}','bs=4096','count=273','status=none'],
+            stderr=subprocess.DEVNULL
+        )
+    except subprocess.CalledProcessError:
+        raise RuntimeError(_("Failed to erase ") + device + ".")
 
-}
 
-# Update progress
-update_progress() {
-    local MESSAGE="$1"
-    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-        echo "# $MESSAGE"
-    else
-        echo "$MESSAGE" | whiptail --gauge "$(gettext 'Installing...')" 6 60 0
-    fi
-}
+def format_partitions(primary: str, fs: str, efi: str | None) -> None:
+    """
+    Format the primary partition (and EFI partition if provided).
+    """
+    if fs == 'fat32':
+        run_command(['mkfs.vfat', primary], _("Failed to format ") + primary + ".")
+    elif fs in ('btrfs','ntfs','exfat'):
+        run_command([f'mkfs.{fs}','-f',primary], _("Failed to format ") + primary + ".")
+    else:
+        run_command([f'mkfs.{fs}','-F',primary], _("Failed to format ") + primary + ".")
 
-# Perform the MiniOS installation process
-install_minios() {
-    ERROR="false"
-    echo "0"
-    update_progress "$(gettext 'Unmounting disk')"
-    umount_disk
-    echo "2"
-    update_progress "$(gettext 'Erasing disk')"
-    erase_disk
-    echo "4"
-    update_progress "$(gettext 'Partitioning disk')"
-    partition_disk
-    partprobe "${DEV}" || udevadm settle
-    sleep 2
-    echo "8"
-    update_progress "$(gettext 'Formatting partition')"
-    format_part
-    echo "15"
-    update_progress "$(gettext 'Mounting partition')"
-    mount_part
-    echo "18"
-    update_progress "$(gettext 'Copying files')"
-    copy_files
-    echo "96"
-    if [ "${GPT_SUPPORT}" != "TRUE" ] && [ "${FS}" != "exfat" ]; then
-        update_progress "$(gettext 'Setting up bootloader')"
-        setup_bootloader
-    fi
-    echo "98"
-    if command -v yad &>/dev/null && command -v minios-configurator &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-        if [ -f "${DESTINATION}/minios/minios.conf" ]; then
-            minios-configurator "${DESTINATION}/minios/minios.conf"
-        fi
-    fi
-    update_progress "$(gettext 'Unmounting disk')"
-    umount_disk
-    echo "100"
-}
+    if efi:
+        run_command(['mkfs.vfat', efi], _("Failed to format EFI ") + efi + ".")
 
-# Display the main menu for selecting installation options
-main_menu() {
-    while true; do
-        find_disks
 
-        if [[ -z "${DISKS}" ]]; then
-            error_dialog "$(gettext 'No available devices found.')"
-            return
-        fi
+def mount_partition(part: str, mount_dir: str) -> None:
+    """
+    Mount the partition to mount_dir, creating or clearing the directory first.
+    """
+    if os.path.ismount(mount_dir):
+        raise RuntimeError(_("Destination ") + mount_dir + _(" is already mounted."))
+    if os.path.isdir(mount_dir) and os.listdir(mount_dir):
+        shutil.rmtree(mount_dir, ignore_errors=True)
+    os.makedirs(mount_dir, exist_ok=True)
 
-        if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-            MAIN_FORM=$(
-                yad --form --center \
-                    --borders=10 \
-                    --window-icon="usb-creator-gtk" \
-                    --title="$(gettext 'MiniOS Installer')" \
-                    --text="<span font-size=\"large\">$(gettext 'Select installation options for MiniOS:')</span>\n" \
-                    --text-align="center" \
-                    --width=300 --height=200 \
-                    --buttons-layout="center" \
-                    --on-top \
-                    --form \
-                    --field="$(gettext 'Select device'):CB" "${DISKS}" \
-                    --field="$(gettext 'Select file system'):CB" "${FILESYSTEMS}" \
-                    --button="$(gettext 'Cancel')!gtk-cancel":101 \
-                    --button="$(gettext 'Install')!usb-creator-gtk":102 \
-                    --button="$(gettext 'Reload')!gtk-refresh":103
-            )
-            local RESULT=$?
+    fs_type = run_command(
+        ['blkid','-o','value','-s','TYPE',part],
+        _("Could not determine filesystem type of ") + part + "."
+    ).strip()
+    if subprocess.call(['mount','-t',fs_type,part,mount_dir]) != 0:
+        raise RuntimeError(_("Failed to mount ") + part + ".")
 
-            DEV_DESC=$(echo "${MAIN_FORM}" | cut -d"|" -f1)
-            DEV_NAME=$(echo "${DEV_DESC}" | cut -d "(" -f 1)
 
-            if [[ -z "${DEV_NAME}" && "${RESULT}" != 101 && "${RESULT}" != 103 && "${RESULT}" != 252 ]]; then
-                error_dialog "$(gettext 'No device selected.')"
+def unmount_partitions(primary: str, efi: str | None, m1: str, m2: str | None) -> None:
+    """
+    Unmount primary and optional EFI partitions and remove mount directories.
+    """
+    for part, mnt in ((primary, m1), (efi, m2)):
+        if part and subprocess.call(['grep','-qs',part,'/proc/mounts']) == 0:
+            subprocess.call(['umount', part])
+            if mnt and os.path.isdir(mnt):
+                try:
+                    os.rmdir(mnt)
+                except Exception:
+                    pass
 
+
+def copy_minios_files(src: str, dst: str, progress_cb, log_cb, config_override: str = None) -> None:
+    """
+    Copy all MiniOS files (including boot/EFI) from src → dst/minios/...
+    If config_override is given, use it as minios/config.conf.
+    """
+    total = int(run_command(['du','-b','-s',src], _("Failed to get size of ") + src + ".").split()[0])
+    copied = 0
+    entries: list[tuple[str,str]] = []
+    owner = getattr(progress_cb, "__self__", None)
+
+    # 1) Main tree → minios/
+    for root, dirs, files in os.walk(src):
+        for fn in files:
+            rel = os.path.relpath(os.path.join(root, fn), src)
+            # теперь пропускаем только changes/, а EFI не пропускаем
+            if rel.startswith('changes/'):
                 continue
-            fi
+            entries.append((os.path.join('minios', rel), os.path.join(root, fn)))
 
-            if [[ "${DEV_NAME}" == "nvme"* ]] || [[ "${DEV_NAME}" == "mmcblk"* ]]; then
-                PART_NAME="${DEV_NAME}p1"
-                EFI_PART_NAME="${DEV_NAME}p2"
-            else
-                PART_NAME="${DEV_NAME}1"
-                EFI_PART_NAME="${DEV_NAME}2"
-            fi
+    # Дальше остальное без изменений...
+    # 2) .disk/info
+    with open('/tmp/info', 'w', encoding='utf-8') as f:
+        f.write('MiniOS')
+    entries.append(('.disk/info', '/tmp/info'))
 
-            DEV="/dev/${DEV_NAME}"
-            PART="/dev/${PART_NAME}"
-            EFI_PART="/dev/${EFI_PART_NAME}"
-            FS=$(echo "${MAIN_FORM}" | cut -d "|" -f2)
-            DESTINATION="/mnt/install/${PART_NAME}"
-            EFI_DESTINATION="/mnt/install/${EFI_PART_NAME}"
-            trap "umount_disk" EXIT
+    # 3) config.conf
+    config_dst = 'minios/config.conf'
+    if config_override and os.path.exists(config_override):
+        entries.append((config_dst, config_override))
+    else:
+        config_src = '/etc/live/config.conf'
+        if os.path.exists(config_src):
+            entries.append((config_dst, config_src))
 
-            case "${RESULT}" in
-            101 | 252)
-                exit 0
-                ;;
-            102)
-                installation
-                break
-                ;;
-            103)
-                continue
-                ;;
-            esac
+    # Копируем из entries и обновляем прогресс
+    for rel, path in entries:
+        if owner and owner.cancel_requested:
+            log_cb(_("Installation canceled by user."))
+            raise RuntimeError(_("Installation canceled by user."))
+        dest = os.path.join(dst, rel)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        shutil.copy2(path, dest)
+        log_cb(_("Copied file: ") + path)
+        size = os.path.getsize(path)
+        copied += size
+        percent = int(18 + (78 * copied / total))
+        progress_cb(percent, _("Copying MiniOS files: ") + rel)
 
-        else
+    # Убедимся, что есть базовые директории
+    for sub in ('boot','modules','changes','scripts'):
+        p = os.path.join(dst, 'minios', sub)
+        os.makedirs(p, exist_ok=True)
+        log_cb(_("Created directory: ") + p)
 
-            DISK_OPTIONS=()
-            for disk in ${DISKS//!/ }; do
-                DISK_OPTIONS+=("${disk}" "")
-            done
 
-            FS_OPTIONS=()
-            for fs in ${FILESYSTEMS//!/ }; do
-                FS_OPTIONS+=("${fs}" "")
-            done
-
-            DEV_DESC=$(whiptail --title "$(gettext 'MiniOS Installer')" --menu "$(gettext 'Select device'):" 20 60 10 "${DISK_OPTIONS[@]}" 3>&1 1>&2 2>&3)
-            DEV_NAME=$(echo "${DEV_DESC}" | cut -d "(" -f 1)
-
-            if [[ -z "${DEV_NAME}" ]]; then
-                exit 1
-            fi
-
-            if [[ "${DEV_NAME}" == "nvme"* ]]; then
-                PART_NAME="${DEV_NAME}p1"
-                EFI_PART_NAME="${DEV_NAME}p2"
-            else
-                PART_NAME="${DEV_NAME}1"
-                EFI_PART_NAME="${DEV_NAME}2"
-            fi
-
-            DEV="/dev/${DEV_NAME}"
-            PART="/dev/${PART_NAME}"
-            EFI_PART="/dev/${EFI_PART_NAME}"
-
-            FS=$(whiptail --title "$(gettext 'MiniOS Installer')" --menu "$(gettext 'Select file system'):" 20 60 10 "${FS_OPTIONS[@]}" 3>&1 1>&2 2>&3)
-            if [[ -z "${FS}" ]]; then
-                exit 1
-            fi
-
-            DESTINATION="/mnt/install/${PART_NAME}"
-            EFI_DESTINATION="/mnt/install/${EFI_PART_NAME}"
-            trap "umount_disk" EXIT
-
-            installation
-
-        fi
-    done
-
-}
-
-# Display the final prompt after installation
-post_install_prompt() {
-    if [ "${ERROR}" = "true" ]; then
+def copy_efi_files(src: str, dst: str, log_cb) -> None:
+    """
+    Copy EFI files from src/boot/EFI → dst/EFI/...
+    """
+    efi_dir = os.path.join(src, 'boot', 'EFI')
+    if not os.path.isdir(efi_dir):
         return
-    fi
 
-    if command -v yad &>/dev/null && [[ -n "${DISPLAY}" ]]; then
-        FINAL_FORM=$(
-            yad --form --center \
-                --borders=10 \
-                --window-icon="usb-creator-gtk" \
-                --title="$(gettext 'MiniOS Installer')" \
-                --text="$(gettext 'Installation complete. Please restart your computer to apply the changes.')" \
-                --width=300 --height=150 \
-                --buttons-layout="center" \
-                --on-top \
-                --form \
-                --button="$(gettext 'Finish')!gtk-ok":101
+    for root, dirs, files in os.walk(efi_dir):
+        for fn in files:
+            rel = os.path.relpath(os.path.join(root, fn), efi_dir)
+            src_path = os.path.join(root, fn)
+            dest_path = os.path.join(dst, 'EFI', rel)
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+            shutil.copy2(src_path, dest_path)
+            log_cb(_("Copied EFI file: ") + src_path)
+
+
+def install_bootloader(device: str, primary: str, efi: str | None, progress_cb, log_cb) -> None:
+    """
+    Install the EXT Linux bootloader; write MBR if needed.
+    Aborts immediately if cancellation is requested.
+    """
+    owner = getattr(progress_cb, "__self__", None)
+    if owner and owner.cancel_requested:
+        raise RuntimeError(_("Installation canceled by user."))
+
+    boot_dir = os.path.join("/mnt/install", os.path.basename(primary), "minios", "boot")
+    log_cb(_("Entering bootloader directory: ") + boot_dir)
+
+    progress_cb(96, _("Setting up bootloader."))
+    arch = subprocess.check_output(['uname','-m'], text=True).strip()
+    exe = 'extlinux.x64' if arch == 'x86_64' else 'extlinux.x32'
+    exe_path = os.path.join(boot_dir, exe)
+
+    if not os.access(exe_path, os.X_OK):
+        os.chmod(exe_path, 0o755)
+        log_cb(_("Made extlinux executable."))
+
+    subprocess.check_call([exe_path, '--install', boot_dir], cwd=boot_dir, stderr=subprocess.DEVNULL)
+    log_cb(_("Ran extlinux installer."))
+
+    if device != primary:
+        mbr = os.path.join(boot_dir, 'mbr.bin')
+        subprocess.check_call(
+            ['dd','bs=440','count=1','conv=notrunc',f'if={mbr}',f'of={device}'],
+            stderr=subprocess.DEVNULL
         )
-        local RESULT=$?
+        log_cb(_("Wrote MBR to ") + device + ".")
 
-    else
-        whiptail --title "$(gettext 'MiniOS Installer')" --msgbox "$(gettext 'Installation complete. Please restart your computer to apply the changes.')" 10 60
-        RESULT=101
-    fi
+        partition_number = re.sub(r'.*[^0-9]', '', primary)
+        fd_input = f"a\n{partition_number}\nw\n"
+        subprocess.run(['fdisk', device], input=fd_input, text=True, stderr=subprocess.DEVNULL)
+        log_cb(_("Set partition active: ") + primary + ".")
 
-    case "${RESULT}" in
-    101)
-        exit 0
-        ;;
-    esac
 
-}
+def apply_css_if_exists():
+    """
+    Load and apply CSS if the file exists.
+    """
+    provider = Gtk.CssProvider()
+    if os.path.exists(CSS_FILE_PATH):
+        provider.load_from_path(CSS_FILE_PATH)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
 
-# Trap for cleanup on exit
-cleanup() {
-    umount_disk
-}
 
-trap cleanup EXIT
+# ──────────────────────────────────────────────────────────────────────────────
+# InstallerWindow Definition
+# ──────────────────────────────────────────────────────────────────────────────
 
-# Check if the script is running as root
-check_root_permissions
+class InstallerWindow(Gtk.ApplicationWindow):
+    def __init__(self, application: Gtk.Application):
+        super().__init__(application=application, title=_(APP_TITLE))
+        self.set_default_size(600, 450)
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_icon_name(ICON_WINDOW)
 
-# Start the installation process by displaying the main menu
-main_menu
+        self.selected_device     = None
+        self.selected_filesystem = None
+        self.use_gpt             = False
+        self.create_efi          = False
+        self.cancel_requested    = False
+
+        self.p1 = None
+        self.m1 = None
+        self.config_path = None
+        self.temp_config_path = None  # путь к временному конфигу
+
+        self.main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        for m in ("set_margin_top","set_margin_bottom","set_margin_start","set_margin_end"):
+            getattr(self.main_vbox, m)(12)
+        self.add(self.main_vbox)
+
+        # Apply CSS if available
+        apply_css_if_exists()
+
+        # Build the user interface
+        self._build_header_bar()
+        self._build_selection_ui()
+
+        self.connect("destroy", lambda w: application.quit())
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # UI construction
+    # ──────────────────────────────────────────────────────────────────────────
+    def _build_header_bar(self):
+        header = Gtk.HeaderBar(show_close_button=True)
+        header.props.title = _(APP_TITLE)
+        self.set_titlebar(header)
+
+    def _build_selection_ui(self):
+        """
+        Build disk list, filesystem combo, and Install button.
+        """
+        for child in self.main_vbox.get_children():
+            self.main_vbox.remove(child)
+
+        lbl = Gtk.Label(label=_("Please select a target disk and filesystem:"), xalign=0)
+        lbl.set_margin_bottom(8)
+        self.main_vbox.pack_start(lbl, False, False, 0)
+
+        hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        self.main_vbox.pack_start(hb, True, True, 0)
+
+        # Disk list
+        vb_disk = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        vb_disk.pack_start(Gtk.Label(label=_("Select Target Disk:"), xalign=0), False, False, 0)
+
+        self.disk_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.SINGLE)
+        self.disk_list.connect("row-selected", self._on_disk_selected)
+
+        for dev in find_available_disks():
+            row = Gtk.ListBoxRow()
+            h = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            img = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name=dev['icon']), Gtk.IconSize.DIALOG)
+            h.pack_start(img, False, False, 0)
+            text = f"<b>{dev['name']}</b> ({dev['size']})"
+            if dev['model']:
+                text += f" \u2014 {GLib.markup_escape_text(dev['model'])}"
+            lbl_dev = Gtk.Label()
+            lbl_dev.set_markup(text)
+            lbl_dev.set_xalign(0)
+            h.pack_start(lbl_dev, True, True, 0)
+            row.add(h)
+            row.device = f"/dev/{dev['name']}"
+            self.disk_list.add(row)
+
+        sw = Gtk.ScrolledWindow()
+        sw.set_min_content_width(350)
+        sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        sw.add(self.disk_list)
+        vb_disk.pack_start(sw, True, True, 0)
+        hb.pack_start(vb_disk, True, True, 0)
+
+        # Filesystem combo and information
+        vb_fs = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        vb_fs.pack_start(Gtk.Label(label=_("Select Filesystem Type:"), xalign=0), False, False, 0)
+
+        hfs = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.combo_fs = Gtk.ComboBoxText(hexpand=True)
+        for fs in detect_filesystem_tools():
+            self.combo_fs.append_text(fs)
+        self.combo_fs.set_active(-1)
+        self.combo_fs.connect("changed", self._on_fs_selected)
+        hfs.pack_start(self.combo_fs, True, True, 0)
+
+        info = Gtk.Image.new_from_icon_name("dialog-information", Gtk.IconSize.SMALL_TOOLBAR)
+        eb = Gtk.EventBox()
+        eb.add(info)
+        eb.set_tooltip_markup(
+            _("<b>ext4</b> (best choice)\n"
+            "  + Stable and has journaling.\n"
+            "  + Fast performance with large-file support.\n"
+            "  - Not compatible with Windows, Mac and most hardware devices.\n\n"
+            "<b>ext2</b>\n"
+            "  + Minimal write overhead preserves flash lifespan.\n"
+            "  + Simple structure is easy to recover.\n"
+            "  - No journaling increases risk of data loss if unplugged.\n"
+            "  - Not compatible with Windows, Mac and most hardware devices.\n\n"
+            "<b>btrfs</b>\n"
+            "  + Snapshots enable easy rollback.\n"
+            "  + Built-in compression saves space.\n"
+            "  - Complex configuration may be needed.\n"
+            "  - Additional metadata can slow transfers on USB drives.\n"
+            "  - Not compatible with Windows, Mac and most hardware devices.\n\n"
+            "<b>FAT32</b>\n"
+            "  + Universally readable by Windows, macOS, and Linux.\n"
+            "  + No extra drivers or setup needed.\n"
+            "  - 4 GiB file size limit.\n"
+            "  - No journaling increases risk of data loss if unplugged.\n"
+            "  - FUSE-based persistence reduce performance.\n\n"
+            "<b>NTFS</b>\n"
+            "  + Supports large files and has journaling.\n"
+            "  + Native Windows support; fast read/write in Linux via ntfs3.\n"
+            "  - Not compatible with Mac and most hardware devices.\n"
+            "  - FUSE-based persistence reduce performance.\n\n")
+        )
+        hfs.pack_start(eb, False, False, 0)
+        vb_fs.pack_start(hfs, False, False, 0)
+        hb.pack_start(vb_fs, True, True, 0)
+
+        # Install button
+        self.btn_install = Gtk.Button(label=_("Install"))
+        self.btn_install.get_style_context().add_class('suggested-action')
+        self.btn_install.set_image(Gtk.Image.new_from_icon_name(ICON_INSTALL, Gtk.IconSize.BUTTON))
+        self.btn_install.set_always_show_image(True)
+        self.btn_install.set_sensitive(False)
+        self.btn_install.connect("clicked", self._on_install_clicked)
+        self.btn_install.set_margin_top(12)
+        self.main_vbox.pack_start(self.btn_install, False, False, 0)
+
+        # Кнопка запуска конфигураторов
+        self.btn_cfg = Gtk.Button(label=_("Configure MiniOS before installation"))
+        self.btn_cfg.get_style_context().add_class('suggested-action')
+        self.btn_cfg.set_margin_top(12)
+        self.btn_cfg.set_image(Gtk.Image.new_from_icon_name(ICON_CONFIGURE, Gtk.IconSize.BUTTON))
+        self.btn_cfg.set_always_show_image(True)
+        self.btn_cfg.connect("clicked", self._on_launch_configurator)
+        self.main_vbox.pack_start(self.btn_cfg, False, False, 0)
+
+        self.show_all()
+
+    def _on_disk_selected(self, listbox, row):
+        self.selected_device = getattr(row, 'device', None)
+        self.selected_disk_info = None  # Store disk info for warning dialog
+        try:
+            size_mib = get_disk_size_mib(self.selected_device)
+            self.use_gpt = (size_mib > 2_097_152)
+        except Exception:
+            self.use_gpt = False        
+        # Save disk info for later use in warning dialog
+        if row:
+            dev_name = getattr(row, 'device', None)
+            dev_short = dev_name.replace("/dev/", "") if dev_name else None
+            for dev in find_available_disks():
+                if dev.get('name') == dev_short:
+                    size = dev.get('size', '')
+                    model = dev.get('model', '')
+                    serial = dev.get('serial', '')
+                    desc = []
+                    if model:
+                        desc.append(model)
+                    if size:
+                        desc.append(size)
+                    if serial:
+                        desc.append(f"SN: {serial}")
+                    self.selected_disk_info = {
+                        'device': dev_name,
+                        'desc': " — " + ", ".join(desc) if desc else ""
+                    }
+                    break
+        else:
+            self.selected_disk_info = None
+        self._update_install_sensitive()
+
+    def _on_fs_selected(self, combo):
+        text = combo.get_active_text()
+        self.selected_filesystem = text or None
+        self.create_efi = bool(text and text != 'fat32')
+        self._update_install_sensitive()
+
+    def _update_install_sensitive(self):
+        ok = bool(self.selected_device and self.selected_filesystem)
+        self.btn_install.set_sensitive(ok)
+
+    def _on_install_clicked(self, button):
+        # Show confirmation warning before proceeding
+        self._show_erase_warning()
+
+    def _show_erase_warning(self):
+        # Remove all widgets from main_vbox
+        for child in self.main_vbox.get_children():
+            self.main_vbox.remove(child)
+
+        # Use cached disk info if available
+        disk_info = self.selected_disk_info or {}
+        disk_label = disk_info.get('device') or _("selected device")
+        disk_desc = disk_info.get('desc') or ""
+
+        warning = Gtk.Label()
+        warning.set_markup(
+            f'<span size="large" weight="bold" foreground="red">{_("All data on the selected device will be lost!")}</span>\n\n'
+            f'<b>{disk_label}{GLib.markup_escape_text(disk_desc)}</b>'
+        )
+        warning.set_justify(Gtk.Justification.CENTER)
+        warning.set_margin_top(40)
+        warning.set_margin_bottom(20)
+        warning.set_line_wrap(True)
+        self.main_vbox.pack_start(warning, True, True, 0)
+
+        btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=24)
+        btn_box.set_halign(Gtk.Align.CENTER)
+
+        btn_cancel = Gtk.Button(label=_("Go Back"))
+        btn_cancel.get_style_context().add_class('destructive-action')
+        btn_cancel.connect("clicked", lambda b: self._build_selection_ui())
+        btn_box.pack_start(btn_cancel, False, False, 0)
+
+        btn_continue = Gtk.Button(label=_("Continue"))
+        btn_continue.get_style_context().add_class('suggested-action')
+        btn_continue.connect("clicked", self._on_confirm_install)
+        btn_box.pack_start(btn_continue, False, False, 0)
+
+        self.main_vbox.pack_start(btn_box, False, False, 0)
+        self.show_all()
+
+    def _on_confirm_install(self, button):
+        self._build_progress_ui()
+        threading.Thread(target=self._run_install_sequence, daemon=True).start()
+
+    def _build_progress_ui(self):
+        for child in self.main_vbox.get_children():
+            self.main_vbox.remove(child)
+
+        self.lbl_status = Gtk.Label(label=_("Preparing to install…"), xalign=0)
+        self.lbl_status.set_line_wrap(True)
+        self.lbl_status.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self.main_vbox.pack_start(self.lbl_status, False, False, 0)
+
+        self.progress = Gtk.ProgressBar()
+        self.progress.set_fraction(0.0)
+        self.main_vbox.pack_start(self.progress, False, False, 0)
+
+        # Toggle log view button
+        self.btn_toggle = Gtk.ToggleButton(label=_("Show Log"))
+        self.btn_toggle.connect("toggled", self._on_toggle_log)
+        self.main_vbox.pack_start(self.btn_toggle, False, False, 0)
+
+        # Cancel button
+        self.btn_cancel = Gtk.Button(label=_("Cancel"))
+        self.btn_cancel.get_style_context().add_class('destructive-action')
+        self.btn_cancel.set_sensitive(True)
+        self.btn_cancel.connect("clicked", self._on_cancel)
+        self.main_vbox.pack_end(self.btn_cancel, False, False, 0)
+
+        # Log view
+        self.log_buf = Gtk.TextBuffer()
+        self.log_view = Gtk.TextView(buffer=self.log_buf)
+        self.log_view.set_editable(False)
+        self.log_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        self.log_view.set_monospace(True)
+
+        self.log_sw = Gtk.ScrolledWindow()
+        self.log_sw.set_min_content_height(200)
+        self.log_sw.add(self.log_view)
+
+        self.show_all()
+
+    def _on_toggle_log(self, toggle):
+        if toggle.get_active():
+            toggle.set_label(_("Hide Log"))
+            self.main_vbox.pack_start(self.log_sw, True, True, 0)
+            self.log_sw.show_all()
+        else:
+            toggle.set_label(_("Show Log"))
+            self.main_vbox.remove(self.log_sw)
+
+    def _on_cancel(self, button):
+        if not self.cancel_requested:
+            self.cancel_requested = True
+
+            # reset progress/bar
+            GLib.idle_add(self.progress.set_fraction, 0.0)
+            GLib.idle_add(self.lbl_status.set_text, _("Installation canceled."))
+            GLib.idle_add(self._append_log, _("Installation canceled by user."))
+
+            # disable the Cancel button (GTK will add the "insensitive" state)
+            GLib.idle_add(self.btn_cancel.set_sensitive, False)
+
+    def _report_progress(self, percent: int, message: str):
+        fraction = percent / 100.0
+        GLib.idle_add(self.progress.set_fraction, fraction)
+        GLib.idle_add(self.lbl_status.set_text, message)
+        GLib.idle_add(self._append_log, message)
+
+    def _append_log(self, message: str):
+        timestamp = GLib.DateTime.new_now_local().format("%Y-%m-%d %H:%M:%S")
+        text = f"[{timestamp}] {message}\n"
+        end_iter = self.log_buf.get_end_iter()
+        self.log_buf.place_cursor(end_iter)
+        self.log_buf.insert_at_cursor(text)
+
+    def _log_async(self, message: str):
+        # Always schedule _append_log on the GTK main loop
+        GLib.idle_add(self._append_log, message)
+
+
+    def _run_install_sequence(self):
+        dev = self.selected_device
+        fs  = self.selected_filesystem
+        use_gpt = self.use_gpt
+        if dev.startswith("/dev/nvme") or dev.startswith("/dev/mmcblk"):
+            # For NVMe and MMC devices, use partition names like nvme0n1p1
+            p1, p2 = f"{dev}p1", f"{dev}p2"
+        else:
+            p1, p2 = f"{dev}1", f"{dev}2"
+        m1 = f"/mnt/install/{os.path.basename(p1)}"
+        m2 = f"/mnt/install/{os.path.basename(p2)}" if self.create_efi else None
+
+        self.p1 = p1
+        self.m1 = m1
+        # Use temporary config if available, otherwise use standard
+        config_override = self.temp_config_path if (self.temp_config_path and os.path.exists(self.temp_config_path)) else None
+        self.config_path = config_override or '/etc/live/config.conf'
+
+        steps = [
+            ( 0,  _("Unmounting disk…"),       lambda: unmount_partitions(p1, p2, m1, m2)),
+            ( 2,  _("Erasing disk…"),          lambda: zero_fill_disk(dev)),
+            ( 4,  _("Partitioning disk…"),     lambda: partition_disk(dev, fs, use_gpt)),
+            ( 8,  _("Formatting partitions…"), lambda: format_partitions(p1, fs, p2 if self.create_efi else None)),
+            (15,  _("Mounting partition…"),    lambda: mount_partition(p1, m1)),
+        ]
+
+        for percent, message, func in steps:
+            if self.cancel_requested:
+                return
+            self._report_progress(percent, message)
+            try:
+                func()
+            except Exception as e:
+                if self.cancel_requested:
+                    return
+                import traceback
+                tb = traceback.format_exc()
+                GLib.idle_add(self._append_log, _("Error at step “") + message + _("”:"))
+                GLib.idle_add(self._append_log, tb)
+                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
+                return
+
+        if self.create_efi and not self.cancel_requested:
+            self._report_progress(18, _("Mounting EFI partition…"))
+            try:
+                mount_partition(p2, m2)
+            except Exception as e:
+                if self.cancel_requested:
+                    return
+                import traceback
+                tb = traceback.format_exc()
+                GLib.idle_add(self._append_log, _("Error mounting EFI partition:"))
+                GLib.idle_add(self._append_log, tb)
+                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
+                return
+
+        if not self.cancel_requested:
+            self._report_progress(18, _("Copying files…"))
+            candidates = [
+                "/run/initramfs/memory/data/minios",
+                "/run/initramfs/memory/iso/minios",
+                "/run/initramfs/memory/toram",
+                "/run/initramfs/memory/data/from/0/minios"
+            ]
+            src = next(
+                (c for c in candidates
+                 if os.path.isdir(c)
+                 and os.path.exists(os.path.join(c, "boot", "vmlinuz"))),
+                None
+            )
+            if not src:
+                if not self.cancel_requested:
+                    GLib.idle_add(self._show_error, _("Cannot find MiniOS image."))
+                return
+            try:
+                copy_minios_files(src, m1, self._report_progress, self._log_async, config_override)
+                if not self.create_efi:
+                    self._report_progress(50, _("Copying EFI files to root…"))
+                    copy_efi_files(src, m1, self._log_async)
+                elif self.create_efi:
+                    self._report_progress(50, _("Copying EFI files to ESP…"))
+                    copy_efi_files(src, m2, self._log_async)
+            except Exception as e:
+                if self.cancel_requested:
+                    return
+                import traceback
+                tb = traceback.format_exc()
+                GLib.idle_add(self._append_log, _("Error during file copy:"))
+                GLib.idle_add(self._append_log, tb)
+                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
+                return
+
+        if not use_gpt and fs != 'exfat' and not self.cancel_requested:
+            self._report_progress(96, _("Setting up bootloader…"))
+            try:
+                install_bootloader(
+                    dev, p1,
+                    p2 if self.create_efi else None,
+                    self._report_progress,
+                    self._log_async
+                )
+            except Exception as e:
+                if self.cancel_requested:
+                    return
+                import traceback
+                tb = traceback.format_exc()
+                GLib.idle_add(self._append_log, _("Error setting up bootloader:"))
+                GLib.idle_add(self._append_log, tb)
+                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
+                return
+
+        if not self.cancel_requested:
+            self._report_progress(98, _("Unmounting disk…"))
+            try:
+                unmount_partitions(p1, p2, m1, m2)
+            except Exception as e:
+                if self.cancel_requested:
+                    return
+                import traceback
+                tb = traceback.format_exc()
+                GLib.idle_add(self._append_log, _("Error during unmount:"))
+                GLib.idle_add(self._append_log, tb)
+                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
+                return
+            self._report_progress(100, _("Installation complete!"))
+            # Disable the Cancel button since installation has finished
+            GLib.idle_add(self.btn_cancel.set_sensitive, False)
+            # Add Launch Configurator button
+            GLib.idle_add(self._add_config_button)
+
+    def _show_error(self, message: str):
+        dlg = Gtk.MessageDialog(
+            transient_for=self,
+            modal=True,
+            destroy_with_parent=True,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text=_("Installation Error")
+        )
+        dlg.format_secondary_text(message)
+        dlg.run()
+        dlg.destroy()
+    
+    def _add_config_button(self):
+        """
+        Больше не нужна, оставляем пустой метод для совместимости вызова
+        """
+        pass
+
+    def _on_launch_configurator(self, button):
+        """
+        Copy the standard config to a temp file and launch the configurator with it.
+        """
+        src_config = '/etc/live/config.conf'
+        if not os.path.exists(src_config):
+            dlg = Gtk.MessageDialog(
+                transient_for=self,
+                modal=True,
+                destroy_with_parent=True,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text=_("Config file not found")
+            )
+            dlg.format_secondary_text(_(f"Standard config file not found at {src_config}."))
+            dlg.run()
+            dlg.destroy()
+            return
+
+        fd, temp_path = tempfile.mkstemp(prefix="minios-config-", suffix=".conf")
+        os.close(fd)
+        shutil.copy2(src_config, temp_path)
+        self.temp_config_path = temp_path
+
+        try:
+            subprocess.Popen(['minios-configurator', temp_path])
+        except Exception as e:
+            dlg = Gtk.MessageDialog(
+                transient_for=self,
+                modal=True,
+                destroy_with_parent=True,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text=_("Launch Error")
+            )
+            dlg.format_secondary_text(str(e))
+            dlg.run()
+            dlg.destroy()
+            return
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Application Class and Entry Point
+# ──────────────────────────────────────────────────────────────────────────────
+
+class MiniOSInstallerApp(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id=APPLICATION_ID)
+        self.window = None
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+        else:
+            if os.geteuid() != 0:
+                dlg = Gtk.MessageDialog(
+                    modal=True,
+                    destroy_with_parent=False,
+                    message_type=Gtk.MessageType.ERROR,
+                    buttons=Gtk.ButtonsType.OK,
+                    text=_("Root Privileges Required")
+                )
+                dlg.format_secondary_text(_("This installer must be run as root."))
+                dlg.run()
+                dlg.destroy()
+                sys.exit(1)
+
+            self.window = InstallerWindow(self)
+            self.window.show_all()
+            self.window.present()
+
+
+def main():
+    app = MiniOSInstallerApp()
+    return app.run(sys.argv)
+
+if __name__ == '__main__':
+    sys.exit(main())

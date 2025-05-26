@@ -1,0 +1,350 @@
+# Indonesian translations for minios-installer package.
+# Copyright (C) 2025 MiniOS Linux.
+# This file is distributed under the same license as the minios-installer package.
+# crims0n <crims0n@minios.dev>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-26 23:01+0300\n"
+"PO-Revision-Date: 2025-05-26 17:32+0300\n"
+"Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
+"Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: minios-installer:70
+msgid "Failed to retrieve disk list."
+msgstr "Gagal mengambil daftar disk."
+
+#: minios-installer:127
+msgid "Failed to get disk size."
+msgstr "Gagal mendapatkan ukuran disk."
+
+#: minios-installer:134
+msgid "Could not parse disk size."
+msgstr "Tidak dapat mengurai ukuran disk."
+
+#: minios-installer:143
+msgid "Failed to set GPT label on "
+msgstr "Gagal mengatur label GPT pada "
+
+#: minios-installer:147 minios-installer:159 minios-installer:170
+msgid "Failed to create primary partition on "
+msgstr "Gagal membuat partisi utama pada "
+
+#: minios-installer:151
+msgid "Failed to create EFI partition on "
+msgstr "Gagal membuat partisi EFI pada "
+
+#: minios-installer:153 minios-installer:165
+msgid "Failed to set boot flag."
+msgstr "Gagal mengatur flag boot."
+
+#: minios-installer:155 minios-installer:167
+msgid "Failed to set MSDOS label on "
+msgstr "Gagal mengatur label MSDOS pada "
+
+#: minios-installer:163
+msgid "Failed to create second partition on "
+msgstr "Gagal membuat partisi kedua pada "
+
+#: minios-installer:184
+msgid "Failed to erase "
+msgstr "Gagal menghapus "
+
+#: minios-installer:192 minios-installer:194 minios-installer:196
+msgid "Failed to format "
+msgstr "Gagal memformat "
+
+#: minios-installer:199
+msgid "Failed to format EFI "
+msgstr "Gagal memformat EFI "
+
+#: minios-installer:207
+msgid "Destination "
+msgstr "Tujuan "
+
+#: minios-installer:207
+msgid " is already mounted."
+msgstr " sudah terpasang."
+
+#: minios-installer:214
+msgid "Could not determine filesystem type of "
+msgstr "Tidak dapat menentukan tipe sistem berkas dari "
+
+#: minios-installer:217
+msgid "Failed to mount "
+msgstr "Gagal memasang "
+
+#: minios-installer:239
+msgid "Failed to get size of "
+msgstr "Gagal mendapatkan ukuran dari "
+
+#: minios-installer:271 minios-installer:272 minios-installer:314
+#: minios-installer:657
+msgid "Installation canceled by user."
+msgstr "Instalasi dibatalkan oleh pengguna."
+
+#: minios-installer:276
+msgid "Copied file: "
+msgstr "File disalin: "
+
+#: minios-installer:280
+msgid "Copying MiniOS files: "
+msgstr "Menyalin file MiniOS: "
+
+#: minios-installer:286
+msgid "Created directory: "
+msgstr "Direktori dibuat: "
+
+#: minios-installer:304
+msgid "Copied EFI file: "
+msgstr "File EFI disalin: "
+
+#: minios-installer:317
+msgid "Entering bootloader directory: "
+msgstr "Memasuki direktori bootloader: "
+
+#: minios-installer:319
+msgid "Setting up bootloader."
+msgstr "Menyiapkan bootloader."
+
+#: minios-installer:326
+msgid "Made extlinux executable."
+msgstr "extlinux dibuat dapat dieksekusi."
+
+#: minios-installer:329
+msgid "Ran extlinux installer."
+msgstr "extlinux installer dijalankan."
+
+#: minios-installer:337
+msgid "Wrote MBR to "
+msgstr "MBR ditulis ke "
+
+#: minios-installer:342
+msgid "Set partition active: "
+msgstr "Partisi diatur sebagai aktif: "
+
+#: minios-installer:410
+msgid "Please select a target disk and filesystem:"
+msgstr "Silakan pilih disk target dan sistem berkas:"
+
+#: minios-installer:419
+msgid "Select Target Disk:"
+msgstr "Pilih Disk Target:"
+
+#: minios-installer:449
+msgid "Select Filesystem Type:"
+msgstr "Pilih Tipe Sistem Berkas:"
+
+#: minios-installer:463
+msgid ""
+"<b>ext4</b> (best choice)\n"
+"  + Stable and has journaling.\n"
+"  + Fast performance with large-file support.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>ext2</b>\n"
+"  + Minimal write overhead preserves flash lifespan.\n"
+"  + Simple structure is easy to recover.\n"
+"  - No journaling increases risk of data loss if unplugged.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>btrfs</b>\n"
+"  + Snapshots enable easy rollback.\n"
+"  + Built-in compression saves space.\n"
+"  - Complex configuration may be needed.\n"
+"  - Additional metadata can slow transfers on USB drives.\n"
+"  - Not compatible with Windows, Mac and most hardware devices.\n"
+"\n"
+"<b>FAT32</b>\n"
+"  + Universally readable by Windows, macOS, and Linux.\n"
+"  + No extra drivers or setup needed.\n"
+"  - 4 GiB file size limit.\n"
+"  - No journaling increases risk of data loss if unplugged.\n"
+"  - FUSE-based persistence reduce performance.\n"
+"\n"
+"<b>NTFS</b>\n"
+"  + Supports large files and has journaling.\n"
+"  + Native Windows support; fast read/write in Linux via ntfs3.\n"
+"  - Not compatible with Mac and most hardware devices.\n"
+"  - FUSE-based persistence reduce performance.\n"
+"\n"
+msgstr ""
+"<b>ext4</b> (pilihan terbaik)\n"
+"  + Stabil dan memiliki journaling.\n"
+"  + Performa cepat dengan dukungan file berukuran besar.\n"
+"  - Tidak kompatibel dengan Windows, Mac, dan sebagian besar perangkat keras.\n"
+"\n"
+"<b>ext2</b>\n"
+"  + Penulisan minimal memperpanjang umur flash.\n"
+"  + Struktur sederhana mudah dipulihkan.\n"
+"  - Tanpa journaling meningkatkan risiko kehilangan data jika dicabut.\n"
+"  - Tidak kompatibel dengan Windows, Mac, dan sebagian besar perangkat keras.\n"
+"\n"
+"<b>btrfs</b>\n"
+"  + Snapshot memungkinkan rollback dengan mudah.\n"
+"  + Kompresi bawaan menghemat ruang.\n"
+"  - Konfigurasi kompleks mungkin diperlukan.\n"
+"  - Metadata tambahan dapat memperlambat transfer pada USB.\n"
+"  - Tidak kompatibel dengan Windows, Mac, dan sebagian besar perangkat keras.\n"
+"\n"
+"<b>FAT32</b>\n"
+"  + Dapat dibaca secara universal oleh Windows, macOS, dan Linux.\n"
+"  + Tidak memerlukan driver atau pengaturan tambahan.\n"
+"  - Batas ukuran file 4 GiB.\n"
+"  - Tanpa journaling meningkatkan risiko kehilangan data jika dicabut.\n"
+"  - Persistensi berbasis FUSE mengurangi performa.\n"
+"\n"
+"<b>NTFS</b>\n"
+"  + Mendukung file besar dan memiliki journaling.\n"
+"  + Dukungan native Windows; baca/tulis cepat di Linux melalui ntfs3.\n"
+"  - Tidak kompatibel dengan Mac dan sebagian besar perangkat keras.\n"
+"  - Persistensi berbasis FUSE mengurangi performa.\n"
+"\n"
+
+#: minios-installer:495
+msgid "Install"
+msgstr "Instal"
+
+#: minios-installer:505
+msgid "Configure MiniOS before installation"
+msgstr "Konfigurasi MiniOS sebelum instalasi"
+
+#: minios-installer:569
+msgid "selected device"
+msgstr "perangkat terpilih"
+
+#: minios-installer:586
+msgid "Go Back"
+msgstr "Kembali"
+
+#: minios-installer:591
+msgid "Continue"
+msgstr "Lanjutkan"
+
+#: minios-installer:607
+msgid "Preparing to install…"
+msgstr "Mempersiapkan instalasi…"
+
+#: minios-installer:617 minios-installer:647
+msgid "Show Log"
+msgstr "Tampilkan Log"
+
+#: minios-installer:622
+msgid "Cancel"
+msgstr "Batal"
+
+#: minios-installer:643
+msgid "Hide Log"
+msgstr "Sembunyikan Log"
+
+#: minios-installer:656
+msgid "Installation canceled."
+msgstr "Instalasi dibatalkan."
+
+#: minios-installer:699 minios-installer:792
+msgid "Unmounting disk…"
+msgstr "Melepas disk…"
+
+#: minios-installer:700
+msgid "Erasing disk…"
+msgstr "Menghapus disk…"
+
+#: minios-installer:701
+msgid "Partitioning disk…"
+msgstr "Mempartisi disk…"
+
+#: minios-installer:702
+msgid "Formatting partitions…"
+msgstr "Memformat partisi…"
+
+#: minios-installer:703
+msgid "Mounting partition…"
+msgstr "Memasang partisi…"
+
+#: minios-installer:717
+msgid "Error at step “"
+msgstr "Kesalahan pada langkah \""
+
+#: minios-installer:717
+msgid "”:"
+msgstr "\":"
+
+#: minios-installer:719 minios-installer:733 minios-installer:769
+#: minios-installer:788 minios-installer:802
+msgid "Installation failed: "
+msgstr "Instalasi gagal: "
+
+#: minios-installer:723
+msgid "Mounting EFI partition…"
+msgstr "Memasang partisi EFI…"
+
+#: minios-installer:731
+msgid "Error mounting EFI partition:"
+msgstr "Kesalahan saat memasang partisi EFI:"
+
+#: minios-installer:737
+msgid "Copying files…"
+msgstr "Menyalin file…"
+
+#: minios-installer:752
+msgid "Cannot find MiniOS image."
+msgstr "Tidak dapat menemukan image MiniOS."
+
+#: minios-installer:757
+msgid "Copying EFI files to root…"
+msgstr "Menyalin file EFI ke root…"
+
+#: minios-installer:760
+msgid "Copying EFI files to ESP…"
+msgstr "Menyalin file EFI ke ESP…"
+
+#: minios-installer:767
+msgid "Error during file copy:"
+msgstr "Kesalahan saat menyalin file:"
+
+#: minios-installer:773
+msgid "Setting up bootloader…"
+msgstr "Menyiapkan bootloader…"
+
+#: minios-installer:786
+msgid "Error setting up bootloader:"
+msgstr "Kesalahan saat menyiapkan bootloader:"
+
+#: minios-installer:800
+msgid "Error during unmount:"
+msgstr "Kesalahan saat melepas:"
+
+#: minios-installer:804
+msgid "Installation complete!"
+msgstr "Instalasi selesai!"
+
+#: minios-installer:817
+msgid "Installation Error"
+msgstr "Kesalahan Instalasi"
+
+#: minios-installer:841
+msgid "Config file not found"
+msgstr "Berkas konfigurasi tidak ditemukan"
+
+#: minios-installer:843
+#, python-brace-format
+msgid "Standard config file not found at {src_config}."
+msgstr "Berkas konfigurasi standar tidak ditemukan di {src_config}."
+
+#: minios-installer:862
+msgid "Launch Error"
+msgstr "Kesalahan Peluncuran"
+
+#: minios-installer:889
+msgid "Root Privileges Required"
+msgstr "Hak akses root diperlukan"
+
+#: minios-installer:891
+msgid "This installer must be run as root."
+msgstr "Installer ini harus dijalankan sebagai root."

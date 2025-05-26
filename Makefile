@@ -1,18 +1,20 @@
 EXECUTABLES = minios-installer
 APPLICATIONS = minios-installer.desktop
 POLICIES = dev.minios.installer.policy
+STYLES = style.css
 
 BINDIR = usr/bin
 APPLICATIONSDIR = usr/share/applications
 POLKITACTIONSDIR = usr/share/polkit-1/actions
 LOCALEDIR = usr/share/locale
+SHAREDIR = usr/share/minios-configurator
 
-PO_FILES = $(shell find locale -name "*.po" -maxdepth 1)
+PO_FILES = $(shell find po -name "*.po" -maxdepth 1)
 MO_FILES = $(patsubst %.po,%.mo,$(PO_FILES))
 
-build: locale
+build: mo
 
-locale: $(MO_FILES)
+mo: $(MO_FILES)
 
 %.mo: %.po
 	@echo "Generating mo file for $<"
@@ -31,6 +33,7 @@ install: build
 	cp $(EXECUTABLES) $(DESTDIR)/$(BINDIR)
 	cp $(APPLICATIONS) $(DESTDIR)/$(APPLICATIONSDIR)
 	cp $(POLICIES) $(DESTDIR)/$(POLKITACTIONSDIR)
+	cp $(STYLES) $(DESTDIR)/$(SHAREDIR)
 
 	for MO_FILE in $(MO_FILES); do \
 		LOCALE=$$(basename $$MO_FILE .mo); \
