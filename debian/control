@@ -9,8 +9,8 @@ Homepage: https://minios.dev
 Package: minios-installer
 Architecture: all
 Depends: ${misc:Depends},
-         policykit-1 | polkitd,
-         policykit-1 | pkexec,
+         polkitd | policykit-1,
+         pkexec | policykit-1,
          python3 (>= 3.8),
          python3-gi,
          gir1.2-gtk-3.0,
