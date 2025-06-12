@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-26 23:01+0300\n"
+"POT-Creation-Date: 2025-06-13 01:26+0300\n"
 "PO-Revision-Date: 2025-05-26 17:23+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -85,8 +85,8 @@ msgstr "Impossible de monter "
 msgid "Failed to get size of "
 msgstr "Impossible d'obtenir la taille de "
 
-#: minios-installer:271 minios-installer:272 minios-installer:314
-#: minios-installer:657
+#: minios-installer:271 minios-installer:272 minios-installer:315
+#: minios-installer:746
 msgid "Installation canceled by user."
 msgstr "Installation annulée par l'utilisateur."
 
@@ -106,43 +106,74 @@ msgstr "Répertoire créé : "
 msgid "Copied EFI file: "
 msgstr "Fichier EFI copié : "
 
-#: minios-installer:317
+#: minios-installer:319
 msgid "Entering bootloader directory: "
 msgstr "Entrée dans le répertoire du chargeur d'amorçage : "
 
-#: minios-installer:319
+#: minios-installer:322
 msgid "Setting up bootloader."
 msgstr "Configuration du chargeur d'amorçage."
 
-#: minios-installer:326
+#: minios-installer:336
+msgid "Remounted boot directory with exec."
+msgstr "Répertoire d'amorçage remonté avec droits d'exécution."
+
+#: minios-installer:338
+msgid "Failed to remount boot directory; proceeding."
+msgstr "Échec du remontage du répertoire d'amorçage ; poursuite."
+
+#: minios-installer:340
 msgid "Made extlinux executable."
 msgstr "extlinux rendu exécutable."
 
-#: minios-installer:329
-msgid "Ran extlinux installer."
-msgstr "Installateur extlinux exécuté."
+#: minios-installer:348
+msgid "Copied extlinux to fallback: "
+msgstr "Copié extlinux vers le chemin de secours : "
 
-#: minios-installer:337
+#: minios-installer:366
+#, python-brace-format
+msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
+msgstr "L'installation d'extlinux a échoué (code {code}), tentative de secours dans /tmp..."
+
+#: minios-installer:381
+#, python-brace-format
+msgid "Error installing boot loader (fallback code {code})."
+msgstr "Erreur lors de l'installation du chargeur d'amorçage (code de secours {code})."
+
+#: minios-installer:384
+msgid "Boot loader installation succeeded via fallback."
+msgstr "L'installation du chargeur d'amorçage a réussi via le secours."
+
+#: minios-installer:386
+#, python-brace-format
+msgid "Ran extlinux installer (code {code})."
+msgstr "Installateur extlinux exécuté (code {code})."
+
+#: minios-installer:395
 msgid "Wrote MBR to "
 msgstr "MBR écrit sur "
 
-#: minios-installer:342
+#: minios-installer:422
 msgid "Set partition active: "
 msgstr "Partition définie comme active : "
 
-#: minios-installer:410
+#: minios-installer:429
+msgid "Removed fallback binary: extlinux.exe."
+msgstr "Binaire de secours supprimé : extlinux.exe."
+
+#: minios-installer:499
 msgid "Please select a target disk and filesystem:"
 msgstr "Veuillez sélectionner un disque cible et un système de fichiers :"
 
-#: minios-installer:419
+#: minios-installer:508
 msgid "Select Target Disk:"
 msgstr "Sélectionnez le disque cible :"
 
-#: minios-installer:449
+#: minios-installer:538
 msgid "Select Filesystem Type:"
 msgstr "Sélectionnez le type de système de fichiers :"
 
-#: minios-installer:463
+#: minios-installer:552
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -179,20 +210,24 @@ msgstr ""
 "<b>ext4</b> (meilleur choix)\n"
 "  + Stable et possède le journalisation.\n"
 "  + Performances rapides avec prise en charge des gros fichiers.\n"
-"  - Non compatible avec Windows, Mac et la plupart des périphériques matériels.\n"
+"  - Non compatible avec Windows, Mac et la plupart des périphériques "
+"matériels.\n"
 "\n"
 "<b>ext2</b>\n"
 "  + Écriture minimale, préserve la durée de vie de la mémoire flash.\n"
 "  + Structure simple, facile à récupérer.\n"
 "  - Pas de journalisation, risque accru de perte de données si débranché.\n"
-"  - Non compatible avec Windows, Mac et la plupart des périphériques matériels.\n"
+"  - Non compatible avec Windows, Mac et la plupart des périphériques "
+"matériels.\n"
 "\n"
 "<b>btrfs</b>\n"
 "  + Les instantanés permettent un retour en arrière facile.\n"
 "  + Compression intégrée pour économiser de l'espace.\n"
 "  - Une configuration complexe peut être nécessaire.\n"
-"  - Les métadonnées supplémentaires peuvent ralentir les transferts sur clé USB.\n"
-"  - Non compatible avec Windows, Mac et la plupart des périphériques matériels.\n"
+"  - Les métadonnées supplémentaires peuvent ralentir les transferts sur clé "
+"USB.\n"
+"  - Non compatible avec Windows, Mac et la plupart des périphériques "
+"matériels.\n"
 "\n"
 "<b>FAT32</b>\n"
 "  + Lisible universellement par Windows, macOS et Linux.\n"
@@ -203,149 +238,150 @@ msgstr ""
 "\n"
 "<b>NTFS</b>\n"
 "  + Prend en charge les gros fichiers et possède le journalisation.\n"
-"  + Prise en charge native de Windows ; lecture/écriture rapide sous Linux via ntfs3.\n"
+"  + Prise en charge native de Windows ; lecture/écriture rapide sous Linux "
+"via ntfs3.\n"
 "  - Non compatible avec Mac et la plupart des périphériques matériels.\n"
 "  - La persistance basée sur FUSE réduit les performances.\n"
 "\n"
 
-#: minios-installer:495
+#: minios-installer:584
 msgid "Install"
 msgstr "Installer"
 
-#: minios-installer:505
+#: minios-installer:594
 msgid "Configure MiniOS before installation"
 msgstr "Configurer MiniOS avant l'installation"
 
-#: minios-installer:569
+#: minios-installer:658
 msgid "selected device"
 msgstr "périphérique sélectionné"
 
-#: minios-installer:586
+#: minios-installer:675
 msgid "Go Back"
 msgstr "Retour"
 
-#: minios-installer:591
+#: minios-installer:680
 msgid "Continue"
 msgstr "Continuer"
 
-#: minios-installer:607
+#: minios-installer:696
 msgid "Preparing to install…"
 msgstr "Préparation de l'installation…"
 
-#: minios-installer:617 minios-installer:647
+#: minios-installer:706 minios-installer:736
 msgid "Show Log"
 msgstr "Afficher le journal"
 
-#: minios-installer:622
+#: minios-installer:711
 msgid "Cancel"
 msgstr "Annuler"
 
-#: minios-installer:643
+#: minios-installer:732
 msgid "Hide Log"
 msgstr "Masquer le journal"
 
-#: minios-installer:656
+#: minios-installer:745
 msgid "Installation canceled."
 msgstr "Installation annulée."
 
-#: minios-installer:699 minios-installer:792
+#: minios-installer:788 minios-installer:881
 msgid "Unmounting disk…"
 msgstr "Démontage du disque…"
 
-#: minios-installer:700
+#: minios-installer:789
 msgid "Erasing disk…"
 msgstr "Effacement du disque…"
 
-#: minios-installer:701
+#: minios-installer:790
 msgid "Partitioning disk…"
 msgstr "Partitionnement du disque…"
 
-#: minios-installer:702
+#: minios-installer:791
 msgid "Formatting partitions…"
 msgstr "Formatage des partitions…"
 
-#: minios-installer:703
+#: minios-installer:792
 msgid "Mounting partition…"
 msgstr "Montage de la partition…"
 
-#: minios-installer:717
+#: minios-installer:806
 msgid "Error at step “"
 msgstr "Erreur à l'étape « "
 
-#: minios-installer:717
+#: minios-installer:806
 msgid "”:"
 msgstr " » :"
 
-#: minios-installer:719 minios-installer:733 minios-installer:769
-#: minios-installer:788 minios-installer:802
+#: minios-installer:808 minios-installer:822 minios-installer:858
+#: minios-installer:877 minios-installer:891
 msgid "Installation failed: "
 msgstr "Échec de l'installation : "
 
-#: minios-installer:723
+#: minios-installer:812
 msgid "Mounting EFI partition…"
 msgstr "Montage de la partition EFI…"
 
-#: minios-installer:731
+#: minios-installer:820
 msgid "Error mounting EFI partition:"
 msgstr "Erreur lors du montage de la partition EFI :"
 
-#: minios-installer:737
+#: minios-installer:826
 msgid "Copying files…"
 msgstr "Copie des fichiers…"
 
-#: minios-installer:752
+#: minios-installer:841
 msgid "Cannot find MiniOS image."
 msgstr "Impossible de trouver l'image MiniOS."
 
-#: minios-installer:757
+#: minios-installer:846
 msgid "Copying EFI files to root…"
 msgstr "Copie des fichiers EFI à la racine…"
 
-#: minios-installer:760
+#: minios-installer:849
 msgid "Copying EFI files to ESP…"
 msgstr "Copie des fichiers EFI sur l'ESP…"
 
-#: minios-installer:767
+#: minios-installer:856
 msgid "Error during file copy:"
 msgstr "Erreur lors de la copie des fichiers :"
 
-#: minios-installer:773
+#: minios-installer:862
 msgid "Setting up bootloader…"
 msgstr "Configuration du chargeur d'amorçage…"
 
-#: minios-installer:786
+#: minios-installer:875
 msgid "Error setting up bootloader:"
 msgstr "Erreur lors de la configuration du chargeur d'amorçage :"
 
-#: minios-installer:800
+#: minios-installer:889
 msgid "Error during unmount:"
 msgstr "Erreur lors du démontage :"
 
-#: minios-installer:804
+#: minios-installer:893
 msgid "Installation complete!"
 msgstr "Installation terminée !"
 
-#: minios-installer:817
+#: minios-installer:906
 msgid "Installation Error"
 msgstr "Erreur d'installation"
 
-#: minios-installer:841
+#: minios-installer:930
 msgid "Config file not found"
 msgstr "Fichier de configuration introuvable"
 
-#: minios-installer:843
+#: minios-installer:932
 #, python-brace-format
 msgid "Standard config file not found at {src_config}."
 msgstr "Fichier de configuration standard introuvable à {src_config}."
 
-#: minios-installer:862
+#: minios-installer:951
 msgid "Launch Error"
 msgstr "Erreur de lancement"
 
-#: minios-installer:889
+#: minios-installer:978
 msgid "Root Privileges Required"
 msgstr "Privilèges root requis"
 
-#: minios-installer:891
+#: minios-installer:980
 msgid "This installer must be run as root."
 msgstr "Cet installateur doit être exécuté en tant que root."

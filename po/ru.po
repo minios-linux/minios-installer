@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-26 23:01+0300\n"
+"POT-Creation-Date: 2025-06-13 01:26+0300\n"
 "PO-Revision-Date: 2025-05-26 17:08+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
@@ -86,8 +86,8 @@ msgstr "Не удалось смонтировать "
 msgid "Failed to get size of "
 msgstr "Не удалось определить размер "
 
-#: minios-installer:271 minios-installer:272 minios-installer:314
-#: minios-installer:657
+#: minios-installer:271 minios-installer:272 minios-installer:315
+#: minios-installer:746
 msgid "Installation canceled by user."
 msgstr "Установка отменена пользователем."
 
@@ -107,43 +107,74 @@ msgstr "Создан каталог: "
 msgid "Copied EFI file: "
 msgstr "Скопирован файл EFI: "
 
-#: minios-installer:317
+#: minios-installer:319
 msgid "Entering bootloader directory: "
 msgstr "Переход в каталог загрузчика: "
 
-#: minios-installer:319
+#: minios-installer:322
 msgid "Setting up bootloader."
 msgstr "Настройка загрузчика."
 
-#: minios-installer:326
+#: minios-installer:336
+msgid "Remounted boot directory with exec."
+msgstr "Загрузочный каталог перемонтирован с правами на выполнение."
+
+#: minios-installer:338
+msgid "Failed to remount boot directory; proceeding."
+msgstr "Не удалось перемонтировать загрузочный каталог; продолжение."
+
+#: minios-installer:340
 msgid "Made extlinux executable."
 msgstr "Сделан extlinux исполняемым."
 
-#: minios-installer:329
-msgid "Ran extlinux installer."
-msgstr "Выполнена установка extlinux."
+#: minios-installer:348
+msgid "Copied extlinux to fallback: "
+msgstr "Скопирован extlinux в резервное расположение: "
 
-#: minios-installer:337
+#: minios-installer:366
+#, python-brace-format
+msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
+msgstr "Установка extlinux не удалась (код {code}), попытка резервной установки в /tmp..."
+
+#: minios-installer:381
+#, python-brace-format
+msgid "Error installing boot loader (fallback code {code})."
+msgstr "Ошибка установки загрузчика (код резервной установки {code})."
+
+#: minios-installer:384
+msgid "Boot loader installation succeeded via fallback."
+msgstr "Установка загрузчика успешно завершена с использованием резервного метода."
+
+#: minios-installer:386
+#, python-brace-format
+msgid "Ran extlinux installer (code {code})."
+msgstr "Запущен установщик extlinux (код {code})."
+
+#: minios-installer:395
 msgid "Wrote MBR to "
 msgstr "Записан MBR на "
 
-#: minios-installer:342
+#: minios-installer:422
 msgid "Set partition active: "
 msgstr "Раздел отмечен как активный: "
 
-#: minios-installer:410
+#: minios-installer:429
+msgid "Removed fallback binary: extlinux.exe."
+msgstr "Удален резервный исполняемый файл: extlinux.exe."
+
+#: minios-installer:499
 msgid "Please select a target disk and filesystem:"
 msgstr "Пожалуйста, выберите целевой диск и файловую систему:"
 
-#: minios-installer:419
+#: minios-installer:508
 msgid "Select Target Disk:"
 msgstr "Выберите целевой диск:"
 
-#: minios-installer:449
+#: minios-installer:538
 msgid "Select Filesystem Type:"
 msgstr "Выберите тип файловой системы:"
 
-#: minios-installer:463
+#: minios-installer:552
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -209,144 +240,144 @@ msgstr ""
 "  - Производительность с постоянством на базе FUSE снижена.\n"
 "\n"
 
-#: minios-installer:495
+#: minios-installer:584
 msgid "Install"
 msgstr "Установить"
 
-#: minios-installer:505
+#: minios-installer:594
 msgid "Configure MiniOS before installation"
 msgstr "Настроить MiniOS перед установкой"
 
-#: minios-installer:569
+#: minios-installer:658
 msgid "selected device"
 msgstr "выбранное устройство"
 
-#: minios-installer:586
+#: minios-installer:675
 msgid "Go Back"
 msgstr "Назад"
 
-#: minios-installer:591
+#: minios-installer:680
 msgid "Continue"
 msgstr "Продолжить"
 
-#: minios-installer:607
+#: minios-installer:696
 msgid "Preparing to install…"
 msgstr "Подготовка к установке…"
 
-#: minios-installer:617 minios-installer:647
+#: minios-installer:706 minios-installer:736
 msgid "Show Log"
 msgstr "Показать журнал"
 
-#: minios-installer:622
+#: minios-installer:711
 msgid "Cancel"
 msgstr "Отмена"
 
-#: minios-installer:643
+#: minios-installer:732
 msgid "Hide Log"
 msgstr "Скрыть журнал"
 
-#: minios-installer:656
+#: minios-installer:745
 msgid "Installation canceled."
 msgstr "Установка отменена."
 
-#: minios-installer:699 minios-installer:792
+#: minios-installer:788 minios-installer:881
 msgid "Unmounting disk…"
 msgstr "Размонтирование диска…"
 
-#: minios-installer:700
+#: minios-installer:789
 msgid "Erasing disk…"
 msgstr "Стирание диска…"
 
-#: minios-installer:701
+#: minios-installer:790
 msgid "Partitioning disk…"
 msgstr "Разметка диска…"
 
-#: minios-installer:702
+#: minios-installer:791
 msgid "Formatting partitions…"
 msgstr "Форматирование разделов…"
 
-#: minios-installer:703
+#: minios-installer:792
 msgid "Mounting partition…"
 msgstr "Монтирование раздела…"
 
-#: minios-installer:717
+#: minios-installer:806
 msgid "Error at step “"
 msgstr "Ошибка на этапе «"
 
-#: minios-installer:717
+#: minios-installer:806
 msgid "”:"
 msgstr "»:"
 
-#: minios-installer:719 minios-installer:733 minios-installer:769
-#: minios-installer:788 minios-installer:802
+#: minios-installer:808 minios-installer:822 minios-installer:858
+#: minios-installer:877 minios-installer:891
 msgid "Installation failed: "
 msgstr "Установка не удалась: "
 
-#: minios-installer:723
+#: minios-installer:812
 msgid "Mounting EFI partition…"
 msgstr "Монтирование раздела EFI…"
 
-#: minios-installer:731
+#: minios-installer:820
 msgid "Error mounting EFI partition:"
 msgstr "Ошибка при монтировании раздела EFI:"
 
-#: minios-installer:737
+#: minios-installer:826
 msgid "Copying files…"
 msgstr "Копирование файлов…"
 
-#: minios-installer:752
+#: minios-installer:841
 msgid "Cannot find MiniOS image."
 msgstr "Не удалось найти образ MiniOS."
 
-#: minios-installer:757
+#: minios-installer:846
 msgid "Copying EFI files to root…"
 msgstr "Копирование EFI-файлов в корень…"
 
-#: minios-installer:760
+#: minios-installer:849
 msgid "Copying EFI files to ESP…"
 msgstr "Копирование EFI-файлов на ESP…"
 
-#: minios-installer:767
+#: minios-installer:856
 msgid "Error during file copy:"
 msgstr "Ошибка при копировании файлов:"
 
-#: minios-installer:773
+#: minios-installer:862
 msgid "Setting up bootloader…"
 msgstr "Настройка загрузчика…"
 
-#: minios-installer:786
+#: minios-installer:875
 msgid "Error setting up bootloader:"
 msgstr "Ошибка при настройке загрузчика:"
 
-#: minios-installer:800
+#: minios-installer:889
 msgid "Error during unmount:"
 msgstr "Ошибка при размонтировании:"
 
-#: minios-installer:804
+#: minios-installer:893
 msgid "Installation complete!"
 msgstr "Установка завершена!"
 
-#: minios-installer:817
+#: minios-installer:906
 msgid "Installation Error"
 msgstr "Ошибка установки"
 
-#: minios-installer:841
+#: minios-installer:930
 msgid "Config file not found"
 msgstr "Файл конфигурации не найден"
 
-#: minios-installer:843
+#: minios-installer:932
 #, python-brace-format
 msgid "Standard config file not found at {src_config}."
 msgstr "Стандартный файл конфигурации не найден по пути {src_config}."
 
-#: minios-installer:862
+#: minios-installer:951
 msgid "Launch Error"
 msgstr "Ошибка запуска"
 
-#: minios-installer:889
+#: minios-installer:978
 msgid "Root Privileges Required"
 msgstr "Требуются права администратора"
 
-#: minios-installer:891
+#: minios-installer:980
 msgid "This installer must be run as root."
 msgstr "Этот установщик должен быть запущен от имени root."
