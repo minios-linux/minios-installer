@@ -22,7 +22,6 @@ Depends: ${misc:Depends},
          dosfstools,
          btrfs-progs,
          ntfs-3g,
-         extlinux,
          util-linux (>= 2.34),
          minios-configurator (= 2.0)
 Description: MiniOS Linux installation utility.
