@@ -309,13 +309,16 @@ def install_bootloader(device: str, primary: str, efi: str | None, progress_cb, 
     Install the EXT Linux bootloader; write MBR if needed.
     Aborts immediately if cancellation is requested.
     """
+    # Check for user cancellation
     owner = getattr(progress_cb, "__self__", None)
     if owner and owner.cancel_requested:
         raise RuntimeError(_("Installation canceled by user."))
 
+    # Prepare paths
     boot_dir = os.path.join("/mnt/install", os.path.basename(primary), "minios", "boot")
     log_cb(_("Entering bootloader directory: ") + boot_dir)
 
+    # Notify progress
     progress_cb(96, _("Setting up bootloader."))
     arch = subprocess.check_output(['uname', '-m'], text=True).strip()
     exe = 'extlinux.x64' if arch == 'x86_64' else 'extlinux.x32'
@@ -358,6 +361,7 @@ def install_bootloader(device: str, primary: str, efi: str | None, progress_cb, 
     for line in proc.stderr.splitlines():
         log_cb(line)
 
+    # If primary failed, try fallback in /tmp
     if proc.returncode != 0:
         log_cb(_("extlinux install failed (code {code}), trying fallback in /tmp...").format(code=proc.returncode))
         tmp_exe = os.path.join('/tmp', exe)
@@ -390,10 +394,41 @@ def install_bootloader(device: str, primary: str, efi: str | None, progress_cb, 
         )
         log_cb(_("Wrote MBR to ") + device + ".")
 
-        partition_number = re.sub(r'.*[^0-9]', '', primary)
-        fd_input = f"a\n{partition_number}\nw\n"
-        subprocess.run(['fdisk', device], input=fd_input, text=True, stderr=subprocess.DEVNULL)
+        # Deactivate existing active partitions
+        try:
+            fdisk_output = subprocess.check_output(['fdisk', '-l', device], text=True)
+        except subprocess.CalledProcessError:
+            fdisk_output = ""
+        old_parts = []
+        for line in fdisk_output.splitlines():
+            m = re.match(r'^(\S+)\s+\*', line)
+            if m and m.group(1).startswith(device):
+                num = re.sub(r'.*[^0-9]', '', m.group(1))
+                if num:
+                    old_parts.append(num)
+
+        # Build fdisk commands: toggle off old, toggle on new, then write
+        cmds = []
+        for old in old_parts:
+            cmds += ['a', old]
+        part_num = re.sub(r'.*[^0-9]', '', primary)
+        cmds += ['a', part_num, 'w']
+        fd_input = "\n".join(cmds) + "\n"
+        subprocess.run(
+            ['fdisk', device],
+            input=fd_input, text=True,
+            stderr=subprocess.DEVNULL
+        )
         log_cb(_("Set partition active: ") + primary + ".")
+
+    # Cleanup fallback binary if it exists in boot_dir
+    fallback = os.path.join(boot_dir, 'extlinux.exe')
+    if os.path.isfile(fallback):
+        try:
+            os.remove(fallback)
+            log_cb(_("Removed fallback binary: extlinux.exe."))
+        except OSError:
+            pass
 
 
 def apply_css_if_exists():
