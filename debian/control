@@ -23,7 +23,7 @@ Depends: ${misc:Depends},
          btrfs-progs,
          ntfs-3g,
          util-linux (>= 2.33),
-         minios-configurator (= 2.0)
+         minios-configurator (>= 2.0)
 Description: MiniOS Linux installation utility.
  MiniOS Installer is a utility specially designed for quick and easy
  install MiniOS on a USB flash drive.
