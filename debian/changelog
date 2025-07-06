@@ -1,7 +1,13 @@
+minios-installer (2.1) unstable; urgency=medium
+
+  * Add support for Python 3.7 for compatibility with Debian 10.
+
+ -- crims0n <crims0n@minios.dev>  Sun, 06 Jul 2025 13:53:01 +0300
+
 minios-installer (2.0) unstable; urgency=medium
 
-  * The installer is completely rewritten in python3.
-  * The ncurses interface has been removed.
+  * Rewrite minios-installer to Python 3 with GTK3 support.
+  * Remove ncurses interface.
 
  -- crims0n <crims0n@minios.dev>  Mon, 26 May 2025 17:35:21 +0300
 

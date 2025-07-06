@@ -21,6 +21,7 @@ import subprocess
 import threading
 import shutil
 import tempfile
+from typing import List, Tuple, Optional, Dict
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gio', '2.0')
@@ -51,7 +52,7 @@ _ = gettext.gettext
 # Helper Functions
 # ──────────────────────────────────────────────────────────────────────────────
 
-def run_command(cmd: list[str], error_message: str) -> str:
+def run_command(cmd: List[str], error_message: str) -> str:
     """
     Run subprocess.check_output(cmd). On failure, raise RuntimeError(error_message).
     """
@@ -61,7 +62,7 @@ def run_command(cmd: list[str], error_message: str) -> str:
         raise RuntimeError(error_message)
 
 
-def find_available_disks() -> list[dict]:
+def find_available_disks() -> List[Dict]:
     """
     Return a list of available block devices with name, size, model, serial, transport, icon.
     """
@@ -100,7 +101,7 @@ def find_available_disks() -> list[dict]:
     return devices
 
 
-def detect_filesystem_tools() -> list[str]:
+def detect_filesystem_tools() -> List[str]:
     """
     Detect which mkfs.* tools are available and return filesystem types.
     """
@@ -184,7 +185,7 @@ def zero_fill_disk(device: str) -> None:
         raise RuntimeError(_("Failed to erase ") + device + ".")
 
 
-def format_partitions(primary: str, fs: str, efi: str | None) -> None:
+def format_partitions(primary: str, fs: str, efi: Optional[str]) -> None:
     """
     Format the primary partition (and EFI partition if provided).
     """
@@ -217,7 +218,7 @@ def mount_partition(part: str, mount_dir: str) -> None:
         raise RuntimeError(_("Failed to mount ") + part + ".")
 
 
-def unmount_partitions(primary: str, efi: str | None, m1: str, m2: str | None) -> None:
+def unmount_partitions(primary: str, efi: Optional[str], m1: str, m2: Optional[str]) -> None:
     """
     Unmount primary and optional EFI partitions and remove mount directories.
     """
@@ -238,19 +239,17 @@ def copy_minios_files(src: str, dst: str, progress_cb, log_cb, config_override: 
     """
     total = int(run_command(['du','-b','-s',src], _("Failed to get size of ") + src + ".").split()[0])
     copied = 0
-    entries: list[tuple[str,str]] = []
+    entries: List[Tuple[str, str]] = []
     owner = getattr(progress_cb, "__self__", None)
 
     # 1) Main tree → minios/
     for root, dirs, files in os.walk(src):
         for fn in files:
             rel = os.path.relpath(os.path.join(root, fn), src)
-            # теперь пропускаем только changes/, а EFI не пропускаем
             if rel.startswith('changes/'):
                 continue
             entries.append((os.path.join('minios', rel), os.path.join(root, fn)))
 
-    # Дальше остальное без изменений...
     # 2) .disk/info
     with open('/tmp/info', 'w', encoding='utf-8') as f:
         f.write('MiniOS')
@@ -265,7 +264,6 @@ def copy_minios_files(src: str, dst: str, progress_cb, log_cb, config_override: 
         if os.path.exists(config_src):
             entries.append((config_dst, config_src))
 
-    # Копируем из entries и обновляем прогресс
     for rel, path in entries:
         if owner and owner.cancel_requested:
             log_cb(_("Installation canceled by user."))
@@ -279,7 +277,6 @@ def copy_minios_files(src: str, dst: str, progress_cb, log_cb, config_override: 
         percent = int(18 + (78 * copied / total))
         progress_cb(percent, _("Copying MiniOS files: ") + rel)
 
-    # Убедимся, что есть базовые директории
     for sub in ('boot','modules','changes','scripts'):
         p = os.path.join(dst, 'minios', sub)
         os.makedirs(p, exist_ok=True)
@@ -304,7 +301,7 @@ def copy_efi_files(src: str, dst: str, log_cb) -> None:
             log_cb(_("Copied EFI file: ") + src_path)
 
 
-def install_bootloader(device: str, primary: str, efi: str | None, progress_cb, log_cb) -> None:
+def install_bootloader(device: str, primary: str, efi: Optional[str], progress_cb, log_cb) -> None:
     """
     Install the EXT Linux bootloader; write MBR if needed.
     Aborts immediately if cancellation is requested.
@@ -590,7 +587,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.btn_install.set_margin_top(12)
         self.main_vbox.pack_start(self.btn_install, False, False, 0)
 
-        # Кнопка запуска конфигураторов
+        # Button to launch configurator
         self.btn_cfg = Gtk.Button(label=_("Configure MiniOS before installation"))
         self.btn_cfg.get_style_context().add_class('suggested-action')
         self.btn_cfg.set_margin_top(12)
