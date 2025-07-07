@@ -5,9 +5,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: minios-installer 2.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-13 01:26+0300\n"
+"Project-Id-Version: minios-installer 2.2\n"
+"Report-Msgid-Bugs-To: crims0n@minios.dev\n"
+"POT-Creation-Date: 2025-07-07 20:40+0000\n"
 "PO-Revision-Date: 2025-05-26 17:30+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Portuguese <translation-team-pt@lists.sourceforge.net>\n"
@@ -17,163 +17,117 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: minios-installer:70
-msgid "Failed to retrieve disk list."
-msgstr "Falha ao obter a lista de discos."
-
-#: minios-installer:127
-msgid "Failed to get disk size."
-msgstr "Falha ao obter o tamanho do disco."
-
-#: minios-installer:134
-msgid "Could not parse disk size."
-msgstr "Não foi possível interpretar o tamanho do disco."
-
-#: minios-installer:143
-msgid "Failed to set GPT label on "
-msgstr "Falha ao definir o rótulo GPT em "
-
-#: minios-installer:147 minios-installer:159 minios-installer:170
-msgid "Failed to create primary partition on "
-msgstr "Falha ao criar partição primária em "
-
-#: minios-installer:151
-msgid "Failed to create EFI partition on "
-msgstr "Falha ao criar partição EFI em "
-
-#: minios-installer:153 minios-installer:165
-msgid "Failed to set boot flag."
-msgstr "Falha ao definir o flag de boot."
-
-#: minios-installer:155 minios-installer:167
-msgid "Failed to set MSDOS label on "
-msgstr "Falha ao definir o rótulo MSDOS em "
-
-#: minios-installer:163
-msgid "Failed to create second partition on "
-msgstr "Falha ao criar a segunda partição em "
-
-#: minios-installer:184
-msgid "Failed to erase "
-msgstr "Falha ao apagar "
-
-#: minios-installer:192 minios-installer:194 minios-installer:196
-msgid "Failed to format "
-msgstr "Falha ao formatar "
-
-#: minios-installer:199
-msgid "Failed to format EFI "
-msgstr "Falha ao formatar EFI "
-
-#: minios-installer:207
-msgid "Destination "
-msgstr "Destino "
-
-#: minios-installer:207
-msgid " is already mounted."
-msgstr " já está montado."
-
-#: minios-installer:214
-msgid "Could not determine filesystem type of "
-msgstr "Não foi possível determinar o tipo de sistema de arquivos de "
-
-#: minios-installer:217
-msgid "Failed to mount "
-msgstr "Falha ao montar "
-
-#: minios-installer:239
-msgid "Failed to get size of "
-msgstr "Falha ao obter o tamanho de "
-
-#: minios-installer:271 minios-installer:272 minios-installer:315
-#: minios-installer:746
+#: lib/copy_utils.py:60 lib/copy_utils.py:61 lib/bootloader_utils.py:33
+#: lib/main_installer.py:377
 msgid "Installation canceled by user."
 msgstr "Instalação cancelada pelo usuário."
 
-#: minios-installer:276
-msgid "Copied file: "
-msgstr "Arquivo copiado: "
-
-#: minios-installer:280
+#: lib/copy_utils.py:70
 msgid "Copying MiniOS files: "
 msgstr "Copiando arquivos do MiniOS: "
 
-#: minios-installer:286
+#: lib/copy_utils.py:72
+msgid "Copied file: "
+msgstr "Arquivo copiado: "
+
+#: lib/copy_utils.py:79
 msgid "Created directory: "
 msgstr "Diretório criado: "
 
-#: minios-installer:304
+#: lib/copy_utils.py:97
 msgid "Copied EFI file: "
 msgstr "Arquivo EFI copiado: "
 
-#: minios-installer:319
-msgid "Entering bootloader directory: "
-msgstr "Entrando no diretório do bootloader: "
+#: lib/mount_utils.py:29
+msgid "Destination "
+msgstr "Destino "
 
-#: minios-installer:322
+#: lib/mount_utils.py:29
+msgid " is already mounted."
+msgstr " já está montado."
+
+#: lib/mount_utils.py:38
+msgid "Could not determine filesystem type of "
+msgstr "Não foi possível determinar o tipo de sistema de arquivos de "
+
+#: lib/mount_utils.py:42
+msgid "Failed to mount "
+msgstr "Falha ao montar "
+
+#: lib/bootloader_utils.py:37
+#, python-brace-format
+msgid "Entering bootloader directory: {boot_dir}"
+msgstr "Entrando no diretório do bootloader: {boot_dir}"
+
+#: lib/bootloader_utils.py:40
 msgid "Setting up bootloader."
 msgstr "Configurando o bootloader."
 
-#: minios-installer:336
+#: lib/bootloader_utils.py:54
 msgid "Remounted boot directory with exec."
-msgstr "Diretório de arranque remontado com permissão de execução."
+msgstr "Diretório de inicialização remontado com execução."
 
-#: minios-installer:338
+#: lib/bootloader_utils.py:56
 msgid "Failed to remount boot directory; proceeding."
 msgstr "Falha ao remontar o diretório de arranque; prosseguindo."
 
-#: minios-installer:340
+#: lib/bootloader_utils.py:58
 msgid "Made extlinux executable."
 msgstr "Tornado extlinux executável."
 
-#: minios-installer:348
-msgid "Copied extlinux to fallback: "
-msgstr "Copiado extlinux para o local de recurso: "
+#: lib/bootloader_utils.py:66
+#, python-brace-format
+msgid "Copied extlinux to fallback: {fallback_name}"
+msgstr "Extlinux copiado para fallback: {fallback_name}"
 
-#: minios-installer:366
+#: lib/bootloader_utils.py:84
 #, python-brace-format
 msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
-msgstr "A instalação do extlinux falhou (código {code}), a tentar o recurso em /tmp..."
+msgstr ""
+"Instalação do extlinux falhou (código {code}), tentando fallback em /tmp..."
 
-#: minios-installer:381
+#: lib/bootloader_utils.py:99
 #, python-brace-format
 msgid "Error installing boot loader (fallback code {code})."
-msgstr "Erro ao instalar o gestor de arranque (código de recurso {code})."
+msgstr ""
+"Erro ao instalar o carregador de inicialização (código de fallback {code})."
 
-#: minios-installer:384
+#: lib/bootloader_utils.py:102
 msgid "Boot loader installation succeeded via fallback."
 msgstr "Instalação do gestor de arranque bem-sucedida através do recurso."
 
-#: minios-installer:386
+#: lib/bootloader_utils.py:104
 #, python-brace-format
 msgid "Ran extlinux installer (code {code})."
 msgstr "Executado o instalador extlinux (código {code})."
 
-#: minios-installer:395
-msgid "Wrote MBR to "
-msgstr "MBR gravado em "
-
-#: minios-installer:422
-msgid "Set partition active: "
-msgstr "Partição definida como ativa: "
-
-#: minios-installer:429
+#: lib/bootloader_utils.py:116
 msgid "Removed fallback binary: extlinux.exe."
-msgstr "Removido binário de recurso: extlinux.exe."
+msgstr "Binário de fallback removido: extlinux.exe."
 
-#: minios-installer:499
+#: lib/bootloader_utils.py:130
+#, python-brace-format
+msgid "Wrote MBR to {device}."
+msgstr "MBR gravado em {device}."
+
+#: lib/bootloader_utils.py:173
+#, python-brace-format
+msgid "Set partition active: {primary}."
+msgstr "Partição definida como ativa: {primary}."
+
+#: lib/main_installer.py:127
 msgid "Please select a target disk and filesystem:"
 msgstr "Por favor, selecione um disco de destino e sistema de arquivos:"
 
-#: minios-installer:508
+#: lib/main_installer.py:136
 msgid "Select Target Disk:"
 msgstr "Selecione o disco de destino:"
 
-#: minios-installer:538
+#: lib/main_installer.py:166
 msgid "Select Filesystem Type:"
 msgstr "Selecione o tipo de sistema de arquivos:"
 
-#: minios-installer:552
+#: lib/main_installer.py:180
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -242,144 +196,201 @@ msgstr ""
 "  - Persistência baseada em FUSE reduz o desempenho.\n"
 "\n"
 
-#: minios-installer:584
+#: lib/main_installer.py:212
 msgid "Install"
 msgstr "Instalar"
 
-#: minios-installer:594
+#: lib/main_installer.py:222
 msgid "Configure MiniOS before installation"
 msgstr "Configurar o MiniOS antes da instalação"
 
-#: minios-installer:658
+#: lib/main_installer.py:282
+msgid "All data on the selected device will be lost!"
+msgstr "Todos os dados no dispositivo selecionado serão perdidos!"
+
+#: lib/main_installer.py:289
 msgid "selected device"
 msgstr "dispositivo selecionado"
 
-#: minios-installer:675
+#: lib/main_installer.py:306
 msgid "Go Back"
 msgstr "Voltar"
 
-#: minios-installer:680
+#: lib/main_installer.py:311
 msgid "Continue"
 msgstr "Continuar"
 
-#: minios-installer:696
-msgid "Preparing to install…"
-msgstr "Preparando para instalar…"
+#: lib/main_installer.py:327
+msgid "Preparing to install..."
+msgstr "Preparando para instalar..."
 
-#: minios-installer:706 minios-installer:736
+#: lib/main_installer.py:337 lib/main_installer.py:367
 msgid "Show Log"
 msgstr "Mostrar log"
 
-#: minios-installer:711
+#: lib/main_installer.py:342
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: minios-installer:732
+#: lib/main_installer.py:363
 msgid "Hide Log"
 msgstr "Ocultar log"
 
-#: minios-installer:745
+#: lib/main_installer.py:376
 msgid "Installation canceled."
 msgstr "Instalação cancelada."
 
-#: minios-installer:788 minios-installer:881
-msgid "Unmounting disk…"
-msgstr "Desmontando disco…"
+#: lib/main_installer.py:418 lib/main_installer.py:500
+msgid "Unmounting disk..."
+msgstr "Desmontando disco..."
 
-#: minios-installer:789
-msgid "Erasing disk…"
-msgstr "Apagando disco…"
+#: lib/main_installer.py:419
+msgid "Erasing disk..."
+msgstr "Apagando disco..."
 
-#: minios-installer:790
-msgid "Partitioning disk…"
-msgstr "Particionando disco…"
+#: lib/main_installer.py:420
+msgid "Partitioning disk..."
+msgstr "Particionando disco..."
 
-#: minios-installer:791
-msgid "Formatting partitions…"
-msgstr "Formatando partições…"
+#: lib/main_installer.py:421
+msgid "Formatting partitions..."
+msgstr "Formatando partições..."
 
-#: minios-installer:792
-msgid "Mounting partition…"
-msgstr "Montando partição…"
+#: lib/main_installer.py:422
+msgid "Mounting partition..."
+msgstr "Montando partição..."
 
-#: minios-installer:806
-msgid "Error at step “"
-msgstr "Erro na etapa \""
+#: lib/main_installer.py:436
+msgid "Error at step: "
+msgstr "Erro na etapa: "
 
-#: minios-installer:806
-msgid "”:"
-msgstr "\":"
-
-#: minios-installer:808 minios-installer:822 minios-installer:858
-#: minios-installer:877 minios-installer:891
+#: lib/main_installer.py:438 lib/main_installer.py:452
+#: lib/main_installer.py:477 lib/main_installer.py:496
+#: lib/main_installer.py:510
 msgid "Installation failed: "
 msgstr "Falha na instalação: "
 
-#: minios-installer:812
-msgid "Mounting EFI partition…"
-msgstr "Montando partição EFI…"
+#: lib/main_installer.py:442
+msgid "Mounting EFI partition..."
+msgstr "Montando partição EFI..."
 
-#: minios-installer:820
+#: lib/main_installer.py:450
 msgid "Error mounting EFI partition:"
 msgstr "Erro ao montar a partição EFI:"
 
-#: minios-installer:826
-msgid "Copying files…"
-msgstr "Copiando arquivos…"
+#: lib/main_installer.py:456
+msgid "Copying files..."
+msgstr "Copiando arquivos..."
 
-#: minios-installer:841
+#: lib/main_installer.py:460
 msgid "Cannot find MiniOS image."
 msgstr "Não foi possível encontrar a imagem do MiniOS."
 
-#: minios-installer:846
-msgid "Copying EFI files to root…"
-msgstr "Copiando arquivos EFI para a raiz…"
+#: lib/main_installer.py:465
+msgid "Copying EFI files to root..."
+msgstr "Copiando arquivos EFI para a raiz..."
 
-#: minios-installer:849
-msgid "Copying EFI files to ESP…"
-msgstr "Copiando arquivos EFI para ESP…"
+#: lib/main_installer.py:468
+msgid "Copying EFI files to ESP..."
+msgstr "Copiando arquivos EFI para ESP..."
 
-#: minios-installer:856
+#: lib/main_installer.py:475
 msgid "Error during file copy:"
 msgstr "Erro ao copiar arquivos:"
 
-#: minios-installer:862
-msgid "Setting up bootloader…"
-msgstr "Configurando o bootloader…"
+#: lib/main_installer.py:481
+msgid "Setting up bootloader..."
+msgstr "Configurando o bootloader..."
 
-#: minios-installer:875
+#: lib/main_installer.py:494
 msgid "Error setting up bootloader:"
 msgstr "Erro ao configurar o bootloader:"
 
-#: minios-installer:889
+#: lib/main_installer.py:508
 msgid "Error during unmount:"
 msgstr "Erro ao desmontar:"
 
-#: minios-installer:893
+#: lib/main_installer.py:512
 msgid "Installation complete!"
 msgstr "Instalação concluída!"
 
-#: minios-installer:906
+#: lib/main_installer.py:523
 msgid "Installation Error"
 msgstr "Erro de instalação"
 
-#: minios-installer:930
+#: lib/main_installer.py:541
 msgid "Config file not found"
 msgstr "Arquivo de configuração não encontrado"
 
-#: minios-installer:932
+#: lib/main_installer.py:543
 #, python-brace-format
 msgid "Standard config file not found at {src_config}."
 msgstr "Arquivo de configuração padrão não encontrado em {src_config}."
 
-#: minios-installer:951
+#: lib/main_installer.py:562
 msgid "Launch Error"
 msgstr "Erro ao iniciar"
 
-#: minios-installer:978
+#: lib/main_installer.py:589
 msgid "Root Privileges Required"
 msgstr "Privilégios de root necessários"
 
-#: minios-installer:980
+#: lib/main_installer.py:591
 msgid "This installer must be run as root."
 msgstr "Este instalador deve ser executado como root."
+
+#: lib/disk_utils.py:33
+msgid "Failed to retrieve disk list."
+msgstr "Falha ao obter a lista de discos."
+
+#: lib/disk_utils.py:42
+msgid "Failed to detect live media device"
+msgstr "Falha ao detectar dispositivo de mídia ao vivo"
+
+#: lib/disk_utils.py:47
+msgid "Failed to detect root disk"
+msgstr "Falha ao detectar disco raiz"
+
+#: lib/disk_utils.py:114
+msgid "Failed to get disk size."
+msgstr "Falha ao obter o tamanho do disco."
+
+#: lib/disk_utils.py:121
+msgid "Could not parse disk size."
+msgstr "Não foi possível interpretar o tamanho do disco."
+
+#: lib/disk_utils.py:133
+msgid "Failed to set GPT label on "
+msgstr "Falha ao definir o rótulo GPT em "
+
+#: lib/disk_utils.py:137 lib/disk_utils.py:151 lib/disk_utils.py:164
+msgid "Failed to create primary partition on "
+msgstr "Falha ao criar partição primária em "
+
+#: lib/disk_utils.py:141
+msgid "Failed to create EFI partition on "
+msgstr "Falha ao criar partição EFI em "
+
+#: lib/disk_utils.py:144 lib/disk_utils.py:158
+msgid "Failed to set boot flag."
+msgstr "Falha ao definir o flag de boot."
+
+#: lib/disk_utils.py:147 lib/disk_utils.py:161
+msgid "Failed to set MSDOS label on "
+msgstr "Falha ao definir o rótulo MSDOS em "
+
+#: lib/disk_utils.py:155
+msgid "Failed to create second partition on "
+msgstr "Falha ao criar a segunda partição em "
+
+#: lib/disk_utils.py:178
+msgid "Failed to erase "
+msgstr "Falha ao apagar "
+
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Falha ao formatar "
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Falha ao formatar EFI "
