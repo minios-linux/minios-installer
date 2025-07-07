@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Script to generate .pot translation template for minios-installer
+# This extracts translatable strings from the Python application
+
+APPNAME="minios-installer"
+POTFILE="po/messages.pot"
+
+# Find all Python source files under lib for translation
+SOURCES=$(find lib -type f -name "*.py")
+
+echo "Generating translation template ($POTFILE) for $APPNAME..."
+
+# Create po directory if it doesn't exist
+mkdir -p po
+
+# Extract translatable strings from Python source
+xgettext --language=Python \
+         --keyword=_ \
+         --keyword=N_ \
+         --add-comments=TRANSLATORS \
+         --from-code=UTF-8 \
+         --package-name="$APPNAME" \
+         --package-version="2.1" \
+         --msgid-bugs-address="crims0n@minios.dev" \
+         --copyright-holder="MiniOS Linux" \
+         --output="$POTFILE" \
+         $SOURCES
+
+if [ $? -eq 0 ]; then
+    echo "Translation template generated successfully: $POTFILE"
+else
+    echo "Error: Failed to generate translation template"
+    exit 1
+fi

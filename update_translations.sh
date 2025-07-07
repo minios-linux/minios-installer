@@ -2,15 +2,23 @@
 # Define the directory where the script is located (for running from any folder)
 SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
 
+# Change to script directory to ensure relative paths work correctly
+cd "$SCRIPT_DIR"
+
 # Script for updating messages.pot and generating .po translation files
-# for the minios-live and minios-cmd scripts.
+# for the minios-installer
 
 LANGUAGES=("ru" "pt" "pt_BR" "it" "id" "fr" "es" "de")
-SCRIPTS=("minios-installer")
 MESSAGES="po/messages.pot"
 
-echo "Generating translation template (messages.pot) for scripts..."
-xgettext --language=Python --keyword=_ --output="$MESSAGES" "${SCRIPTS[@]}"
+echo "Generating translation template using makepot..."
+# Use the makepot script to generate the .pot file with Python sources
+./makepot
+
+if [ ! -f "$MESSAGES" ]; then
+    echo "Error: Failed to generate $MESSAGES"
+    exit 1
+fi
 
 # For each language
 for lang in "${LANGUAGES[@]}"; do
