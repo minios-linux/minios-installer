@@ -5,7 +5,7 @@ MiniOS Installer
 A graphical tool for installing MiniOS onto a disk via GTK.
 
 Usage:
-    minios-installer
+    main_installer.py
 
 Copyright (C) 2025 MiniOS Linux
 Author: crims0n <crims0n@minios.dev>
@@ -13,15 +13,25 @@ Original idea: FershoUno <https://github.com/FershoUno>
 """
 
 import os
-import re
 import sys
 import gi
 import gettext
-import subprocess
 import threading
-import shutil
 import tempfile
-from typing import List, Tuple, Optional, Dict
+import shutil
+import subprocess
+from typing import Optional
+
+# Add lib directory to Python path
+sys.path.insert(0, '/usr/lib/minios-installer')
+
+# Import our library modules
+from disk_utils import find_available_disks, get_disk_size_mib
+from mount_utils import mount_partition, unmount_partitions, force_unmount_device
+from format_utils import format_partitions, check_filesystem_support, detect_filesystem_tools
+from copy_utils import copy_minios_files, copy_efi_files, find_minios_source
+from bootloader_utils import install_bootloader
+from disk_utils import partition_disk, zero_fill_disk
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gio', '2.0')
@@ -47,385 +57,6 @@ ICON_CONFIGURE   = 'preferences-system-symbolic'
 gettext.bindtextdomain(APP_NAME, LOCALE_DIRECTORY)
 gettext.textdomain(APP_NAME)
 _ = gettext.gettext
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Helper Functions
-# ──────────────────────────────────────────────────────────────────────────────
-
-def run_command(cmd: List[str], error_message: str) -> str:
-    """
-    Run subprocess.check_output(cmd). On failure, raise RuntimeError(error_message).
-    """
-    try:
-        return subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-        raise RuntimeError(error_message)
-
-
-def find_available_disks() -> List[Dict]:
-    """
-    Return a list of available block devices with name, size, model, serial, transport, icon.
-    """
-    output = run_command(
-        ['lsblk','-P','-o','NAME,SIZE,MODEL,SERIAL,ROTA,TRAN','-d','-n','-I','3,8,179,259,252'],
-        _("Failed to retrieve disk list.")
-    )
-    devices = []
-    for line in output.splitlines():
-        props = {k.lower(): v for k, v in re.findall(r'(\w+)="([^"]*)"', line)}
-        name = props.get('name')
-        if not name or name.startswith(('loop','nbd')):
-            continue
-
-        size   = props.get('size','')
-        model  = props.get('model','')
-        serial = props.get('serial','')
-        rota   = props.get('rota','0') == '1'
-        tran   = props.get('tran','')
-
-        if tran == 'usb':
-            icon = 'drive-removable-media-usb'
-        elif rota:
-            icon = 'drive-harddisk-symbolic'
-        else:
-            icon = 'media-flash-symbolic'
-
-        devices.append({
-            'name': name,
-            'size': size,
-            'model': model,
-            'serial': serial,
-            'transport': tran or ('rotational' if rota else 'non‑rotational'),
-            'icon': icon
-        })
-    return devices
-
-
-def detect_filesystem_tools() -> List[str]:
-    """
-    Detect which mkfs.* tools are available and return filesystem types.
-    """
-    fss = []
-    if shutil.which('mkfs.ext4'):
-        fss.append('ext4')
-    if shutil.which('mkfs.ext2'):
-        fss.append('ext2')
-    if shutil.which('mkfs.btrfs'):
-        fss.append('btrfs')
-    if shutil.which('mkfs.vfat'):
-        fss.append('fat32')
-    if shutil.which('mkfs.ntfs'):
-        fss.append('ntfs')
-    return fss
-
-
-def get_disk_size_mib(device: str) -> int:
-    """
-    Return disk size in MiB (integer) by parsing parted output.
-    """
-    output = run_command(
-        ['parted','-s',device,'unit','MiB','print'],
-        _("Failed to get disk size.")
-    )
-    for line in output.splitlines():
-        if device in line:
-            m = re.search(r'(\d+(?:\.\d+)?)MiB', line)
-            if m:
-                return int(float(m.group(1)))
-    raise RuntimeError(_("Could not parse disk size."))
-
-
-def partition_disk(device: str, fs: str, use_gpt: bool) -> None:
-    """
-    Partition the disk; if fs is not 'fat32', create an EFI partition.
-    """
-    efi = (fs != 'fat32')
-    if efi and use_gpt:
-        run_command(['parted','-s',device,'mklabel','gpt'], _("Failed to set GPT label on ") + device + ".")
-        size = get_disk_size_mib(device) - 100
-        run_command(
-            ['parted','-s',device,'mkpart','primary',fs,'1MiB',f'{size}MiB'],
-            _("Failed to create primary partition on ") + device + "."
-        )
-        run_command(
-            ['parted','-s',device,'mkpart','ESP','fat32',f'{size}MiB','100%'],
-            _("Failed to create EFI partition on ") + device + "."
-        )
-        run_command(['parted','-s',device,'set','2','boot','on'], _("Failed to set boot flag."))
-    elif efi:
-        run_command(['parted','-s',device,'mklabel','msdos'], _("Failed to set MSDOS label on ") + device + ".")
-        size = get_disk_size_mib(device) - 100
-        run_command(
-            ['parted','-s',device,'mkpart','primary',fs,'1MiB',f'{size}MiB'],
-            _("Failed to create primary partition on ") + device + "."
-        )
-        run_command(
-            ['parted','-s',device,'mkpart','primary','fat32',f'{size}MiB','100%'],
-            _("Failed to create second partition on ") + device + "."
-        )
-        run_command(['parted','-s',device,'set','1','boot','on'], _("Failed to set boot flag."))
-    else:
-        run_command(['parted','-s',device,'mklabel','msdos'], _("Failed to set MSDOS label on ") + device + ".")
-        run_command(
-            ['parted','-s',device,'mkpart','primary',fs,'1MiB','100%'],
-            _("Failed to create primary partition on ") + device + "."
-        )
-
-
-def zero_fill_disk(device: str) -> None:
-    """
-    Overwrite the beginning of the disk with zeros.
-    """
-    try:
-        subprocess.check_call(
-            ['dd','if=/dev/zero',f'of={device}','bs=4096','count=273','status=none'],
-            stderr=subprocess.DEVNULL
-        )
-    except subprocess.CalledProcessError:
-        raise RuntimeError(_("Failed to erase ") + device + ".")
-
-
-def format_partitions(primary: str, fs: str, efi: Optional[str]) -> None:
-    """
-    Format the primary partition (and EFI partition if provided).
-    """
-    if fs == 'fat32':
-        run_command(['mkfs.vfat', primary], _("Failed to format ") + primary + ".")
-    elif fs in ('btrfs','ntfs','exfat'):
-        run_command([f'mkfs.{fs}','-f',primary], _("Failed to format ") + primary + ".")
-    else:
-        run_command([f'mkfs.{fs}','-F',primary], _("Failed to format ") + primary + ".")
-
-    if efi:
-        run_command(['mkfs.vfat', efi], _("Failed to format EFI ") + efi + ".")
-
-
-def mount_partition(part: str, mount_dir: str) -> None:
-    """
-    Mount the partition to mount_dir, creating or clearing the directory first.
-    """
-    if os.path.ismount(mount_dir):
-        raise RuntimeError(_("Destination ") + mount_dir + _(" is already mounted."))
-    if os.path.isdir(mount_dir) and os.listdir(mount_dir):
-        shutil.rmtree(mount_dir, ignore_errors=True)
-    os.makedirs(mount_dir, exist_ok=True)
-
-    fs_type = run_command(
-        ['blkid','-o','value','-s','TYPE',part],
-        _("Could not determine filesystem type of ") + part + "."
-    ).strip()
-    if subprocess.call(['mount','-t',fs_type,part,mount_dir]) != 0:
-        raise RuntimeError(_("Failed to mount ") + part + ".")
-
-
-def unmount_partitions(primary: str, efi: Optional[str], m1: str, m2: Optional[str]) -> None:
-    """
-    Unmount primary and optional EFI partitions and remove mount directories.
-    """
-    for part, mnt in ((primary, m1), (efi, m2)):
-        if part and subprocess.call(['grep','-qs',part,'/proc/mounts']) == 0:
-            subprocess.call(['umount', part])
-            if mnt and os.path.isdir(mnt):
-                try:
-                    os.rmdir(mnt)
-                except Exception:
-                    pass
-
-
-def copy_minios_files(src: str, dst: str, progress_cb, log_cb, config_override: str = None) -> None:
-    """
-    Copy all MiniOS files (including boot/EFI) from src → dst/minios/...
-    If config_override is given, use it as minios/config.conf.
-    """
-    total = int(run_command(['du','-b','-s',src], _("Failed to get size of ") + src + ".").split()[0])
-    copied = 0
-    entries: List[Tuple[str, str]] = []
-    owner = getattr(progress_cb, "__self__", None)
-
-    # 1) Main tree → minios/
-    for root, dirs, files in os.walk(src):
-        for fn in files:
-            rel = os.path.relpath(os.path.join(root, fn), src)
-            if rel.startswith('changes/'):
-                continue
-            entries.append((os.path.join('minios', rel), os.path.join(root, fn)))
-
-    # 2) .disk/info
-    with open('/tmp/info', 'w', encoding='utf-8') as f:
-        f.write('MiniOS')
-    entries.append(('.disk/info', '/tmp/info'))
-
-    # 3) config.conf
-    config_dst = 'minios/config.conf'
-    if config_override and os.path.exists(config_override):
-        entries.append((config_dst, config_override))
-    else:
-        config_src = '/etc/live/config.conf'
-        if os.path.exists(config_src):
-            entries.append((config_dst, config_src))
-
-    for rel, path in entries:
-        if owner and owner.cancel_requested:
-            log_cb(_("Installation canceled by user."))
-            raise RuntimeError(_("Installation canceled by user."))
-        dest = os.path.join(dst, rel)
-        os.makedirs(os.path.dirname(dest), exist_ok=True)
-        shutil.copy2(path, dest)
-        log_cb(_("Copied file: ") + path)
-        size = os.path.getsize(path)
-        copied += size
-        percent = int(18 + (78 * copied / total))
-        progress_cb(percent, _("Copying MiniOS files: ") + rel)
-
-    for sub in ('boot','modules','changes','scripts'):
-        p = os.path.join(dst, 'minios', sub)
-        os.makedirs(p, exist_ok=True)
-        log_cb(_("Created directory: ") + p)
-
-
-def copy_efi_files(src: str, dst: str, log_cb) -> None:
-    """
-    Copy EFI files from src/boot/EFI → dst/EFI/...
-    """
-    efi_dir = os.path.join(src, 'boot', 'EFI')
-    if not os.path.isdir(efi_dir):
-        return
-
-    for root, dirs, files in os.walk(efi_dir):
-        for fn in files:
-            rel = os.path.relpath(os.path.join(root, fn), efi_dir)
-            src_path = os.path.join(root, fn)
-            dest_path = os.path.join(dst, 'EFI', rel)
-            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-            shutil.copy2(src_path, dest_path)
-            log_cb(_("Copied EFI file: ") + src_path)
-
-
-def install_bootloader(device: str, primary: str, efi: Optional[str], progress_cb, log_cb) -> None:
-    """
-    Install the EXT Linux bootloader; write MBR if needed.
-    Aborts immediately if cancellation is requested.
-    """
-    # Check for user cancellation
-    owner = getattr(progress_cb, "__self__", None)
-    if owner and owner.cancel_requested:
-        raise RuntimeError(_("Installation canceled by user."))
-
-    # Prepare paths
-    boot_dir = os.path.join("/mnt/install", os.path.basename(primary), "minios", "boot")
-    log_cb(_("Entering bootloader directory: ") + boot_dir)
-
-    # Notify progress
-    progress_cb(96, _("Setting up bootloader."))
-    arch = subprocess.check_output(['uname', '-m'], text=True).strip()
-    exe = 'extlinux.x64' if arch == 'x86_64' else 'extlinux.x32'
-    exe_path = os.path.join(boot_dir, exe)
-
-    # Check if EXTLINUX is executable; try remount+chmod if not
-    if not os.access(exe_path, os.X_OK):
-        try:
-            subprocess.run(
-                ['mount', '-o', 'remount,exec', boot_dir],
-                cwd=boot_dir,
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                check=True
-            )
-            log_cb(_("Remounted boot directory with exec."))
-        except subprocess.CalledProcessError:
-            log_cb(_("Failed to remount boot directory; proceeding."))
-        os.chmod(exe_path, 0o755)
-        log_cb(_("Made extlinux executable."))
-
-    # If still not executable, copy to extlinux.exe and adjust exe/exe_path
-    if not os.access(exe_path, os.X_OK):
-        fallback_name = 'extlinux.exe'
-        fallback_path = os.path.join(boot_dir, fallback_name)
-        shutil.copy2(exe_path, fallback_path)
-        os.chmod(fallback_path, 0o755)
-        log_cb(_("Copied extlinux to fallback: ") + fallback_name)
-        exe = fallback_name
-        exe_path = fallback_path
-
-    # Try primary extlinux install, logging output line by line
-    proc = subprocess.run(
-        [exe_path, '--install', boot_dir],
-        cwd=boot_dir,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        text=True
-    )
-    for line in proc.stdout.splitlines():
-        log_cb(line)
-    for line in proc.stderr.splitlines():
-        log_cb(line)
-
-    # If primary failed, try fallback in /tmp
-    if proc.returncode != 0:
-        log_cb(_("extlinux install failed (code {code}), trying fallback in /tmp...").format(code=proc.returncode))
-        tmp_exe = os.path.join('/tmp', exe)
-        shutil.copy2(exe_path, tmp_exe)
-        os.chmod(tmp_exe, 0o755)
-        proc2 = subprocess.run(
-            [tmp_exe, '--install', boot_dir],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True
-        )
-        for line in proc2.stdout.splitlines():
-            log_cb(line)
-        for line in proc2.stderr.splitlines():
-            log_cb(line)
-
-        if proc2.returncode != 0:
-            raise RuntimeError(_("Error installing boot loader (fallback code {code}).").format(code=proc2.returncode))
-        else:
-            os.remove(tmp_exe)
-            log_cb(_("Boot loader installation succeeded via fallback."))
-    else:
-        log_cb(_("Ran extlinux installer (code {code}).").format(code=proc.returncode))
-
-    # Write MBR and set active partition if needed
-    if device != primary:
-        mbr = os.path.join(boot_dir, 'mbr.bin')
-        subprocess.check_call(
-            ['dd', 'bs=440', 'count=1', 'conv=notrunc', f'if={mbr}', f'of={device}'],
-            stderr=subprocess.DEVNULL
-        )
-        log_cb(_("Wrote MBR to ") + device + ".")
-
-        # Deactivate existing active partitions
-        try:
-            fdisk_output = subprocess.check_output(['fdisk', '-l', device], text=True)
-        except subprocess.CalledProcessError:
-            fdisk_output = ""
-        old_parts = []
-        for line in fdisk_output.splitlines():
-            m = re.match(r'^(\S+)\s+\*', line)
-            if m and m.group(1).startswith(device):
-                num = re.sub(r'.*[^0-9]', '', m.group(1))
-                if num:
-                    old_parts.append(num)
-
-        # Build fdisk commands: toggle off old, toggle on new, then write
-        cmds = []
-        for old in old_parts:
-            cmds += ['a', old]
-        part_num = re.sub(r'.*[^0-9]', '', primary)
-        cmds += ['a', part_num, 'w']
-        fd_input = "\n".join(cmds) + "\n"
-        subprocess.run(
-            ['fdisk', device],
-            input=fd_input, text=True,
-            stderr=subprocess.DEVNULL
-        )
-        log_cb(_("Set partition active: ") + primary + ".")
-
-    # Cleanup fallback binary if it exists in boot_dir
-    fallback = os.path.join(boot_dir, 'extlinux.exe')
-    if os.path.isfile(fallback):
-        try:
-            os.remove(fallback)
-            log_cb(_("Removed fallback binary: extlinux.exe."))
-        except OSError:
-            pass
 
 
 def apply_css_if_exists():
@@ -462,7 +93,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.p1 = None
         self.m1 = None
         self.config_path = None
-        self.temp_config_path = None  # путь к временному конфигу
+        self.temp_config_path = None
 
         self.main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         for m in ("set_margin_top","set_margin_bottom","set_margin_start","set_margin_end"):
@@ -646,6 +277,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._show_erase_warning()
 
     def _show_erase_warning(self):
+        # xgettext doesn't recognize f-strings, so we duplicate _(...)
+        # before using an f-string to ensure the string is extracted for translation
+        _("All data on the selected device will be lost!")
         # Remove all widgets from main_vbox
         for child in self.main_vbox.get_children():
             self.main_vbox.remove(child)
@@ -690,7 +324,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         for child in self.main_vbox.get_children():
             self.main_vbox.remove(child)
 
-        self.lbl_status = Gtk.Label(label=_("Preparing to install…"), xalign=0)
+        self.lbl_status = Gtk.Label(label=_("Preparing to install..."), xalign=0)
         self.lbl_status.set_line_wrap(True)
         self.lbl_status.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
         self.main_vbox.pack_start(self.lbl_status, False, False, 0)
@@ -762,7 +396,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
         # Always schedule _append_log on the GTK main loop
         GLib.idle_add(self._append_log, message)
 
-
     def _run_install_sequence(self):
         dev = self.selected_device
         fs  = self.selected_filesystem
@@ -782,11 +415,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.config_path = config_override or '/etc/live/config.conf'
 
         steps = [
-            ( 0,  _("Unmounting disk…"),       lambda: unmount_partitions(p1, p2, m1, m2)),
-            ( 2,  _("Erasing disk…"),          lambda: zero_fill_disk(dev)),
-            ( 4,  _("Partitioning disk…"),     lambda: partition_disk(dev, fs, use_gpt)),
-            ( 8,  _("Formatting partitions…"), lambda: format_partitions(p1, fs, p2 if self.create_efi else None)),
-            (15,  _("Mounting partition…"),    lambda: mount_partition(p1, m1)),
+            ( 0,  _("Unmounting disk..."),       lambda: unmount_partitions(p1, p2, m1, m2)),
+            ( 2,  _("Erasing disk..."),          lambda: zero_fill_disk(dev)),
+            ( 4,  _("Partitioning disk..."),     lambda: partition_disk(dev, fs, use_gpt)),
+            ( 8,  _("Formatting partitions..."), lambda: format_partitions(p1, fs, p2 if self.create_efi else None)),
+            (15,  _("Mounting partition..."),    lambda: mount_partition(p1, m1)),
         ]
 
         for percent, message, func in steps:
@@ -800,13 +433,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
                     return
                 import traceback
                 tb = traceback.format_exc()
-                GLib.idle_add(self._append_log, _("Error at step “") + message + _("”:"))
+                GLib.idle_add(self._append_log, _("Error at step: ") + message)
                 GLib.idle_add(self._append_log, tb)
                 GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
                 return
 
         if self.create_efi and not self.cancel_requested:
-            self._report_progress(18, _("Mounting EFI partition…"))
+            self._report_progress(18, _("Mounting EFI partition..."))
             try:
                 mount_partition(p2, m2)
             except Exception as e:
@@ -820,19 +453,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 return
 
         if not self.cancel_requested:
-            self._report_progress(18, _("Copying files…"))
-            candidates = [
-                "/run/initramfs/memory/data/minios",
-                "/run/initramfs/memory/iso/minios",
-                "/run/initramfs/memory/toram",
-                "/run/initramfs/memory/data/from/0/minios"
-            ]
-            src = next(
-                (c for c in candidates
-                 if os.path.isdir(c)
-                 and os.path.exists(os.path.join(c, "boot", "vmlinuz"))),
-                None
-            )
+            self._report_progress(18, _("Copying files..."))
+            src = find_minios_source()
             if not src:
                 if not self.cancel_requested:
                     GLib.idle_add(self._show_error, _("Cannot find MiniOS image."))
@@ -840,10 +462,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
             try:
                 copy_minios_files(src, m1, self._report_progress, self._log_async, config_override)
                 if not self.create_efi:
-                    self._report_progress(50, _("Copying EFI files to root…"))
+                    self._report_progress(50, _("Copying EFI files to root..."))
                     copy_efi_files(src, m1, self._log_async)
                 elif self.create_efi:
-                    self._report_progress(50, _("Copying EFI files to ESP…"))
+                    self._report_progress(50, _("Copying EFI files to ESP..."))
                     copy_efi_files(src, m2, self._log_async)
             except Exception as e:
                 if self.cancel_requested:
@@ -856,7 +478,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 return
 
         if not use_gpt and fs != 'exfat' and not self.cancel_requested:
-            self._report_progress(96, _("Setting up bootloader…"))
+            self._report_progress(96, _("Setting up bootloader..."))
             try:
                 install_bootloader(
                     dev, p1,
@@ -875,7 +497,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 return
 
         if not self.cancel_requested:
-            self._report_progress(98, _("Unmounting disk…"))
+            self._report_progress(98, _("Unmounting disk..."))
             try:
                 unmount_partitions(p1, p2, m1, m2)
             except Exception as e:
@@ -890,8 +512,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self._report_progress(100, _("Installation complete!"))
             # Disable the Cancel button since installation has finished
             GLib.idle_add(self.btn_cancel.set_sensitive, False)
-            # Add Launch Configurator button
-            GLib.idle_add(self._add_config_button)
 
     def _show_error(self, message: str):
         dlg = Gtk.MessageDialog(
@@ -905,12 +525,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
         dlg.format_secondary_text(message)
         dlg.run()
         dlg.destroy()
-    
-    def _add_config_button(self):
-        """
-        Больше не нужна, оставляем пустой метод для совместимости вызова
-        """
-        pass
 
     def _on_launch_configurator(self, button):
         """

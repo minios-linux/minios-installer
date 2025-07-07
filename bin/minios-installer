@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# MiniOS Installer Launcher
+# This script launches the main installer Python application
+#
+
+set -e
+
+TERM=xterm
+
+DIR=/usr/lib/minios-installer
+
+$DIR/main_installer.py "$@"
