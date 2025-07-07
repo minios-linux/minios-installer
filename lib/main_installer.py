@@ -26,7 +26,7 @@ from typing import Optional
 sys.path.insert(0, '/usr/lib/minios-installer')
 
 # Import our library modules
-from disk_utils import find_available_disks, get_disk_size_mib
+from disk_utils import find_available_disks, get_disk_size_mib, start_disk_monitoring, stop_disk_monitoring, pause_disk_monitoring, resume_disk_monitoring
 from mount_utils import mount_partition, unmount_partitions, force_unmount_device
 from format_utils import format_partitions, check_filesystem_support, detect_filesystem_tools
 from copy_utils import copy_minios_files, copy_efi_files, find_minios_source
@@ -107,7 +107,50 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._build_header_bar()
         self._build_selection_ui()
 
-        self.connect("destroy", lambda w: application.quit())
+        # Start disk monitoring
+        start_disk_monitoring(self._refresh_disk_list)
+
+        self.connect("destroy", self._on_destroy)
+
+    def _on_destroy(self, widget):
+        stop_disk_monitoring(self._refresh_disk_list)
+        self.get_application().quit()
+
+    def _refresh_disk_list(self):
+        selected_path = self.selected_device
+
+        # Clear existing rows
+        for child in self.disk_list.get_children():
+            self.disk_list.remove(child)
+
+        new_row_to_select = None
+        # Repopulate the list
+        for dev in find_available_disks():
+            row = Gtk.ListBoxRow()
+            h = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            img = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name=dev['icon']), Gtk.IconSize.DIALOG)
+            h.pack_start(img, False, False, 0)
+            text = f"<b>{dev['name']}</b> ({dev['size']})"
+            if dev['model']:
+                text += f" \u2014 {GLib.markup_escape_text(dev['model'])}"
+            lbl_dev = Gtk.Label()
+            lbl_dev.set_markup(text)
+            lbl_dev.set_xalign(0)
+            h.pack_start(lbl_dev, True, True, 0)
+            row.add(h)
+            row.device = f"/dev/{dev['name']}"
+            self.disk_list.add(row)
+            if row.device == selected_path:
+                new_row_to_select = row
+
+        self.disk_list.show_all()
+
+        if new_row_to_select:
+            self.disk_list.select_row(new_row_to_select)
+        else:
+            self.selected_device = None
+            if hasattr(self, 'btn_install'):
+                self._update_install_sensitive()
 
     # ──────────────────────────────────────────────────────────────────────────
     # UI construction
@@ -138,21 +181,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.disk_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.SINGLE)
         self.disk_list.connect("row-selected", self._on_disk_selected)
 
-        for dev in find_available_disks():
-            row = Gtk.ListBoxRow()
-            h = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            img = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name=dev['icon']), Gtk.IconSize.DIALOG)
-            h.pack_start(img, False, False, 0)
-            text = f"<b>{dev['name']}</b> ({dev['size']})"
-            if dev['model']:
-                text += f" \u2014 {GLib.markup_escape_text(dev['model'])}"
-            lbl_dev = Gtk.Label()
-            lbl_dev.set_markup(text)
-            lbl_dev.set_xalign(0)
-            h.pack_start(lbl_dev, True, True, 0)
-            row.add(h)
-            row.device = f"/dev/{dev['name']}"
-            self.disk_list.add(row)
+        self._refresh_disk_list()
 
         sw = Gtk.ScrolledWindow()
         sw.set_min_content_width(350)
@@ -269,8 +298,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._update_install_sensitive()
 
     def _update_install_sensitive(self):
-        ok = bool(self.selected_device and self.selected_filesystem)
-        self.btn_install.set_sensitive(ok)
+        if hasattr(self, 'btn_install'):
+            ok = bool(self.selected_device and self.selected_filesystem)
+            self.btn_install.set_sensitive(ok)
 
     def _on_install_clicked(self, button):
         # Show confirmation warning before proceeding
@@ -317,6 +347,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.show_all()
 
     def _on_confirm_install(self, button):
+        pause_disk_monitoring()
         self._build_progress_ui()
         threading.Thread(target=self._run_install_sequence, daemon=True).start()
 
@@ -397,121 +428,124 @@ class InstallerWindow(Gtk.ApplicationWindow):
         GLib.idle_add(self._append_log, message)
 
     def _run_install_sequence(self):
-        dev = self.selected_device
-        fs  = self.selected_filesystem
-        use_gpt = self.use_gpt
-        if dev.startswith("/dev/nvme") or dev.startswith("/dev/mmcblk"):
-            # For NVMe and MMC devices, use partition names like nvme0n1p1
-            p1, p2 = f"{dev}p1", f"{dev}p2"
-        else:
-            p1, p2 = f"{dev}1", f"{dev}2"
-        m1 = f"/mnt/install/{os.path.basename(p1)}"
-        m2 = f"/mnt/install/{os.path.basename(p2)}" if self.create_efi else None
+        try:
+            dev = self.selected_device
+            fs  = self.selected_filesystem
+            use_gpt = self.use_gpt
+            if dev.startswith("/dev/nvme") or dev.startswith("/dev/mmcblk"):
+                # For NVMe and MMC devices, use partition names like nvme0n1p1
+                p1, p2 = f"{dev}p1", f"{dev}p2"
+            else:
+                p1, p2 = f"{dev}1", f"{dev}2"
+            m1 = f"/mnt/install/{os.path.basename(p1)}"
+            m2 = f"/mnt/install/{os.path.basename(p2)}" if self.create_efi else None
 
-        self.p1 = p1
-        self.m1 = m1
-        # Use temporary config if available, otherwise use standard
-        config_override = self.temp_config_path if (self.temp_config_path and os.path.exists(self.temp_config_path)) else None
-        self.config_path = config_override or '/etc/live/config.conf'
+            self.p1 = p1
+            self.m1 = m1
+            # Use temporary config if available, otherwise use standard
+            config_override = self.temp_config_path if (self.temp_config_path and os.path.exists(self.temp_config_path)) else None
+            self.config_path = config_override or '/etc/live/config.conf'
 
-        steps = [
-            ( 0,  _("Unmounting disk..."),       lambda: unmount_partitions(p1, p2, m1, m2)),
-            ( 2,  _("Erasing disk..."),          lambda: zero_fill_disk(dev)),
-            ( 4,  _("Partitioning disk..."),     lambda: partition_disk(dev, fs, use_gpt)),
-            ( 8,  _("Formatting partitions..."), lambda: format_partitions(p1, fs, p2 if self.create_efi else None)),
-            (15,  _("Mounting partition..."),    lambda: mount_partition(p1, m1)),
-        ]
+            steps = [
+                ( 0,  _("Unmounting disk..."),       lambda: unmount_partitions(p1, p2, m1, m2)),
+                ( 2,  _("Erasing disk..."),          lambda: zero_fill_disk(dev)),
+                ( 4,  _("Partitioning disk..."),     lambda: partition_disk(dev, fs, use_gpt)),
+                ( 8,  _("Formatting partitions..."), lambda: format_partitions(p1, fs, p2 if self.create_efi else None)),
+                (15,  _("Mounting partition..."),    lambda: mount_partition(p1, m1)),
+            ]
 
-        for percent, message, func in steps:
-            if self.cancel_requested:
-                return
-            self._report_progress(percent, message)
-            try:
-                func()
-            except Exception as e:
+            for percent, message, func in steps:
                 if self.cancel_requested:
                     return
-                import traceback
-                tb = traceback.format_exc()
-                GLib.idle_add(self._append_log, _("Error at step: ") + message)
-                GLib.idle_add(self._append_log, tb)
-                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
-                return
-
-        if self.create_efi and not self.cancel_requested:
-            self._report_progress(18, _("Mounting EFI partition..."))
-            try:
-                mount_partition(p2, m2)
-            except Exception as e:
-                if self.cancel_requested:
+                self._report_progress(percent, message)
+                try:
+                    func()
+                except Exception as e:
+                    if self.cancel_requested:
+                        return
+                    import traceback
+                    tb = traceback.format_exc()
+                    GLib.idle_add(self._append_log, _("Error at step: ") + message)
+                    GLib.idle_add(self._append_log, tb)
+                    GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
                     return
-                import traceback
-                tb = traceback.format_exc()
-                GLib.idle_add(self._append_log, _("Error mounting EFI partition:"))
-                GLib.idle_add(self._append_log, tb)
-                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
-                return
 
-        if not self.cancel_requested:
-            self._report_progress(18, _("Copying files..."))
-            src = find_minios_source()
-            if not src:
-                if not self.cancel_requested:
-                    GLib.idle_add(self._show_error, _("Cannot find MiniOS image."))
-                return
-            try:
-                copy_minios_files(src, m1, self._report_progress, self._log_async, config_override)
-                if not self.create_efi:
-                    self._report_progress(50, _("Copying EFI files to root..."))
-                    copy_efi_files(src, m1, self._log_async)
-                elif self.create_efi:
-                    self._report_progress(50, _("Copying EFI files to ESP..."))
-                    copy_efi_files(src, m2, self._log_async)
-            except Exception as e:
-                if self.cancel_requested:
+            if self.create_efi and not self.cancel_requested:
+                self._report_progress(18, _("Mounting EFI partition..."))
+                try:
+                    mount_partition(p2, m2)
+                except Exception as e:
+                    if self.cancel_requested:
+                        return
+                    import traceback
+                    tb = traceback.format_exc()
+                    GLib.idle_add(self._append_log, _("Error mounting EFI partition:"))
+                    GLib.idle_add(self._append_log, tb)
+                    GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
                     return
-                import traceback
-                tb = traceback.format_exc()
-                GLib.idle_add(self._append_log, _("Error during file copy:"))
-                GLib.idle_add(self._append_log, tb)
-                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
-                return
 
-        if not use_gpt and fs != 'exfat' and not self.cancel_requested:
-            self._report_progress(96, _("Setting up bootloader..."))
-            try:
-                install_bootloader(
-                    dev, p1,
-                    p2 if self.create_efi else None,
-                    self._report_progress,
-                    self._log_async
-                )
-            except Exception as e:
-                if self.cancel_requested:
+            if not self.cancel_requested:
+                self._report_progress(18, _("Copying files..."))
+                src = find_minios_source()
+                if not src:
+                    if not self.cancel_requested:
+                        GLib.idle_add(self._show_error, _("Cannot find MiniOS image."))
                     return
-                import traceback
-                tb = traceback.format_exc()
-                GLib.idle_add(self._append_log, _("Error setting up bootloader:"))
-                GLib.idle_add(self._append_log, tb)
-                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
-                return
+                try:
+                    copy_minios_files(src, m1, self._report_progress, self._log_async, config_override)
+                    if not self.create_efi:
+                        self._report_progress(50, _("Copying EFI files to root..."))
+                        copy_efi_files(src, m1, self._log_async)
+                    elif self.create_efi:
+                        self._report_progress(50, _("Copying EFI files to ESP..."))
+                        copy_efi_files(src, m2, self._log_async)
+                except Exception as e:
+                    if self.cancel_requested:
+                        return
+                    import traceback
+                    tb = traceback.format_exc()
+                    GLib.idle_add(self._append_log, _("Error during file copy:"))
+                    GLib.idle_add(self._append_log, tb)
+                    GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
+                    return
 
-        if not self.cancel_requested:
-            self._report_progress(98, _("Unmounting disk..."))
-            try:
-                unmount_partitions(p1, p2, m1, m2)
-            except Exception as e:
-                if self.cancel_requested:
+            if not use_gpt and fs != 'exfat' and not self.cancel_requested:
+                self._report_progress(96, _("Setting up bootloader..."))
+                try:
+                    install_bootloader(
+                        dev, p1,
+                        p2 if self.create_efi else None,
+                        self._report_progress,
+                        self._log_async
+                    )
+                except Exception as e:
+                    if self.cancel_requested:
+                        return
+                    import traceback
+                    tb = traceback.format_exc()
+                    GLib.idle_add(self._append_log, _("Error setting up bootloader:"))
+                    GLib.idle_add(self._append_log, tb)
+                    GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
                     return
-                import traceback
-                tb = traceback.format_exc()
-                GLib.idle_add(self._append_log, _("Error during unmount:"))
-                GLib.idle_add(self._append_log, tb)
-                GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
-                return
-            self._report_progress(100, _("Installation complete!"))
-            # Disable the Cancel button since installation has finished
-            GLib.idle_add(self.btn_cancel.set_sensitive, False)
+
+            if not self.cancel_requested:
+                self._report_progress(98, _("Unmounting disk..."))
+                try:
+                    unmount_partitions(p1, p2, m1, m2)
+                except Exception as e:
+                    if self.cancel_requested:
+                        return
+                    import traceback
+                    tb = traceback.format_exc()
+                    GLib.idle_add(self._append_log, _("Error during unmount:"))
+                    GLib.idle_add(self._append_log, tb)
+                    GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
+                    return
+                self._report_progress(100, _("Installation complete!"))
+                # Disable the Cancel button since installation has finished
+                GLib.idle_add(self.btn_cancel.set_sensitive, False)
+        finally:
+            resume_disk_monitoring()
 
     def _show_error(self, message: str):
         dlg = Gtk.MessageDialog(

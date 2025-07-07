@@ -13,8 +13,12 @@ import re
 import subprocess
 import json
 import gettext
-from typing import List, Dict, Optional
+import gi
+from typing import List, Dict, Optional, Callable
 from command_utils import run_command
+
+gi.require_version('UDisks', '2.0')
+from gi.repository import UDisks, GLib
 
 
 # Set up gettext for localization
@@ -176,3 +180,93 @@ def zero_fill_disk(device: str) -> None:
         )
     except subprocess.CalledProcessError:
         raise RuntimeError(_("Failed to erase ") + device + ".")
+
+
+class DiskMonitor:
+    """
+    Monitor disk changes using UDisks2 and notify callbacks when changes occur.
+    """
+    
+    def __init__(self):
+        self.udisks_client = None
+        self.listener_id = None
+        self.callbacks = []
+        
+    def start_monitoring(self, callback: Callable[[], None]) -> None:
+        """
+        Start monitoring disk changes and call the callback when changes occur.
+        """
+        if callback not in self.callbacks:
+            self.callbacks.append(callback)
+            
+        if self.udisks_client is None:
+            self.udisks_client = UDisks.Client.new_sync()
+            self.listener_id = self.udisks_client.connect("changed", self._on_disks_changed)
+    
+    def stop_monitoring(self, callback: Callable[[], None] = None) -> None:
+        """
+        Stop monitoring disk changes. If callback is provided, remove only that callback.
+        If no callback provided, remove all callbacks and stop monitoring.
+        """
+        if callback and callback in self.callbacks:
+            self.callbacks.remove(callback)
+        elif callback is None:
+            self.callbacks.clear()
+            
+        if not self.callbacks and self.udisks_client and self.listener_id:
+            self.udisks_client.disconnect(self.listener_id)
+            self.udisks_client = None
+            self.listener_id = None
+    
+    def pause_monitoring(self) -> None:
+        """
+        Temporarily pause monitoring (useful during disk operations).
+        """
+        if self.udisks_client and self.listener_id:
+            self.udisks_client.handler_block(self.listener_id)
+    
+    def resume_monitoring(self) -> None:
+        """
+        Resume monitoring after pause.
+        """
+        if self.udisks_client and self.listener_id:
+            self.udisks_client.handler_unblock(self.listener_id)
+    
+    def _on_disks_changed(self, client, *args) -> None:
+        """
+        Internal callback when UDisks detects changes.
+        """
+        for callback in self.callbacks:
+            GLib.idle_add(callback)
+
+
+# Global disk monitor instance
+_disk_monitor = DiskMonitor()
+
+
+def start_disk_monitoring(callback: Callable[[], None]) -> None:
+    """
+    Start monitoring disk changes globally.
+    """
+    _disk_monitor.start_monitoring(callback)
+
+
+def stop_disk_monitoring(callback: Callable[[], None] = None) -> None:
+    """
+    Stop monitoring disk changes globally.
+    """
+    _disk_monitor.stop_monitoring(callback)
+
+
+def pause_disk_monitoring() -> None:
+    """
+    Pause disk monitoring globally.
+    """
+    _disk_monitor.pause_monitoring()
+
+
+def resume_disk_monitoring() -> None:
+    """
+    Resume disk monitoring globally.
+    """
+    _disk_monitor.resume_monitoring()
