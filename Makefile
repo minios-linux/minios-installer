@@ -18,13 +18,9 @@ build: mo
 
 mo: $(MO_FILES)
 
-makepot:
-	@echo "Generating translation template..."
-	./makepot
-
-update-po: makepot
+update-po: update-po
 	@echo "Updating translation files..."
-	./update_translations.sh
+	./update-po.sh
 
 %.mo: %.po
 	@echo "Generating mo file for $<"
@@ -55,4 +51,4 @@ install: build
 		install -Dm644 "$$MO_FILE" "$(DESTDIR)/usr/share/locale/$$LOCALE/LC_MESSAGES/minios-installer.mo"; \
 	done
 
-.PHONY: build mo makepot update-po clean install
+.PHONY: build mo update-po clean install

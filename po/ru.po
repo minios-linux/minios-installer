@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
-"Report-Msgid-Bugs-To: crims0n@minios.dev\n"
-"POT-Creation-Date: 2025-07-07 20:40+0000\n"
+"Report-Msgid-Bugs-To: support@minios.dev\n"
+"POT-Creation-Date: 2025-07-08 16:13+0000\n"
 "PO-Revision-Date: 2025-05-26 17:08+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: lib/copy_utils.py:60 lib/copy_utils.py:61 lib/bootloader_utils.py:33
-#: lib/main_installer.py:377
+#: lib/main_installer.py:583
 msgid "Installation canceled by user."
 msgstr "Установка отменена пользователем."
 
@@ -116,19 +116,51 @@ msgstr "Записан MBR на {device}."
 msgid "Set partition active: {primary}."
 msgstr "Раздел отмечен как активный: {primary}."
 
-#: lib/main_installer.py:127
+#: lib/main_installer.py:169
+msgid "USB Device"
+msgstr "USB-устройство"
+
+#: lib/main_installer.py:171
+msgid "SATA Drive"
+msgstr "SATA-накопитель"
+
+#: lib/main_installer.py:173
+msgid "IDE Drive"
+msgstr "IDE-накопитель"
+
+#: lib/main_installer.py:175
+msgid "NVMe SSD"
+msgstr "NVMe SSD"
+
+#: lib/main_installer.py:177
+msgid "MMC/SD Card"
+msgstr "MMC/SD-карта"
+
+#: lib/main_installer.py:179
+msgid "Hard Disk Drive"
+msgstr "Жесткий диск"
+
+#: lib/main_installer.py:219
+msgid "Warning: This appears to be a system disk"
+msgstr "Предупреждение: это, похоже, системный диск"
+
+#: lib/main_installer.py:223
+msgid "Warning: This disk has mounted partitions"
+msgstr "Предупреждение: на этом диске есть смонтированные разделы"
+
+#: lib/main_installer.py:256
 msgid "Please select a target disk and filesystem:"
 msgstr "Пожалуйста, выберите целевой диск и файловую систему:"
 
-#: lib/main_installer.py:136
+#: lib/main_installer.py:265
 msgid "Select Target Disk:"
 msgstr "Выберите целевой диск:"
 
-#: lib/main_installer.py:166
+#: lib/main_installer.py:282
 msgid "Select Filesystem Type:"
 msgstr "Выберите тип файловой системы:"
 
-#: lib/main_installer.py:180
+#: lib/main_installer.py:296
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -194,194 +226,222 @@ msgstr ""
 "  - Производительность с постоянством на базе FUSE снижена.\n"
 "\n"
 
-#: lib/main_installer.py:212
+#: lib/main_installer.py:328
 msgid "Install"
 msgstr "Установить"
 
-#: lib/main_installer.py:222
+#: lib/main_installer.py:338
 msgid "Configure MiniOS before installation"
 msgstr "Настроить MiniOS перед установкой"
 
-#: lib/main_installer.py:282
-msgid "All data on the selected device will be lost!"
-msgstr "Все данные на выбранном устройстве будут потеряны!"
+#: lib/main_installer.py:399
+msgid "WARNING: This action is irreversible!"
+msgstr "ВНИМАНИЕ: это действие необратимо!"
 
-#: lib/main_installer.py:289
+#: lib/main_installer.py:400
+msgid "Device information:"
+msgstr "Информация об устройстве:"
+
+#: lib/main_installer.py:401
+msgid "What will be erased:"
+msgstr "Что будет стерто:"
+
+#: lib/main_installer.py:409
 msgid "selected device"
 msgstr "выбранное устройство"
 
-#: lib/main_installer.py:306
+#: lib/main_installer.py:481
+msgid "Files, documents, and applications"
+msgstr "Файлы, документы и приложения"
+
+#: lib/main_installer.py:482
+msgid "Operating systems"
+msgstr "Операционные системы"
+
+#: lib/main_installer.py:483
+msgid "Personal data and settings"
+msgstr "Личные данные и настройки"
+
+#: lib/main_installer.py:484
+msgid "All partitions and file systems"
+msgstr "Все разделы и файловые системы"
+
+#: lib/main_installer.py:511
 msgid "Go Back"
 msgstr "Назад"
 
-#: lib/main_installer.py:311
+#: lib/main_installer.py:516
 msgid "Continue"
 msgstr "Продолжить"
 
-#: lib/main_installer.py:327
+#: lib/main_installer.py:533
 msgid "Preparing to install..."
 msgstr "Подготовка к установке..."
 
-#: lib/main_installer.py:337 lib/main_installer.py:367
+#: lib/main_installer.py:543 lib/main_installer.py:573
 msgid "Show Log"
 msgstr "Показать журнал"
 
-#: lib/main_installer.py:342
+#: lib/main_installer.py:548
 msgid "Cancel"
 msgstr "Отмена"
 
-#: lib/main_installer.py:363
+#: lib/main_installer.py:569
 msgid "Hide Log"
 msgstr "Скрыть журнал"
 
-#: lib/main_installer.py:376
+#: lib/main_installer.py:582
 msgid "Installation canceled."
 msgstr "Установка отменена."
 
-#: lib/main_installer.py:418 lib/main_installer.py:500
+#: lib/main_installer.py:589
+msgid "Restart Installation"
+msgstr "Перезапустить установку"
+
+#: lib/main_installer.py:637 lib/main_installer.py:719
 msgid "Unmounting disk..."
 msgstr "Размонтирование диска..."
 
-#: lib/main_installer.py:419
+#: lib/main_installer.py:638
 msgid "Erasing disk..."
 msgstr "Стирание диска..."
 
-#: lib/main_installer.py:420
+#: lib/main_installer.py:639
 msgid "Partitioning disk..."
 msgstr "Разметка диска..."
 
-#: lib/main_installer.py:421
+#: lib/main_installer.py:640
 msgid "Formatting partitions..."
 msgstr "Форматирование разделов..."
 
-#: lib/main_installer.py:422
+#: lib/main_installer.py:641
 msgid "Mounting partition..."
 msgstr "Монтирование раздела..."
 
-#: lib/main_installer.py:436
+#: lib/main_installer.py:655
 msgid "Error at step: "
 msgstr "Ошибка на шаге: "
 
-#: lib/main_installer.py:438 lib/main_installer.py:452
-#: lib/main_installer.py:477 lib/main_installer.py:496
-#: lib/main_installer.py:510
+#: lib/main_installer.py:657 lib/main_installer.py:671
+#: lib/main_installer.py:696 lib/main_installer.py:715
+#: lib/main_installer.py:729
 msgid "Installation failed: "
 msgstr "Установка не удалась: "
 
-#: lib/main_installer.py:442
+#: lib/main_installer.py:661
 msgid "Mounting EFI partition..."
 msgstr "Монтирование раздела EFI..."
 
-#: lib/main_installer.py:450
+#: lib/main_installer.py:669
 msgid "Error mounting EFI partition:"
 msgstr "Ошибка при монтировании раздела EFI:"
 
-#: lib/main_installer.py:456
+#: lib/main_installer.py:675
 msgid "Copying files..."
 msgstr "Копирование файлов..."
 
-#: lib/main_installer.py:460
+#: lib/main_installer.py:679
 msgid "Cannot find MiniOS image."
 msgstr "Не удалось найти образ MiniOS."
 
-#: lib/main_installer.py:465
+#: lib/main_installer.py:684
 msgid "Copying EFI files to root..."
 msgstr "Копирование EFI-файлов в корень..."
 
-#: lib/main_installer.py:468
+#: lib/main_installer.py:687
 msgid "Copying EFI files to ESP..."
 msgstr "Копирование EFI-файлов на ESP..."
 
-#: lib/main_installer.py:475
+#: lib/main_installer.py:694
 msgid "Error during file copy:"
 msgstr "Ошибка при копировании файлов:"
 
-#: lib/main_installer.py:481
+#: lib/main_installer.py:700
 msgid "Setting up bootloader..."
 msgstr "Настройка загрузчика..."
 
-#: lib/main_installer.py:494
+#: lib/main_installer.py:713
 msgid "Error setting up bootloader:"
 msgstr "Ошибка при настройке загрузчика:"
 
-#: lib/main_installer.py:508
+#: lib/main_installer.py:727
 msgid "Error during unmount:"
 msgstr "Ошибка при размонтировании:"
 
-#: lib/main_installer.py:512
+#: lib/main_installer.py:731
 msgid "Installation complete!"
 msgstr "Установка завершена!"
 
-#: lib/main_installer.py:523
+#: lib/main_installer.py:744
 msgid "Installation Error"
 msgstr "Ошибка установки"
 
-#: lib/main_installer.py:541
+#: lib/main_installer.py:762
 msgid "Config file not found"
 msgstr "Файл конфигурации не найден"
 
-#: lib/main_installer.py:543
+#: lib/main_installer.py:764
 #, python-brace-format
 msgid "Standard config file not found at {src_config}."
 msgstr "Стандартный файл конфигурации не найден по пути {src_config}."
 
-#: lib/main_installer.py:562
+#: lib/main_installer.py:783
 msgid "Launch Error"
 msgstr "Ошибка запуска"
 
-#: lib/main_installer.py:589
+#: lib/main_installer.py:810
 msgid "Root Privileges Required"
 msgstr "Требуются права администратора"
 
-#: lib/main_installer.py:591
+#: lib/main_installer.py:812
 msgid "This installer must be run as root."
 msgstr "Этот установщик должен быть запущен от имени root."
 
-#: lib/disk_utils.py:33
+#: lib/disk_utils.py:87
 msgid "Failed to retrieve disk list."
 msgstr "Не удалось получить список дисков."
 
-#: lib/disk_utils.py:42
+#: lib/disk_utils.py:96
 msgid "Failed to detect live media device"
 msgstr "Не удалось обнаружить устройство загрузочного носителя"
 
-#: lib/disk_utils.py:47
+#: lib/disk_utils.py:101
 msgid "Failed to detect root disk"
 msgstr "Не удалось обнаружить корневой диск"
 
-#: lib/disk_utils.py:114
+#: lib/disk_utils.py:168
 msgid "Failed to get disk size."
 msgstr "Не удалось определить размер диска."
 
-#: lib/disk_utils.py:121
+#: lib/disk_utils.py:175
 msgid "Could not parse disk size."
 msgstr "Не удалось распознать размер диска."
 
-#: lib/disk_utils.py:133
+#: lib/disk_utils.py:187
 msgid "Failed to set GPT label on "
 msgstr "Не удалось установить метку GPT на "
 
-#: lib/disk_utils.py:137 lib/disk_utils.py:151 lib/disk_utils.py:164
+#: lib/disk_utils.py:191 lib/disk_utils.py:205 lib/disk_utils.py:218
 msgid "Failed to create primary partition on "
 msgstr "Не удалось создать основной раздел на "
 
-#: lib/disk_utils.py:141
+#: lib/disk_utils.py:195
 msgid "Failed to create EFI partition on "
 msgstr "Не удалось создать раздел EFI на "
 
-#: lib/disk_utils.py:144 lib/disk_utils.py:158
+#: lib/disk_utils.py:198 lib/disk_utils.py:212
 msgid "Failed to set boot flag."
 msgstr "Не удалось установить загрузочный флаг."
 
-#: lib/disk_utils.py:147 lib/disk_utils.py:161
+#: lib/disk_utils.py:201 lib/disk_utils.py:215
 msgid "Failed to set MSDOS label on "
 msgstr "Не удалось установить метку MSDOS на "
 
-#: lib/disk_utils.py:155
+#: lib/disk_utils.py:209
 msgid "Failed to create second partition on "
 msgstr "Не удалось создать второй раздел на "
 
-#: lib/disk_utils.py:178
+#: lib/disk_utils.py:232
 msgid "Failed to erase "
 msgstr "Не удалось стереть "
 
@@ -392,3 +452,6 @@ msgstr "Не удалось отформатировать "
 #: lib/format_utils.py:51
 msgid "Failed to format EFI "
 msgstr "Не удалось отформатировать EFI "
+
+#~ msgid "All data on the selected device will be lost!"
+#~ msgstr "Все данные на выбранном устройстве будут потеряны!"

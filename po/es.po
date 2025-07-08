@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
-"Report-Msgid-Bugs-To: crims0n@minios.dev\n"
-"POT-Creation-Date: 2025-07-07 20:40+0000\n"
+"Report-Msgid-Bugs-To: support@minios.dev\n"
+"POT-Creation-Date: 2025-07-08 16:13+0000\n"
 "PO-Revision-Date: 2025-05-26 17:18+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/copy_utils.py:60 lib/copy_utils.py:61 lib/bootloader_utils.py:33
-#: lib/main_installer.py:377
+#: lib/main_installer.py:583
 msgid "Installation canceled by user."
 msgstr "Instalación cancelada por el usuario."
 
@@ -115,19 +115,51 @@ msgstr "MBR escrito en {device}."
 msgid "Set partition active: {primary}."
 msgstr "Partición marcada como activa: {primary}."
 
-#: lib/main_installer.py:127
+#: lib/main_installer.py:169
+msgid "USB Device"
+msgstr "Dispositivo USB"
+
+#: lib/main_installer.py:171
+msgid "SATA Drive"
+msgstr "Disco SATA"
+
+#: lib/main_installer.py:173
+msgid "IDE Drive"
+msgstr "Disco IDE"
+
+#: lib/main_installer.py:175
+msgid "NVMe SSD"
+msgstr "SSD NVMe"
+
+#: lib/main_installer.py:177
+msgid "MMC/SD Card"
+msgstr "Tarjeta MMC/SD"
+
+#: lib/main_installer.py:179
+msgid "Hard Disk Drive"
+msgstr "Disco duro"
+
+#: lib/main_installer.py:219
+msgid "Warning: This appears to be a system disk"
+msgstr "Advertencia: este parece ser un disco del sistema"
+
+#: lib/main_installer.py:223
+msgid "Warning: This disk has mounted partitions"
+msgstr "Advertencia: este disco tiene particiones montadas"
+
+#: lib/main_installer.py:256
 msgid "Please select a target disk and filesystem:"
 msgstr "Por favor, seleccione un disco de destino y sistema de archivos:"
 
-#: lib/main_installer.py:136
+#: lib/main_installer.py:265
 msgid "Select Target Disk:"
 msgstr "Seleccione el disco de destino:"
 
-#: lib/main_installer.py:166
+#: lib/main_installer.py:282
 msgid "Select Filesystem Type:"
 msgstr "Seleccione el tipo de sistema de archivos:"
 
-#: lib/main_installer.py:180
+#: lib/main_installer.py:296
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -196,194 +228,222 @@ msgstr ""
 "  - La persistencia basada en FUSE reduce el rendimiento.\n"
 "\n"
 
-#: lib/main_installer.py:212
+#: lib/main_installer.py:328
 msgid "Install"
 msgstr "Instalar"
 
-#: lib/main_installer.py:222
+#: lib/main_installer.py:338
 msgid "Configure MiniOS before installation"
 msgstr "Configurar MiniOS antes de la instalación"
 
-#: lib/main_installer.py:282
-msgid "All data on the selected device will be lost!"
-msgstr "¡Todos los datos en el dispositivo seleccionado se perderán!"
+#: lib/main_installer.py:399
+msgid "WARNING: This action is irreversible!"
+msgstr "¡ADVERTENCIA: esta acción es irreversible!"
 
-#: lib/main_installer.py:289
+#: lib/main_installer.py:400
+msgid "Device information:"
+msgstr "Información del dispositivo:"
+
+#: lib/main_installer.py:401
+msgid "What will be erased:"
+msgstr "Lo que se borrará:"
+
+#: lib/main_installer.py:409
 msgid "selected device"
 msgstr "dispositivo seleccionado"
 
-#: lib/main_installer.py:306
+#: lib/main_installer.py:481
+msgid "Files, documents, and applications"
+msgstr "Archivos, documentos y aplicaciones"
+
+#: lib/main_installer.py:482
+msgid "Operating systems"
+msgstr "Sistemas operativos"
+
+#: lib/main_installer.py:483
+msgid "Personal data and settings"
+msgstr "Datos personales y configuraciones"
+
+#: lib/main_installer.py:484
+msgid "All partitions and file systems"
+msgstr "Todas las particiones y sistemas de archivos"
+
+#: lib/main_installer.py:511
 msgid "Go Back"
 msgstr "Volver"
 
-#: lib/main_installer.py:311
+#: lib/main_installer.py:516
 msgid "Continue"
 msgstr "Continuar"
 
-#: lib/main_installer.py:327
+#: lib/main_installer.py:533
 msgid "Preparing to install..."
 msgstr "Preparando la instalación..."
 
-#: lib/main_installer.py:337 lib/main_installer.py:367
+#: lib/main_installer.py:543 lib/main_installer.py:573
 msgid "Show Log"
 msgstr "Mostrar registro"
 
-#: lib/main_installer.py:342
+#: lib/main_installer.py:548
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: lib/main_installer.py:363
+#: lib/main_installer.py:569
 msgid "Hide Log"
 msgstr "Ocultar registro"
 
-#: lib/main_installer.py:376
+#: lib/main_installer.py:582
 msgid "Installation canceled."
 msgstr "Instalación cancelada."
 
-#: lib/main_installer.py:418 lib/main_installer.py:500
+#: lib/main_installer.py:589
+msgid "Restart Installation"
+msgstr "Reiniciar instalación"
+
+#: lib/main_installer.py:637 lib/main_installer.py:719
 msgid "Unmounting disk..."
 msgstr "Desmontando disco..."
 
-#: lib/main_installer.py:419
+#: lib/main_installer.py:638
 msgid "Erasing disk..."
 msgstr "Borrando disco..."
 
-#: lib/main_installer.py:420
+#: lib/main_installer.py:639
 msgid "Partitioning disk..."
 msgstr "Particionando disco..."
 
-#: lib/main_installer.py:421
+#: lib/main_installer.py:640
 msgid "Formatting partitions..."
 msgstr "Formateando particiones..."
 
-#: lib/main_installer.py:422
+#: lib/main_installer.py:641
 msgid "Mounting partition..."
 msgstr "Montando partición..."
 
-#: lib/main_installer.py:436
+#: lib/main_installer.py:655
 msgid "Error at step: "
 msgstr "Error en el paso: "
 
-#: lib/main_installer.py:438 lib/main_installer.py:452
-#: lib/main_installer.py:477 lib/main_installer.py:496
-#: lib/main_installer.py:510
+#: lib/main_installer.py:657 lib/main_installer.py:671
+#: lib/main_installer.py:696 lib/main_installer.py:715
+#: lib/main_installer.py:729
 msgid "Installation failed: "
 msgstr "La instalación falló: "
 
-#: lib/main_installer.py:442
+#: lib/main_installer.py:661
 msgid "Mounting EFI partition..."
 msgstr "Montando partición EFI..."
 
-#: lib/main_installer.py:450
+#: lib/main_installer.py:669
 msgid "Error mounting EFI partition:"
 msgstr "Error al montar la partición EFI:"
 
-#: lib/main_installer.py:456
+#: lib/main_installer.py:675
 msgid "Copying files..."
 msgstr "Copiando archivos..."
 
-#: lib/main_installer.py:460
+#: lib/main_installer.py:679
 msgid "Cannot find MiniOS image."
 msgstr "No se puede encontrar la imagen de MiniOS."
 
-#: lib/main_installer.py:465
+#: lib/main_installer.py:684
 msgid "Copying EFI files to root..."
 msgstr "Copiando archivos EFI a la raíz..."
 
-#: lib/main_installer.py:468
+#: lib/main_installer.py:687
 msgid "Copying EFI files to ESP..."
 msgstr "Copiando archivos EFI a ESP..."
 
-#: lib/main_installer.py:475
+#: lib/main_installer.py:694
 msgid "Error during file copy:"
 msgstr "Error durante la copia de archivos:"
 
-#: lib/main_installer.py:481
+#: lib/main_installer.py:700
 msgid "Setting up bootloader..."
 msgstr "Configurando el gestor de arranque..."
 
-#: lib/main_installer.py:494
+#: lib/main_installer.py:713
 msgid "Error setting up bootloader:"
 msgstr "Error al configurar el gestor de arranque:"
 
-#: lib/main_installer.py:508
+#: lib/main_installer.py:727
 msgid "Error during unmount:"
 msgstr "Error al desmontar:"
 
-#: lib/main_installer.py:512
+#: lib/main_installer.py:731
 msgid "Installation complete!"
 msgstr "¡Instalación completa!"
 
-#: lib/main_installer.py:523
+#: lib/main_installer.py:744
 msgid "Installation Error"
 msgstr "Error de instalación"
 
-#: lib/main_installer.py:541
+#: lib/main_installer.py:762
 msgid "Config file not found"
 msgstr "Archivo de configuración no encontrado"
 
-#: lib/main_installer.py:543
+#: lib/main_installer.py:764
 #, python-brace-format
 msgid "Standard config file not found at {src_config}."
 msgstr "Archivo de configuración estándar no encontrado en {src_config}."
 
-#: lib/main_installer.py:562
+#: lib/main_installer.py:783
 msgid "Launch Error"
 msgstr "Error de inicio"
 
-#: lib/main_installer.py:589
+#: lib/main_installer.py:810
 msgid "Root Privileges Required"
 msgstr "Se requieren privilegios de root"
 
-#: lib/main_installer.py:591
+#: lib/main_installer.py:812
 msgid "This installer must be run as root."
 msgstr "Este instalador debe ejecutarse como root."
 
-#: lib/disk_utils.py:33
+#: lib/disk_utils.py:87
 msgid "Failed to retrieve disk list."
 msgstr "No se pudo obtener la lista de discos."
 
-#: lib/disk_utils.py:42
+#: lib/disk_utils.py:96
 msgid "Failed to detect live media device"
 msgstr "No se pudo detectar el dispositivo de medios en vivo"
 
-#: lib/disk_utils.py:47
+#: lib/disk_utils.py:101
 msgid "Failed to detect root disk"
 msgstr "No se pudo detectar el disco raíz"
 
-#: lib/disk_utils.py:114
+#: lib/disk_utils.py:168
 msgid "Failed to get disk size."
 msgstr "No se pudo obtener el tamaño del disco."
 
-#: lib/disk_utils.py:121
+#: lib/disk_utils.py:175
 msgid "Could not parse disk size."
 msgstr "No se pudo analizar el tamaño del disco."
 
-#: lib/disk_utils.py:133
+#: lib/disk_utils.py:187
 msgid "Failed to set GPT label on "
 msgstr "No se pudo establecer la etiqueta GPT en "
 
-#: lib/disk_utils.py:137 lib/disk_utils.py:151 lib/disk_utils.py:164
+#: lib/disk_utils.py:191 lib/disk_utils.py:205 lib/disk_utils.py:218
 msgid "Failed to create primary partition on "
 msgstr "No se pudo crear la partición primaria en "
 
-#: lib/disk_utils.py:141
+#: lib/disk_utils.py:195
 msgid "Failed to create EFI partition on "
 msgstr "No se pudo crear la partición EFI en "
 
-#: lib/disk_utils.py:144 lib/disk_utils.py:158
+#: lib/disk_utils.py:198 lib/disk_utils.py:212
 msgid "Failed to set boot flag."
 msgstr "No se pudo establecer el indicador de arranque."
 
-#: lib/disk_utils.py:147 lib/disk_utils.py:161
+#: lib/disk_utils.py:201 lib/disk_utils.py:215
 msgid "Failed to set MSDOS label on "
 msgstr "No se pudo establecer la etiqueta MSDOS en "
 
-#: lib/disk_utils.py:155
+#: lib/disk_utils.py:209
 msgid "Failed to create second partition on "
 msgstr "No se pudo crear la segunda partición en "
 
-#: lib/disk_utils.py:178
+#: lib/disk_utils.py:232
 msgid "Failed to erase "
 msgstr "No se pudo borrar "
 
@@ -394,3 +454,6 @@ msgstr "No se pudo formatear "
 #: lib/format_utils.py:51
 msgid "Failed to format EFI "
 msgstr "No se pudo formatear EFI "
+
+#~ msgid "All data on the selected device will be lost!"
+#~ msgstr "¡Todos los datos en el dispositivo seleccionado se perderán!"
