@@ -6,7 +6,23 @@
   <icon_name>usb-creator-gtk</icon_name>
   <action id="org.minios.installer.install">
     <description>Install MiniOS</description>
+    <description xml:lang="de">MiniOS installieren</description>
+    <description xml:lang="es">Instalar MiniOS</description>
+    <description xml:lang="fr">Installer MiniOS</description>
+    <description xml:lang="id">Instal MiniOS</description>
+    <description xml:lang="it">Installa MiniOS</description>
+    <description xml:lang="pt">Instalar MiniOS</description>
+    <description xml:lang="pt_BR">Instalar MiniOS</description>
+    <description xml:lang="ru">Установить MiniOS</description>
     <message>Authentication is required to run MiniOS Installer</message>
+    <message xml:lang="de">Authentifizierung ist erforderlich, um MiniOS Installer auszuführen</message>
+    <message xml:lang="es">Se requiere autenticación para ejecutar el instalador de MiniOS</message>
+    <message xml:lang="fr">L'authentification est requise pour exécuter l'installateur MiniOS</message>
+    <message xml:lang="id">Autentikasi diperlukan untuk menjalankan MiniOS Installer</message>
+    <message xml:lang="it">È richiesta l'autenticazione per eseguire l'installer di MiniOS</message>
+    <message xml:lang="pt">Autenticação é necessária para executar o instalador MiniOS</message>
+    <message xml:lang="pt_BR">Autenticação é necessária para executar o instalador MiniOS</message>
+    <message xml:lang="ru">Для запуска установщика MiniOS требуется аутентификация</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
