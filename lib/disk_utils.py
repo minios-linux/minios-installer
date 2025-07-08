@@ -27,6 +27,56 @@ gettext.textdomain('minios-installer')
 _ = gettext.gettext
 
 
+def format_size_to_gb(size_str: str) -> str:
+    """
+    Convert size string from lsblk to GB format.
+    Examples: "10G" -> "10 GB", "500M" -> "0.5 GB", "2T" -> "2000 GB"
+    """
+    if not size_str:
+        return "? GB"
+    
+    # Remove any whitespace
+    size_str = size_str.strip()
+    
+    # Extract number and unit
+    import re
+    match = re.match(r'([0-9.]+)([KMGTPB]?)', size_str.upper())
+    if not match:
+        return size_str  # Return original if can't parse
+    
+    number_str, unit = match.groups()
+    try:
+        number = float(number_str)
+    except ValueError:
+        return size_str  # Return original if can't parse number
+    
+    # Convert to GB
+    if unit == 'B' or unit == '':
+        gb = number / (1024 ** 3)
+    elif unit == 'K':
+        gb = number / (1024 ** 2)
+    elif unit == 'M':
+        gb = number / 1024
+    elif unit == 'G':
+        gb = number
+    elif unit == 'T':
+        gb = number * 1024
+    elif unit == 'P':
+        gb = number * 1024 * 1024
+    else:
+        return size_str  # Unknown unit
+    
+    # Format the result
+    if gb >= 1000:
+        return f"{gb:.0f} GB"
+    elif gb >= 100:
+        return f"{gb:.0f} GB"
+    elif gb >= 10:
+        return f"{gb:.1f} GB"
+    else:
+        return f"{gb:.2f} GB"
+
+
 def find_available_disks() -> List[Dict]:
     """
     Return a list of available block devices with name, size, model, serial, transport, icon.
@@ -63,7 +113,7 @@ def find_available_disks() -> List[Dict]:
         if name == root_disk or not name or name.startswith(('loop','nbd')):
             continue
 
-        size   = props.get('size','')
+        size   = format_size_to_gb(props.get('size',''))
         model  = props.get('model','')
         serial = props.get('serial','')
         rota   = props.get('rota','0') == '1'

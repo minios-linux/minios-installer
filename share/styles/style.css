@@ -32,3 +32,53 @@ button.destructive-action {
 button.destructive-action:disabled {
     padding: 10px 16px;
 }
+
+listbox row {
+    border-radius: 8px;
+    margin: 2px;
+    padding: 4px;
+}
+
+/* Warning dialog frame styling */
+frame {
+    border-radius: 8px;
+    padding: 4px;
+}
+
+frame > label {
+    font-weight: bold;
+    margin: 4px;
+}
+
+/* Device info styling */
+.device-info {
+    padding: 8px;
+    margin: 4px;
+    border-radius: 6px;
+}
+
+.risk-item {
+    padding: 4px;
+    margin: 2px;
+    border-radius: 4px;
+}
+
+/* Warning styling */
+.warning-text {
+    font-weight: bold;
+}
+
+.info-text {
+    font-size: smaller;
+}
+
+/* Button spacing */
+button {
+    margin: 0px;
+}
+
+/* Scrolled window styling */
+scrolledwindow {
+    border-radius: 6px;
+    border: 1px solid;
+}

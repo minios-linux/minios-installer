@@ -127,18 +127,104 @@ class InstallerWindow(Gtk.ApplicationWindow):
         # Repopulate the list
         for dev in find_available_disks():
             row = Gtk.ListBoxRow()
-            h = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            img = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name=dev['icon']), Gtk.IconSize.DIALOG)
-            h.pack_start(img, False, False, 0)
-            text = f"<b>{dev['name']}</b> ({dev['size']})"
+            row.set_margin_top(8)
+            row.set_margin_bottom(8)
+            row.set_margin_start(12)
+            row.set_margin_end(12)
+            
+            # Main horizontal container
+            main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+            
+            # Device icon
+            img = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name=dev['icon']), Gtk.IconSize.DND)
+            main_box.pack_start(img, False, False, 0)
+            
+            # Device information container
+            info_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            info_box.set_hexpand(True)
+            
+            # Primary line: Device name and size
+            primary_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            
+            device_label = Gtk.Label()
+            device_label.set_markup(f'<b><span size="large" weight="regular">/dev/{GLib.markup_escape_text(dev["name"])}</span></b>')
+            device_label.set_halign(Gtk.Align.START)
+            primary_box.pack_start(device_label, False, False, 0)
+            
+            size_label = Gtk.Label()
+            size_label.set_markup(f'<span size="medium" weight="bold">{GLib.markup_escape_text(dev["size"])}</span>')
+            size_label.set_halign(Gtk.Align.CENTER)
+            primary_box.pack_end(size_label, False, False, 0)
+            
+            info_box.pack_start(primary_box, False, False, 0)
+            
+            # Secondary line: Model and additional info
+            secondary_info = []
             if dev['model']:
-                text += f" \u2014 {GLib.markup_escape_text(dev['model'])}"
-            lbl_dev = Gtk.Label()
-            lbl_dev.set_markup(text)
-            lbl_dev.set_xalign(0)
-            h.pack_start(lbl_dev, True, True, 0)
-            row.add(h)
-            row.device = f"/dev/{dev['name']}"
+                secondary_info.append(GLib.markup_escape_text(dev['model']))
+            
+            transport = dev.get('transport', '')
+            if transport and transport != 'non‑rotational':
+                if transport == 'usb':
+                    secondary_info.append(_("USB Device"))
+                elif transport == 'sata':
+                    secondary_info.append(_("SATA Drive"))
+                elif transport == 'ata':
+                    secondary_info.append(_("IDE Drive"))
+                elif transport == 'nvme':
+                    secondary_info.append(_("NVMe SSD"))
+                elif transport == 'mmc':
+                    secondary_info.append(_("MMC/SD Card"))
+                elif transport == 'rotational':
+                    secondary_info.append(_("Hard Disk Drive"))
+                else:
+                    secondary_info.append(transport.upper())
+            
+            if dev.get('serial'):
+                secondary_info.append(f"S/N: {GLib.markup_escape_text(dev['serial'][:16])}{'...' if len(dev['serial']) > 16 else ''}")
+            
+            if secondary_info:
+                secondary_label = Gtk.Label()
+                secondary_text = " • ".join(secondary_info)
+                secondary_label.set_markup(f'<span size="small" color="#666666">{secondary_text}</span>')
+                secondary_label.set_halign(Gtk.Align.START)
+                secondary_label.set_ellipsize(Pango.EllipsizeMode.END)
+                info_box.pack_start(secondary_label, False, False, 0)
+            
+            main_box.pack_start(info_box, True, True, 0)
+            
+            # Warning indicator for system disks or mounted devices
+            device_path = f"/dev/{dev['name']}"
+            try:
+                # Check if this might be a system disk or mounted device
+                is_system = False
+                is_mounted = False
+                lsblk_output = subprocess.run(
+                    ['lsblk', '-n', '-o', 'MOUNTPOINT', device_path],
+                    capture_output=True, text=True, timeout=5
+                ).stdout
+                
+                # Check for MiniOS system disk
+                if '/run/initramfs/memory/data' in lsblk_output:
+                    is_system = True
+                # Check if any partition is mounted
+                elif lsblk_output.strip() and not lsblk_output.strip() == '':
+                    is_mounted = True
+            except:
+                is_system = False
+                is_mounted = False
+                
+            if is_system:
+                warning_icon = Gtk.Image.new_from_icon_name("dialog-warning", Gtk.IconSize.MENU)
+                warning_icon.set_tooltip_text(_("Warning: This appears to be a system disk"))
+                main_box.pack_start(warning_icon, False, False, 0)
+            elif is_mounted:
+                mounted_icon = Gtk.Image.new_from_icon_name("dialog-warning", Gtk.IconSize.MENU)
+                mounted_icon.set_tooltip_text(_("Warning: This disk has mounted partitions"))
+                main_box.pack_start(mounted_icon, False, False, 0)
+            
+            row.add(main_box)
+            row.device = device_path
             self.disk_list.add(row)
             if row.device == selected_path:
                 new_row_to_select = row
@@ -185,6 +271,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         sw = Gtk.ScrolledWindow()
         sw.set_min_content_width(350)
+        sw.set_min_content_height(200)
         sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         sw.add(self.disk_list)
         vb_disk.pack_start(sw, True, True, 0)
@@ -250,7 +337,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         # Button to launch configurator
         self.btn_cfg = Gtk.Button(label=_("Configure MiniOS before installation"))
         self.btn_cfg.get_style_context().add_class('suggested-action')
-        self.btn_cfg.set_margin_top(12)
+        self.btn_cfg.set_margin_top(0)
         self.btn_cfg.set_image(Gtk.Image.new_from_icon_name(ICON_CONFIGURE, Gtk.IconSize.BUTTON))
         self.btn_cfg.set_always_show_image(True)
         self.btn_cfg.connect("clicked", self._on_launch_configurator)
@@ -309,7 +396,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _show_erase_warning(self):
         # xgettext doesn't recognize f-strings, so we duplicate _(...)
         # before using an f-string to ensure the string is extracted for translation
-        _("All data on the selected device will be lost!")
+        _("WARNING: This action is irreversible!")
+        _("Device information:")
+        _("What will be erased:")
+        
         # Remove all widgets from main_vbox
         for child in self.main_vbox.get_children():
             self.main_vbox.remove(child)
@@ -319,29 +409,114 @@ class InstallerWindow(Gtk.ApplicationWindow):
         disk_label = disk_info.get('device') or _("selected device")
         disk_desc = disk_info.get('desc') or ""
 
-        warning = Gtk.Label()
-        warning.set_markup(
-            f'<span size="large" weight="bold" foreground="red">{_("All data on the selected device will be lost!")}</span>\n\n'
-            f'<b>{disk_label}{GLib.markup_escape_text(disk_desc)}</b>'
-        )
-        warning.set_justify(Gtk.Justification.CENTER)
-        warning.set_margin_top(40)
-        warning.set_margin_bottom(20)
-        warning.set_line_wrap(True)
-        self.main_vbox.pack_start(warning, True, True, 0)
+        # Main container with spacing
+        main_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        main_container.set_margin_top(20)
+        main_container.set_margin_bottom(20)
+        main_container.set_margin_start(20)
+        main_container.set_margin_end(20)
 
+        # Warning header with icon
+        header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        header_box.set_halign(Gtk.Align.CENTER)
+        
+        warning_icon = Gtk.Image.new_from_icon_name("dialog-warning", Gtk.IconSize.LARGE_TOOLBAR)
+        header_box.pack_start(warning_icon, False, False, 0)
+        
+        warning_label = Gtk.Label()
+        warning_label.set_markup(f'<span size="x-large" weight="bold" foreground="red">{_("WARNING: This action is irreversible!")}</span>')
+        warning_label.set_halign(Gtk.Align.CENTER)
+        header_box.pack_start(warning_label, False, False, 0)
+        
+        main_container.pack_start(header_box, False, False, 0)
+
+        # Device info section
+        device_frame = Gtk.Frame()
+        device_frame.set_label_align(0.5, 0.5)
+        device_frame.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        
+        device_label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        device_info_icon = Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.MENU)
+        device_label_box.pack_start(device_info_icon, False, False, 0)
+        device_label_widget = Gtk.Label()
+        device_label_widget.set_markup(f'<b>{_("Device information:")}</b>')
+        device_label_box.pack_start(device_label_widget, False, False, 0)
+        device_frame.set_label_widget(device_label_box)
+        
+        device_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        device_content.set_margin_top(10)
+        device_content.set_margin_bottom(10)
+        device_content.set_margin_start(15)
+        device_content.set_margin_end(15)
+        
+        device_info_label = Gtk.Label()
+        device_info_label.set_markup(f'<span size="medium"><b>{GLib.markup_escape_text(disk_label)}</b>{GLib.markup_escape_text(disk_desc)}</span>')
+        device_info_label.set_halign(Gtk.Align.START)
+        device_content.pack_start(device_info_label, False, False, 0)
+        
+        device_frame.add(device_content)
+        main_container.pack_start(device_frame, False, False, 0)
+
+        # What will be erased section
+        erase_frame = Gtk.Frame()
+        erase_frame.set_label_align(0.5, 0.5)
+        erase_frame.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        
+        erase_label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        erase_icon = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)
+        erase_label_box.pack_start(erase_icon, False, False, 0)
+        erase_label_widget = Gtk.Label()
+        erase_label_widget.set_markup(f'<b>{_("What will be erased:")}</b>')
+        erase_label_box.pack_start(erase_label_widget, False, False, 0)
+        erase_frame.set_label_widget(erase_label_box)
+        
+        erase_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        erase_content.set_margin_top(10)
+        erase_content.set_margin_bottom(10)
+        erase_content.set_margin_start(15)
+        erase_content.set_margin_end(15)
+        
+        # Risk items with icons
+        risk_items = [
+            ("applications-office", _("Files, documents, and applications")),
+            ("applications-system", _("Operating systems")),
+            ("user-home", _("Personal data and settings")),
+            ("drive-harddisk", _("All partitions and file systems"))
+        ]
+        
+        for icon_name, description in risk_items:
+            item_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            item_icon = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.MENU)
+            item_box.pack_start(item_icon, False, False, 0)
+            item_label = Gtk.Label(label=description)
+            item_label.set_halign(Gtk.Align.START)
+            item_box.pack_start(item_label, False, False, 0)
+            erase_content.pack_start(item_box, False, False, 0)
+        
+        erase_frame.add(erase_content)
+        main_container.pack_start(erase_frame, False, False, 0)
+
+        # Add main container to scrolled window for better handling
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.add(main_container)
+        self.main_vbox.pack_start(scrolled, True, True, 0)
+
+        # Button box
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=24)
-        btn_box.set_halign(Gtk.Align.CENTER)
+        btn_box.set_homogeneous(True)
+        btn_box.set_margin_top(10)
+        btn_box.set_margin_bottom(10)
 
         btn_cancel = Gtk.Button(label=_("Go Back"))
-        btn_cancel.get_style_context().add_class('destructive-action')
+        btn_cancel.get_style_context().add_class('suggested-action')
         btn_cancel.connect("clicked", lambda b: self._build_selection_ui())
-        btn_box.pack_start(btn_cancel, False, False, 0)
+        btn_box.pack_start(btn_cancel, True, True, 0)
 
         btn_continue = Gtk.Button(label=_("Continue"))
-        btn_continue.get_style_context().add_class('suggested-action')
+        btn_continue.get_style_context().add_class('destructive-action')
         btn_continue.connect("clicked", self._on_confirm_install)
-        btn_box.pack_start(btn_continue, False, False, 0)
+        btn_box.pack_start(btn_continue, True, True, 0)
 
         self.main_vbox.pack_start(btn_box, False, False, 0)
         self.show_all()
@@ -407,8 +582,20 @@ class InstallerWindow(Gtk.ApplicationWindow):
             GLib.idle_add(self.lbl_status.set_text, _("Installation canceled."))
             GLib.idle_add(self._append_log, _("Installation canceled by user."))
 
-            # disable the Cancel button (GTK will add the "insensitive" state)
-            GLib.idle_add(self.btn_cancel.set_sensitive, False)
+            # Change Cancel to Restart button
+            self._setup_restart_button()
+
+    def _setup_restart_button(self):
+        self.btn_cancel.set_label(_("Restart Installation"))
+        self.btn_cancel.get_style_context().remove_class('destructive-action')
+        self.btn_cancel.get_style_context().add_class('suggested-action')
+        try:
+            self.btn_cancel.disconnect_by_func(self._on_cancel)
+        except TypeError:
+            # This may happen if the handler is already disconnected
+            pass
+        self.btn_cancel.connect("clicked", lambda b: self._build_selection_ui())
+        self.btn_cancel.set_sensitive(True)
 
     def _report_progress(self, percent: int, message: str):
         fraction = percent / 100.0
@@ -542,8 +729,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
                     GLib.idle_add(self._show_error, _("Installation failed: ") + str(e))
                     return
                 self._report_progress(100, _("Installation complete!"))
-                # Disable the Cancel button since installation has finished
-                GLib.idle_add(self.btn_cancel.set_sensitive, False)
+                # Change Cancel to Restart button
+                GLib.idle_add(self._setup_restart_button)
         finally:
             resume_disk_monitoring()
 
