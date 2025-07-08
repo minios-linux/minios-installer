@@ -1,55 +1,41 @@
-# minios-installer
+# MiniOS Installer
 
-MiniOS Installer - a graphical tool for installing MiniOS on a disk.
+A graphical tool for installing MiniOS permanently to your flash drive.
 
-## Build and Translation
+## Features
 
-### Generating Translation Template
+- GTK3 interface with multi-language support
+- Multiple filesystem support (ext4, btrfs, fat32, etc.)
+- UEFI/BIOS compatibility
 
-To create or update the translation template (messages.pot):
+## Usage
 
+Launch the installer:
 ```bash
-make makepot
+sudo minios-installer
 ```
 
-or directly:
+Or from Applications Menu: System → MiniOS Installer
 
-```bash
-./makepot
-```
-
-### Updating Translations
-
-To update all translation files (.po):
-
-```bash
-make update-po
-```
-
-or directly:
-
-```bash
-./update_translations.sh
-```
-
-### Build
-
-To build the project with .mo file generation:
+## Build
 
 ```bash
 make build
 ```
 
-### Clean
-
-To remove generated .mo files:
+## Install
 
 ```bash
-make clean
+sudo make install
 ```
 
-### Installation
+## Translation
 
+Update translations:
 ```bash
-make install DESTDIR=/path/to/destination
+make update-po
 ```
+
+## License
+
+GPL-3.0
