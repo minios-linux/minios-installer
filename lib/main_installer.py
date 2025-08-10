@@ -394,8 +394,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._show_erase_warning()
 
     def _show_erase_warning(self):
-        # xgettext doesn't recognize f-strings, so we duplicate _(...)
-        # before using an f-string to ensure the string is extracted for translation
+        # xgettext doesn't recognize f-strings, so we duplicate _(...) 
+        # to ensure the string is extracted for translation
         _("WARNING: This action is irreversible!")
         _("Device information:")
         _("What will be erased:")
