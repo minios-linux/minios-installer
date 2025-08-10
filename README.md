@@ -1,41 +1,33 @@
 # MiniOS Installer
 
-A graphical tool for installing MiniOS permanently to your flash drive.
+GTK3 graphical tool for installing MiniOS permanently to disk from a live session.
 
 ## Features
 
-- GTK3 interface with multi-language support
-- Multiple filesystem support (ext4, btrfs, fat32, etc.)
-- UEFI/BIOS compatibility
+- Multiple filesystem support (ext4, btrfs, xfs, f2fs, FAT32)
+- UEFI/BIOS compatibility with automatic detection
+- Step-by-step installation process with progress tracking
+- PolicyKit authentication for secure operations
 
 ## Usage
 
-Launch the installer:
 ```bash
-sudo minios-installer
+minios-installer
 ```
 
-Or from Applications Menu: System → MiniOS Installer
+Or from Applications Menu: System → Install MiniOS
 
 ## Build
 
 ```bash
 make build
-```
-
-## Install
-
-```bash
 sudo make install
-```
-
-## Translation
-
-Update translations:
-```bash
-make update-po
 ```
 
 ## License
 
-GPL-3.0
+GPL-3.0+
+
+## Author
+
+crims0n <crims0n@minios.dev>
