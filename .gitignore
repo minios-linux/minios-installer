@@ -1,0 +1,14 @@
+# Build files
+*.mo
+
+# Debian package build files
+debian/debhelper-build-stamp
+debian/files
+debian/*.substvars
+debian/minios-installer/
+debian/tmp/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
