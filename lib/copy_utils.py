@@ -109,10 +109,51 @@ def find_minios_source() -> Optional[str]:
         "/run/initramfs/memory/data/from/0/minios"
     ]
     
+    def get_boot_files_from_cmdline():
+        """Extract vmlinuz and initramfs filenames from /proc/cmdline"""
+        try:
+            with open('/proc/cmdline', 'r') as f:
+                cmdline = f.read().strip()
+            
+            vmlinuz_file = None
+            initramfs_file = None
+            
+            # Parse boot parameters (support multiple formats)
+            for param in cmdline.split():
+                # GRUB/SYSLINUX: BOOT_IMAGE= or linux=
+                if param.startswith('BOOT_IMAGE=') or param.startswith('linux='):
+                    boot_path = param.split('=', 1)[1]
+                    # Extract filename from path like /minios/boot/vmlinuz-version
+                    vmlinuz_file = os.path.basename(boot_path)
+                # initrd parameter
+                elif param.startswith('initrd='):
+                    initrd_path = param.split('=', 1)[1]
+                    # Extract filename from path like /minios/boot/initrfs-version.img
+                    initramfs_file = os.path.basename(initrd_path)
+            
+            return vmlinuz_file, initramfs_file
+        except (IOError, OSError):
+            return None, None
+    
     for candidate in candidates:
-        if (os.path.isdir(candidate) and 
-            os.path.exists(os.path.join(candidate, "boot", "vmlinuz"))):
-            return candidate
+        if os.path.isdir(candidate):
+            boot_dir = os.path.join(candidate, "boot")
+            if os.path.isdir(boot_dir):
+                try:
+                    boot_files = os.listdir(boot_dir)
+                    
+                    # First check for generic vmlinuz and initramfs files
+                    if "vmlinuz" in boot_files:
+                        return candidate
+                    
+                    # If no generic files, check for files matching /proc/cmdline
+                    cmdline_vmlinuz, cmdline_initramfs = get_boot_files_from_cmdline()
+                    if (cmdline_vmlinuz and cmdline_vmlinuz in boot_files and
+                        cmdline_initramfs and cmdline_initramfs in boot_files):
+                        return candidate
+                        
+                except (OSError, PermissionError):
+                    continue
     
     return None
 

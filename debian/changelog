@@ -1,3 +1,10 @@
+minios-installer (2.3) unstable; urgency=medium
+
+  * Add function to extract boot file names from /proc/cmdline and enhance
+    MiniOS source detection
+
+ -- crims0n <crims0n@minios.dev>  Sun, 10 Aug 2025 19:46:15 +0000
+
 minios-installer (2.2) unstable; urgency=medium
 
   * Split minios-installer into libraries to improve code structure.
