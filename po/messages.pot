@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: minios-installer 2.2\n"
+"Project-Id-Version: minios-installer 2.3\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-07-08 16:29+0000\n"
+"POT-Creation-Date: 2025-08-11 05:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,22 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: lib/mount_utils.py:29
+msgid "Destination "
+msgstr ""
+
+#: lib/mount_utils.py:29
+msgid " is already mounted."
+msgstr ""
+
+#: lib/mount_utils.py:38
+msgid "Could not determine filesystem type of "
+msgstr ""
+
+#: lib/mount_utils.py:42
+msgid "Failed to mount "
+msgstr ""
 
 #: lib/copy_utils.py:60 lib/copy_utils.py:61 lib/bootloader_utils.py:33
 #: lib/main_installer.py:583
@@ -36,22 +52,6 @@ msgstr ""
 
 #: lib/copy_utils.py:97
 msgid "Copied EFI file: "
-msgstr ""
-
-#: lib/mount_utils.py:29
-msgid "Destination "
-msgstr ""
-
-#: lib/mount_utils.py:29
-msgid " is already mounted."
-msgstr ""
-
-#: lib/mount_utils.py:38
-msgid "Could not determine filesystem type of "
-msgstr ""
-
-#: lib/mount_utils.py:42
-msgid "Failed to mount "
 msgstr ""
 
 #: lib/bootloader_utils.py:37
@@ -111,6 +111,14 @@ msgstr ""
 #: lib/bootloader_utils.py:173
 #, python-brace-format
 msgid "Set partition active: {primary}."
+msgstr ""
+
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr ""
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
 msgstr ""
 
 #: lib/main_installer.py:169
@@ -200,15 +208,15 @@ msgstr ""
 msgid "Configure MiniOS before installation"
 msgstr ""
 
-#: lib/main_installer.py:399
+#: lib/main_installer.py:399 lib/main_installer.py:427
 msgid "WARNING: This action is irreversible!"
 msgstr ""
 
-#: lib/main_installer.py:400
+#: lib/main_installer.py:400 lib/main_installer.py:442
 msgid "Device information:"
 msgstr ""
 
-#: lib/main_installer.py:401
+#: lib/main_installer.py:401 lib/main_installer.py:469
 msgid "What will be erased:"
 msgstr ""
 
@@ -346,11 +354,6 @@ msgstr ""
 msgid "Config file not found"
 msgstr ""
 
-#: lib/main_installer.py:764
-#, python-brace-format
-msgid "Standard config file not found at {src_config}."
-msgstr ""
-
 #: lib/main_installer.py:783
 msgid "Launch Error"
 msgstr ""
@@ -409,12 +412,4 @@ msgstr ""
 
 #: lib/disk_utils.py:232
 msgid "Failed to erase "
-msgstr ""
-
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr ""
-
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
 msgstr ""

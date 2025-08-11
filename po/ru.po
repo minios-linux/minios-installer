@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-07-08 16:13+0000\n"
+"POT-Creation-Date: 2025-08-11 05:49+0000\n"
 "PO-Revision-Date: 2025-05-26 17:08+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
@@ -15,8 +15,24 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: lib/mount_utils.py:29
+msgid "Destination "
+msgstr "Путь назначения "
+
+#: lib/mount_utils.py:29
+msgid " is already mounted."
+msgstr " уже смонтирован."
+
+#: lib/mount_utils.py:38
+msgid "Could not determine filesystem type of "
+msgstr "Не удалось определить тип файловой системы для "
+
+#: lib/mount_utils.py:42
+msgid "Failed to mount "
+msgstr "Не удалось смонтировать "
 
 #: lib/copy_utils.py:60 lib/copy_utils.py:61 lib/bootloader_utils.py:33
 #: lib/main_installer.py:583
@@ -38,22 +54,6 @@ msgstr "Создан каталог: "
 #: lib/copy_utils.py:97
 msgid "Copied EFI file: "
 msgstr "Скопирован EFI-файл: "
-
-#: lib/mount_utils.py:29
-msgid "Destination "
-msgstr "Путь назначения "
-
-#: lib/mount_utils.py:29
-msgid " is already mounted."
-msgstr " уже смонтирован."
-
-#: lib/mount_utils.py:38
-msgid "Could not determine filesystem type of "
-msgstr "Не удалось определить тип файловой системы для "
-
-#: lib/mount_utils.py:42
-msgid "Failed to mount "
-msgstr "Не удалось смонтировать "
 
 #: lib/bootloader_utils.py:37
 #, python-brace-format
@@ -115,6 +115,14 @@ msgstr "Записан MBR на {device}."
 #, python-brace-format
 msgid "Set partition active: {primary}."
 msgstr "Раздел отмечен как активный: {primary}."
+
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Не удалось отформатировать "
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Не удалось отформатировать EFI "
 
 #: lib/main_installer.py:169
 msgid "USB Device"
@@ -234,15 +242,15 @@ msgstr "Установить"
 msgid "Configure MiniOS before installation"
 msgstr "Настроить MiniOS перед установкой"
 
-#: lib/main_installer.py:399
+#: lib/main_installer.py:399 lib/main_installer.py:427
 msgid "WARNING: This action is irreversible!"
 msgstr "ВНИМАНИЕ: это действие необратимо!"
 
-#: lib/main_installer.py:400
+#: lib/main_installer.py:400 lib/main_installer.py:442
 msgid "Device information:"
 msgstr "Информация об устройстве:"
 
-#: lib/main_installer.py:401
+#: lib/main_installer.py:401 lib/main_installer.py:469
 msgid "What will be erased:"
 msgstr "Что будет стерто:"
 
@@ -380,11 +388,6 @@ msgstr "Ошибка установки"
 msgid "Config file not found"
 msgstr "Файл конфигурации не найден"
 
-#: lib/main_installer.py:764
-#, python-brace-format
-msgid "Standard config file not found at {src_config}."
-msgstr "Стандартный файл конфигурации не найден по пути {src_config}."
-
 #: lib/main_installer.py:783
 msgid "Launch Error"
 msgstr "Ошибка запуска"
@@ -444,14 +447,3 @@ msgstr "Не удалось создать второй раздел на "
 #: lib/disk_utils.py:232
 msgid "Failed to erase "
 msgstr "Не удалось стереть "
-
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr "Не удалось отформатировать "
-
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
-msgstr "Не удалось отформатировать EFI "
-
-#~ msgid "All data on the selected device will be lost!"
-#~ msgstr "Все данные на выбранном устройстве будут потеряны!"

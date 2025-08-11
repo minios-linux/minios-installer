@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-07-08 16:13+0000\n"
+"POT-Creation-Date: 2025-08-11 05:49+0000\n"
 "PO-Revision-Date: 2025-05-26 17:26+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -16,6 +16,22 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/mount_utils.py:29
+msgid "Destination "
+msgstr "Destinazione "
+
+#: lib/mount_utils.py:29
+msgid " is already mounted."
+msgstr " è già montato."
+
+#: lib/mount_utils.py:38
+msgid "Could not determine filesystem type of "
+msgstr "Impossibile determinare il tipo di filesystem di "
+
+#: lib/mount_utils.py:42
+msgid "Failed to mount "
+msgstr "Impossibile montare "
 
 #: lib/copy_utils.py:60 lib/copy_utils.py:61 lib/bootloader_utils.py:33
 #: lib/main_installer.py:583
@@ -37,22 +53,6 @@ msgstr "Cartella creata: "
 #: lib/copy_utils.py:97
 msgid "Copied EFI file: "
 msgstr "File EFI copiato: "
-
-#: lib/mount_utils.py:29
-msgid "Destination "
-msgstr "Destinazione "
-
-#: lib/mount_utils.py:29
-msgid " is already mounted."
-msgstr " è già montato."
-
-#: lib/mount_utils.py:38
-msgid "Could not determine filesystem type of "
-msgstr "Impossibile determinare il tipo di filesystem di "
-
-#: lib/mount_utils.py:42
-msgid "Failed to mount "
-msgstr "Impossibile montare "
 
 #: lib/bootloader_utils.py:37
 #, python-brace-format
@@ -115,6 +115,14 @@ msgstr "MBR scritto su {device}."
 #, python-brace-format
 msgid "Set partition active: {primary}."
 msgstr "Partizione impostata come attiva: {primary}."
+
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Impossibile formattare "
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Impossibile formattare EFI "
 
 #: lib/main_installer.py:169
 msgid "USB Device"
@@ -238,15 +246,15 @@ msgstr "Installa"
 msgid "Configure MiniOS before installation"
 msgstr "Configura MiniOS prima dell'installazione"
 
-#: lib/main_installer.py:399
+#: lib/main_installer.py:399 lib/main_installer.py:427
 msgid "WARNING: This action is irreversible!"
 msgstr "ATTENZIONE: questa azione è irreversibile!"
 
-#: lib/main_installer.py:400
+#: lib/main_installer.py:400 lib/main_installer.py:442
 msgid "Device information:"
 msgstr "Informazioni sul dispositivo:"
 
-#: lib/main_installer.py:401
+#: lib/main_installer.py:401 lib/main_installer.py:469
 msgid "What will be erased:"
 msgstr "Cosa sarà cancellato:"
 
@@ -384,11 +392,6 @@ msgstr "Errore di installazione"
 msgid "Config file not found"
 msgstr "File di configurazione non trovato"
 
-#: lib/main_installer.py:764
-#, python-brace-format
-msgid "Standard config file not found at {src_config}."
-msgstr "File di configurazione standard non trovato in {src_config}."
-
 #: lib/main_installer.py:783
 msgid "Launch Error"
 msgstr "Errore di avvio"
@@ -448,14 +451,3 @@ msgstr "Impossibile creare la seconda partizione su "
 #: lib/disk_utils.py:232
 msgid "Failed to erase "
 msgstr "Impossibile cancellare "
-
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr "Impossibile formattare "
-
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
-msgstr "Impossibile formattare EFI "
-
-#~ msgid "All data on the selected device will be lost!"
-#~ msgstr "Tutti i dati sul dispositivo selezionato saranno persi!"
