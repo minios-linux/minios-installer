@@ -820,8 +820,11 @@ class MiniOSInstallerApp(Gtk.Application):
 
 
 def main():
-    app = MiniOSInstallerApp()
-    return app.run(sys.argv)
+    try:
+        app = MiniOSInstallerApp()
+        return app.run(sys.argv)
+    except KeyboardInterrupt:
+        return 130
 
 if __name__ == '__main__':
     sys.exit(main())

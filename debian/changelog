@@ -2,6 +2,8 @@ minios-installer (2.3) unstable; urgency=medium
 
   * Add function to extract boot file names from /proc/cmdline and enhance
     MiniOS source detection
+  * Enhance bootloader utilities to support GRUB detection and installation
+  * Improve error handling in main installer
 
  -- crims0n <crims0n@minios.dev>  Sun, 10 Aug 2025 19:46:15 +0000
 

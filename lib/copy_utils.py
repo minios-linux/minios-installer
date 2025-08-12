@@ -120,16 +120,30 @@ def find_minios_source() -> Optional[str]:
             
             # Parse boot parameters (support multiple formats)
             for param in cmdline.split():
-                # GRUB/SYSLINUX: BOOT_IMAGE= or linux=
-                if param.startswith('BOOT_IMAGE=') or param.startswith('linux='):
+                # GRUB: BOOT_IMAGE= parameter contains kernel path
+                if param.startswith('BOOT_IMAGE='):
                     boot_path = param.split('=', 1)[1]
                     # Extract filename from path like /minios/boot/vmlinuz-version
+                    vmlinuz_file = os.path.basename(boot_path)
+                # SYSLINUX: linux= parameter
+                elif param.startswith('linux='):
+                    boot_path = param.split('=', 1)[1]
                     vmlinuz_file = os.path.basename(boot_path)
                 # initrd parameter
                 elif param.startswith('initrd='):
                     initrd_path = param.split('=', 1)[1]
                     # Extract filename from path like /minios/boot/initrfs-version.img
                     initramfs_file = os.path.basename(initrd_path)
+            
+            # If we found kernel but no initramfs, try to guess initramfs name
+            if vmlinuz_file and not initramfs_file:
+                # Convert vmlinuz-version to initrfs-version.img
+                if vmlinuz_file.startswith('vmlinuz-'):
+                    version = vmlinuz_file[8:]  # Remove 'vmlinuz-' prefix
+                    initramfs_file = f'initrfs-{version}.img'
+                elif vmlinuz_file.startswith('vmlinuz'):
+                    # Handle generic vmlinuz case
+                    initramfs_file = 'initrd.img'
             
             return vmlinuz_file, initramfs_file
         except (IOError, OSError):
@@ -146,10 +160,17 @@ def find_minios_source() -> Optional[str]:
                     if "vmlinuz" in boot_files:
                         return candidate
                     
-                    # If no generic files, check for files matching /proc/cmdline
+                    # If no generic files, check for files matching the currently loaded kernel from /proc/cmdline
                     cmdline_vmlinuz, cmdline_initramfs = get_boot_files_from_cmdline()
                     if (cmdline_vmlinuz and cmdline_vmlinuz in boot_files and
                         cmdline_initramfs and cmdline_initramfs in boot_files):
+                        return candidate
+                    
+                    # Fallback: if cmdline parsing failed, look for any versioned kernel files
+                    # This handles cases where we're not running from MiniOS live environment
+                    has_vmlinuz = any(f.startswith("vmlinuz") for f in boot_files)
+                    has_initramfs = any(f.startswith("initrfs") or f.startswith("initrd") for f in boot_files)
+                    if has_vmlinuz and has_initramfs:
                         return candidate
                         
                 except (OSError, PermissionError):
