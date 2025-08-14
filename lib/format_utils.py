@@ -43,7 +43,7 @@ def format_partitions(primary: str, fs: str, efi: Optional[str]) -> None:
     """
     if fs == 'fat32':
         run_command(['mkfs.vfat', primary], _("Failed to format ") + primary + ".")
-    elif fs in ('btrfs','ntfs','exfat'):
+    elif fs in ('btrfs','ntfs'):
         run_command([f'mkfs.{fs}','-f',primary], _("Failed to format ") + primary + ".")
     else:
         run_command([f'mkfs.{fs}','-F',primary], _("Failed to format ") + primary + ".")
@@ -63,8 +63,7 @@ def check_filesystem_support() -> dict:
         'ext2': 'mkfs.ext2',
         'fat32': 'mkfs.vfat', 
         'btrfs': 'mkfs.btrfs',
-        'ntfs': 'mkfs.ntfs',
-        'exfat': 'mkfs.exfat'
+        'ntfs': 'mkfs.ntfs'
     }
     
     support = {}

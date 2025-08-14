@@ -4,6 +4,9 @@ minios-installer (2.3) unstable; urgency=medium
     MiniOS source detection
   * Enhance bootloader utilities to support GRUB detection and installation
   * Improve error handling in main installer
+  * Add language selection in installer UI
+  * Add support for translation of grub configuration files
+  * Fix fdisk partition activation using sfdisk for better reliability
 
  -- crims0n <crims0n@minios.dev>  Sun, 10 Aug 2025 19:46:15 +0000
 

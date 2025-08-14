@@ -88,6 +88,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.selected_filesystem = None
         self.use_gpt             = False
         self.create_efi          = False
+        self.grub_config_type    = "multilang"  # "multilang" or language code like "ru_RU"
         self.cancel_requested    = False
 
         self.p1 = None
@@ -322,6 +323,37 @@ class InstallerWindow(Gtk.ApplicationWindow):
         )
         hfs.pack_start(eb, False, False, 0)
         vb_fs.pack_start(hfs, False, False, 0)
+        
+        # GRUB boot menu language selection
+        grub_config_label = Gtk.Label(label=_("GRUB Boot Menu Language:"))
+        grub_config_label.set_halign(Gtk.Align.START)
+        grub_config_label.set_margin_top(12)
+        vb_fs.pack_start(grub_config_label, False, False, 0)
+        
+        # Language selection dropdown
+        grub_config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        
+        # Available languages from po files
+        self.available_languages = [
+            ("multilang", _("Multilingual menu")),
+            ("en_US", "English"),
+            ("ru_RU", "Русский"),
+            ("de_DE", "Deutsch"), 
+            ("es_ES", "Español"),
+            ("it_IT", "Italiano"),
+            ("id_ID", "Bahasa Indonesia"),
+            ("pt_BR", "Português (Brasil)")
+        ]
+        
+        self.language_combo = Gtk.ComboBoxText()
+        for lang_code, lang_name in self.available_languages:
+            self.language_combo.append(lang_code, lang_name)
+        self.language_combo.set_active(0)  # Select multilingual by default
+        self.language_combo.connect("changed", self._on_language_changed)
+        grub_config_box.pack_start(self.language_combo, False, False, 0)
+        
+        vb_fs.pack_start(grub_config_box, False, False, 6)
+        
         hb.pack_start(vb_fs, True, True, 0)
 
         # Install button
@@ -383,6 +415,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.selected_filesystem = text or None
         self.create_efi = bool(text and text != 'fat32')
         self._update_install_sensitive()
+
+    def _on_language_changed(self, combo):
+        """Handle GRUB boot menu language selection change."""
+        lang_code = combo.get_active_id()
+        if lang_code is not None:
+            self.grub_config_type = lang_code
 
     def _update_install_sensitive(self):
         if hasattr(self, 'btn_install'):
@@ -679,7 +717,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                         GLib.idle_add(self._show_error, _("Cannot find MiniOS image."))
                     return
                 try:
-                    copy_minios_files(src, m1, self._report_progress, self._log_async, config_override)
+                    copy_minios_files(src, m1, self._report_progress, self._log_async, config_override, self.grub_config_type)
                     if not self.create_efi:
                         self._report_progress(50, _("Copying EFI files to root..."))
                         copy_efi_files(src, m1, self._log_async)

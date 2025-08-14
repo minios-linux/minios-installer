@@ -11,7 +11,8 @@ Author: crims0n <crims0n@minios.dev>
 import os
 import shutil
 import gettext
-from typing import Optional, Callable
+import re
+from typing import Optional, Callable, Dict
 
 # Set up gettext for localization
 gettext.bindtextdomain('minios-installer', '/usr/share/locale')
@@ -20,7 +21,7 @@ _ = gettext.gettext
 
 
 def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callable, 
-                     config_override: Optional[str] = None) -> None:
+                     config_override: Optional[str] = None, grub_config_type: str = "multilang") -> None:
     """
     Copy MiniOS files from src to dst with progress reporting.
     """
@@ -77,6 +78,9 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
         p = os.path.join(dst, 'minios', sub)
         os.makedirs(p, exist_ok=True)
         log_cb(_("Created directory: ") + p)
+    
+    # Handle GRUB configuration selection
+    _process_grub_config(dst, grub_config_type, log_cb)
 
 
 def copy_efi_files(src: str, dst: str, log_cb: Callable) -> None:
@@ -194,3 +198,150 @@ def _calculate_copy_size(src: str) -> int:
             except:
                 pass
     return total
+
+
+def _parse_po_file(po_path: str) -> Dict[str, str]:
+    """
+    Parse a .po file and return a dictionary of msgid -> msgstr mappings.
+    """
+    translations = {}
+    
+    if not os.path.exists(po_path):
+        return translations
+    
+    try:
+        with open(po_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Find all msgid/msgstr pairs using regex
+        pattern = r'msgid\s+"([^"]*(?:\\.[^"]*)*?)"\s*msgstr\s+"([^"]*(?:\\.[^"]*)*?)"'
+        matches = re.findall(pattern, content, re.MULTILINE | re.DOTALL)
+        
+        for msgid, msgstr in matches:
+            if msgid and msgstr:  # Skip empty translations
+                # Unescape the strings
+                msgid = msgid.replace('\\"', '"').replace('\\n', '\n')
+                msgstr = msgstr.replace('\\"', '"').replace('\\n', '\n')
+                translations[msgid] = msgstr
+                
+    except Exception:
+        pass  # Return empty dict on error
+        
+    return translations
+
+
+def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path: str, log_cb: Callable) -> bool:
+    """
+    Generate a localized GRUB configuration using po files.
+    Writes directly to grub.cfg. Returns True if successful.
+    """
+    # Parse po file for the language
+    po_path = os.path.join(grub_dir, 'po', f'{lang_code}.po')
+    translations = _parse_po_file(po_path)
+    
+    if not translations:
+        log_cb(_("Warning: No translations found for {lang}, using English fallback").format(lang=lang_code))
+        return False
+    
+    # Get template from english config (has the structure we want)
+    english_cfg_path = os.path.join(grub_dir, 'grub.english.cfg')
+    if not os.path.exists(english_cfg_path):
+        log_cb(_("Error: grub.english.cfg template not found"))
+        return False
+        
+    try:
+        with open(english_cfg_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+        
+        # Apply translations to the template
+        localized_content = template_content
+        
+        # Define the menu entries to translate
+        menu_entries = {
+            "Resume previous session": "resume",
+            "Start a new session": "newsession", 
+            "Choose session during startup": "choosesession",
+            "Fresh start": "freshstart",
+            "Copy to RAM": "copyram",
+            "Loading kernel and ramdisk...": "loading",
+            "MiniOS": "OS"
+        }
+        
+        # Replace English menu text with localized versions
+        for english_text, var_name in menu_entries.items():
+            if english_text in translations:
+                localized_text = translations[english_text]
+                # Replace the menuentry labels
+                localized_content = localized_content.replace(f'menuentry "{english_text}"', f'menuentry "{localized_text}"')
+                # Replace variable assignments if they exist
+                localized_content = re.sub(f'set {var_name}="{re.escape(english_text)}"', 
+                                         f'set {var_name}="{localized_text}"', localized_content)
+        
+        # Set localized theme if available
+        theme_path = f'/minios/boot/grub/minios-theme/theme_{lang_code}.txt'
+        if os.path.exists(os.path.join(grub_dir, 'minios-theme', f'theme_{lang_code}.txt')):
+            # Replace theme setting with localized version
+            localized_content = re.sub(
+                r'set theme=/minios/boot/grub/minios-theme/theme\.txt',
+                f'set theme={theme_path}',
+                localized_content
+            )
+            log_cb(_("Using localized theme: {theme}").format(theme=f'theme_{lang_code}.txt'))
+        else:
+            log_cb(_("Localized theme not found for {lang}, using default").format(lang=lang_code))
+        
+        # Write localized config directly to grub.cfg
+        with open(grub_cfg_path, 'w', encoding='utf-8') as f:
+            f.write(localized_content)
+        
+        log_cb(_("Generated localized GRUB config for {lang}").format(lang=lang_code))
+        return True
+        
+    except Exception as e:
+        log_cb(_("Error generating localized GRUB config: {error}").format(error=str(e)))
+        return False
+
+
+def _process_grub_config(dst: str, config_type: str, log_cb: Callable) -> None:
+    """
+    Process GRUB boot menu language selection:
+    - For multilang: Copy grub.multilang.cfg to grub.cfg 
+    - For specific language: Generate localized config and copy to grub.cfg
+    """
+    grub_dir = os.path.join(dst, 'minios', 'boot', 'grub')
+    
+    if not os.path.exists(grub_dir):
+        log_cb(_("GRUB directory not found, skipping GRUB boot menu configuration"))
+        return
+    
+    grub_cfg_path = os.path.join(grub_dir, 'grub.cfg')
+    
+    if config_type == "multilang":
+        # Use multilingual config
+        source_cfg_path = os.path.join(grub_dir, 'grub.multilang.cfg')
+        config_name = _("multilingual menu")
+        
+        if os.path.exists(source_cfg_path):
+            shutil.copy2(source_cfg_path, grub_cfg_path)
+            log_cb(_("Applied {config} GRUB boot menu from {source}").format(
+                config=config_name, source=os.path.basename(source_cfg_path)))
+        else:
+            log_cb(_("Warning: {config} configuration file not found, keeping original grub.cfg").format(
+                config=config_name))
+    
+    else:
+        # Generate localized config for specific language
+        lang_code = config_type
+        log_cb(_("Generating localized GRUB menu for language: {lang}").format(lang=lang_code))
+        
+        if _generate_localized_grub_config(grub_dir, lang_code, grub_cfg_path, log_cb):
+            log_cb(_("Applied {lang} GRUB boot menu").format(lang=lang_code))
+        else:
+            # Fallback to English if localized generation failed
+            log_cb(_("Failed to generate {lang} config, falling back to English").format(lang=lang_code))
+            english_cfg_path = os.path.join(grub_dir, 'grub.english.cfg')
+            if os.path.exists(english_cfg_path):
+                shutil.copy2(english_cfg_path, grub_cfg_path)
+                log_cb(_("Applied English GRUB boot menu as fallback"))
+            else:
+                log_cb(_("Warning: No fallback configuration available, keeping original grub.cfg"))

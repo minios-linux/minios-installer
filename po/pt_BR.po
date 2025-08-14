@@ -7,16 +7,245 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-11 05:49+0000\n"
+"POT-Creation-Date: 2025-08-14 14:14+0300\n"
 "PO-Revision-Date: 2025-05-26 17:28+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
-"Language-Team: Brazilian Portuguese <ldpbr-"
-"translation@lists.sourceforge.net>\n"
+"Language-Team: Brazilian Portuguese <ldpbr-translation@lists.sourceforge."
+"net>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Falha ao formatar "
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Falha ao formatar EFI "
+
+#: lib/bootloader_utils.py:61 lib/main_installer.py:621 lib/copy_utils.py:61
+#: lib/copy_utils.py:62
+msgid "Installation canceled by user."
+msgstr "Instalação cancelada pelo usuário."
+
+#: lib/bootloader_utils.py:65
+#, python-brace-format
+msgid "Entering bootloader directory: {boot_dir}"
+msgstr "Entrando no diretório do bootloader: {boot_dir}"
+
+#: lib/bootloader_utils.py:69
+#, python-brace-format
+msgid "Detected bootloader type: {type}"
+msgstr "Tipo de bootloader detectado: {type}"
+
+#: lib/bootloader_utils.py:82
+msgid "Installing GRUB bootloader..."
+msgstr "Instalando bootloader GRUB..."
+
+#: lib/bootloader_utils.py:97
+msgid "Using portable grub-bios-setup from image"
+msgstr "Usando grub-bios-setup portátil da imagem"
+
+#: lib/bootloader_utils.py:115
+msgid "GRUB installed successfully using grub-bios-setup"
+msgstr "GRUB instalado com sucesso usando grub-bios-setup"
+
+#: lib/bootloader_utils.py:118
+#, python-brace-format
+msgid "grub-bios-setup failed (code {code}), trying manual installation..."
+msgstr ""
+"grub-bios-setup falhou (código {code}), tentando instalação manual..."
+"Instalação do extlinux falhou (código {code}), tentando fallback em /tmp..."
+
+#: lib/bootloader_utils.py:122
+#, python-brace-format
+msgid "grub-bios-setup failed with exception: {error}"
+msgstr "grub-bios-setup falhou com exceção: {error}"
+
+#: lib/bootloader_utils.py:126
+msgid "grub-bios-setup not found in image, using manual installation..."
+msgstr "grub-bios-setup não encontrado na imagem, usando instalação manual..."
+
+#: lib/bootloader_utils.py:129 lib/bootloader_utils.py:197
+msgid "GRUB bootloader installation completed"
+msgstr "Instalação do bootloader GRUB concluída"
+
+#: lib/bootloader_utils.py:137
+msgid "Performing manual GRUB installation..."
+msgstr "Executando instalação manual do GRUB..."
+
+#: lib/bootloader_utils.py:138
+#, python-brace-format
+msgid "Device: {device}, Primary partition: {primary}"
+msgstr "Dispositivo: {device}, Partição primária: {primary}"
+
+#: lib/bootloader_utils.py:139
+#, python-brace-format
+msgid "GRUB directory: {grub_dir}"
+msgstr "Diretório GRUB: {grub_dir}"
+
+#: lib/bootloader_utils.py:145
+#, python-brace-format
+msgid "Installing boot.img (size: {size} bytes) to MBR"
+msgstr "Instalando boot.img (tamanho: {size} bytes) no MBR"
+
+#: lib/bootloader_utils.py:150
+msgid "Installed GRUB stage 1 (boot.img) to MBR"
+msgstr "Instalado GRUB estágio 1 (boot.img) no MBR"
+
+#: lib/bootloader_utils.py:159
+msgid "Installed GRUB boot_hybrid.img to MBR as fallback"
+msgstr "Instalado GRUB boot_hybrid.img no MBR como reserva"
+
+#: lib/bootloader_utils.py:161
+#, python-brace-format
+msgid "No GRUB boot images found in {dir}"
+msgstr "Nenhuma imagem de boot GRUB encontrada em {dir}"
+
+#: lib/bootloader_utils.py:167
+#, python-brace-format
+msgid "Installing diskboot.img (size: {size} bytes) to partition"
+msgstr "Instalando diskboot.img (tamanho: {size} bytes) na partição"
+
+#: lib/bootloader_utils.py:173
+msgid "Installed GRUB stage 1.5 (diskboot.img) to partition"
+msgstr "Instalado GRUB estágio 1.5 (diskboot.img) na partição"
+
+#: lib/bootloader_utils.py:175
+msgid "diskboot.img not found, skipping partition boot sector installation"
+msgstr ""
+"diskboot.img não encontrado, pulando instalação do setor de boot da partição"
+
+#: lib/bootloader_utils.py:185
+msgid "Installed core.img to boot gap"
+msgstr "Instalado core.img no espaço de boot"
+
+#: lib/bootloader_utils.py:187
+#, python-brace-format
+msgid "Warning: Failed to install core.img: {error}"
+msgstr "Aviso: Falha ao instalar core.img: {error}"
+
+#: lib/bootloader_utils.py:189
+msgid "Warning: core.img not found in image - GRUB may not boot properly"
+msgstr ""
+"Aviso: core.img não encontrado na imagem - GRUB pode não inicializar "
+"corretamente"
+
+#: lib/bootloader_utils.py:205
+msgid "Installing EXTLINUX bootloader..."
+msgstr "Instalando bootloader EXTLINUX..."
+
+#: lib/bootloader_utils.py:220
+msgid "Remounted boot directory with exec."
+msgstr "Diretório de inicialização remontado com execução."
+
+#: lib/bootloader_utils.py:222
+msgid "Failed to remount boot directory; proceeding."
+msgstr "Falha ao remontar o diretório de boot; prosseguindo."
+
+#: lib/bootloader_utils.py:224
+msgid "Made extlinux executable."
+msgstr "Tornado extlinux executável."
+
+#: lib/bootloader_utils.py:232
+#, python-brace-format
+msgid "Copied extlinux to fallback: {fallback_name}"
+msgstr "Extlinux copiado para fallback: {fallback_name}"
+
+#: lib/bootloader_utils.py:250
+#, python-brace-format
+msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
+msgstr ""
+"Instalação do extlinux falhou (código {code}), tentando fallback em /tmp..."
+
+#: lib/bootloader_utils.py:265
+#, python-brace-format
+msgid "Error installing boot loader (fallback code {code})."
+msgstr ""
+"Erro ao instalar o carregador de inicialização (código de fallback {code})."
+
+#: lib/bootloader_utils.py:268
+msgid "Boot loader installation succeeded via fallback."
+msgstr "Instalação do gerenciador de inicialização bem-sucedida via fallback."
+
+#: lib/bootloader_utils.py:270
+#, python-brace-format
+msgid "Ran extlinux installer (code {code})."
+msgstr "Executado o instalador extlinux (código {code})."
+
+#: lib/bootloader_utils.py:282
+msgid "Removed fallback binary: extlinux.exe."
+msgstr "Binário de fallback removido: extlinux.exe."
+
+#: lib/bootloader_utils.py:286
+msgid "EXTLINUX bootloader installation completed"
+msgstr "Instalação do bootloader EXTLINUX concluída"
+
+#: lib/bootloader_utils.py:300
+msgid "MBR signature OK (0x55AA)"
+msgstr "Assinatura MBR OK (0x55AA)"
+
+#: lib/bootloader_utils.py:302
+#, python-brace-format
+msgid "Warning: MBR signature incorrect: {sig}"
+msgstr "Aviso: Assinatura MBR incorreta: {sig}"
+
+#: lib/bootloader_utils.py:306
+msgid "GRUB signature found in MBR"
+msgstr "Assinatura GRUB encontrada no MBR"
+
+#: lib/bootloader_utils.py:308
+msgid "Warning: GRUB signature not found in MBR"
+msgstr "Aviso: Assinatura GRUB não encontrada no MBR"
+
+#: lib/bootloader_utils.py:314
+msgid "GRUB signature found in partition boot sector"
+msgstr "Assinatura GRUB encontrada no setor de boot da partição"
+
+#: lib/bootloader_utils.py:316
+msgid "Warning: GRUB signature not found in partition boot sector"
+msgstr "Aviso: Assinatura GRUB não encontrada no setor de boot da partição"
+
+#: lib/bootloader_utils.py:319
+#, python-brace-format
+msgid "Warning: Failed to verify GRUB installation: {error}"
+msgstr "Aviso: Falha ao verificar instalação do GRUB: {error}"
+
+#: lib/bootloader_utils.py:331
+#, python-brace-format
+msgid "Wrote MBR to {device}."
+msgstr "MBR gravado em {device}."
+
+#: lib/bootloader_utils.py:341
+#, python-brace-format
+msgid "Error: Could not extract partition number from {primary}"
+msgstr "Erro: Não foi possível extrair o número da partição de {primary}"
+
+#: lib/bootloader_utils.py:361
+#, python-brace-format
+msgid "Set partition active: {primary}"
+msgstr "Partição definida como ativa: {primary}."
+
+#: lib/bootloader_utils.py:363
+#, python-brace-format
+msgid "Error: sfdisk returned exit code {code}"
+msgstr "Erro: sfdisk retornou código de saída {code}"
+
+#: lib/bootloader_utils.py:366
+msgid "Error: sfdisk command timed out"
+msgstr "Erro: comando sfdisk excedeu o tempo limite"
+
+#: lib/bootloader_utils.py:368
+msgid "Error: sfdisk not found - install util-linux package"
+msgstr "Erro: sfdisk não encontrado - instale o pacote util-linux"
+
+#: lib/bootloader_utils.py:370
+#, python-brace-format
+msgid "Error running sfdisk: {error}"
+msgstr "Erro ao executar sfdisk: {error}"
 
 #: lib/mount_utils.py:29
 msgid "Destination "
@@ -34,141 +263,51 @@ msgstr "Não foi possível determinar o tipo de sistema de arquivos de "
 msgid "Failed to mount "
 msgstr "Falha ao montar "
 
-#: lib/copy_utils.py:60 lib/copy_utils.py:61 lib/bootloader_utils.py:33
-#: lib/main_installer.py:583
-msgid "Installation canceled by user."
-msgstr "Instalação cancelada pelo usuário."
-
-#: lib/copy_utils.py:70
-msgid "Copying MiniOS files: "
-msgstr "Copiando arquivos do MiniOS: "
-
-#: lib/copy_utils.py:72
-msgid "Copied file: "
-msgstr "Arquivo copiado: "
-
-#: lib/copy_utils.py:79
-msgid "Created directory: "
-msgstr "Diretório criado: "
-
-#: lib/copy_utils.py:97
-msgid "Copied EFI file: "
-msgstr "Arquivo EFI copiado: "
-
-#: lib/bootloader_utils.py:37
-#, python-brace-format
-msgid "Entering bootloader directory: {boot_dir}"
-msgstr "Entrando no diretório do bootloader: {boot_dir}"
-
-#: lib/bootloader_utils.py:40
-msgid "Setting up bootloader."
-msgstr "Configurando o bootloader."
-
-#: lib/bootloader_utils.py:54
-msgid "Remounted boot directory with exec."
-msgstr "Diretório de inicialização remontado com execução."
-
-#: lib/bootloader_utils.py:56
-msgid "Failed to remount boot directory; proceeding."
-msgstr "Falha ao remontar o diretório de boot; prosseguindo."
-
-#: lib/bootloader_utils.py:58
-msgid "Made extlinux executable."
-msgstr "Tornado extlinux executável."
-
-#: lib/bootloader_utils.py:66
-#, python-brace-format
-msgid "Copied extlinux to fallback: {fallback_name}"
-msgstr "Extlinux copiado para fallback: {fallback_name}"
-
-#: lib/bootloader_utils.py:84
-#, python-brace-format
-msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
-msgstr ""
-"Instalação do extlinux falhou (código {code}), tentando fallback em /tmp..."
-
-#: lib/bootloader_utils.py:99
-#, python-brace-format
-msgid "Error installing boot loader (fallback code {code})."
-msgstr ""
-"Erro ao instalar o carregador de inicialização (código de fallback {code})."
-
-#: lib/bootloader_utils.py:102
-msgid "Boot loader installation succeeded via fallback."
-msgstr "Instalação do gerenciador de inicialização bem-sucedida via fallback."
-
-#: lib/bootloader_utils.py:104
-#, python-brace-format
-msgid "Ran extlinux installer (code {code})."
-msgstr "Executado o instalador extlinux (código {code})."
-
-#: lib/bootloader_utils.py:116
-msgid "Removed fallback binary: extlinux.exe."
-msgstr "Binário de fallback removido: extlinux.exe."
-
-#: lib/bootloader_utils.py:130
-#, python-brace-format
-msgid "Wrote MBR to {device}."
-msgstr "MBR gravado em {device}."
-
-#: lib/bootloader_utils.py:173
-#, python-brace-format
-msgid "Set partition active: {primary}."
-msgstr "Partição definida como ativa: {primary}."
-
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr "Falha ao formatar "
-
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
-msgstr "Falha ao formatar EFI "
-
-#: lib/main_installer.py:169
+#: lib/main_installer.py:170
 msgid "USB Device"
 msgstr "Dispositivo USB"
 
-#: lib/main_installer.py:171
+#: lib/main_installer.py:172
 msgid "SATA Drive"
 msgstr "Disco SATA"
 
-#: lib/main_installer.py:173
+#: lib/main_installer.py:174
 msgid "IDE Drive"
 msgstr "Disco IDE"
 
-#: lib/main_installer.py:175
+#: lib/main_installer.py:176
 msgid "NVMe SSD"
 msgstr "SSD NVMe"
 
-#: lib/main_installer.py:177
+#: lib/main_installer.py:178
 msgid "MMC/SD Card"
 msgstr "Cartão MMC/SD"
 
-#: lib/main_installer.py:179
+#: lib/main_installer.py:180
 msgid "Hard Disk Drive"
 msgstr "Disco Rígido"
 
-#: lib/main_installer.py:219
+#: lib/main_installer.py:220
 msgid "Warning: This appears to be a system disk"
 msgstr "Atenção: este parece ser um disco do sistema"
 
-#: lib/main_installer.py:223
+#: lib/main_installer.py:224
 msgid "Warning: This disk has mounted partitions"
 msgstr "Atenção: este disco tem partições montadas"
 
-#: lib/main_installer.py:256
+#: lib/main_installer.py:257
 msgid "Please select a target disk and filesystem:"
 msgstr "Por favor, selecione um disco de destino e sistema de arquivos:"
 
-#: lib/main_installer.py:265
+#: lib/main_installer.py:266
 msgid "Select Target Disk:"
 msgstr "Selecione o disco de destino:"
 
-#: lib/main_installer.py:282
+#: lib/main_installer.py:283
 msgid "Select Filesystem Type:"
 msgstr "Selecione o tipo de sistema de arquivos:"
 
-#: lib/main_installer.py:296
+#: lib/main_installer.py:297
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -238,168 +377,181 @@ msgstr ""
 "\n"
 
 #: lib/main_installer.py:328
+msgid "GRUB Boot Menu Language:"
+msgstr "Idioma do Menu de Inicialização GRUB:"
+
+#: lib/main_installer.py:338
+msgid "Multilingual menu"
+msgstr "Menu multilíngue"
+
+#: lib/main_installer.py:360
 msgid "Install"
 msgstr "Instalar"
 
-#: lib/main_installer.py:338
+#: lib/main_installer.py:370
 msgid "Configure MiniOS before installation"
 msgstr "Configurar o MiniOS antes da instalação"
 
-#: lib/main_installer.py:399 lib/main_installer.py:427
+#: lib/main_installer.py:437
 msgid "WARNING: This action is irreversible!"
 msgstr "ATENÇÃO: esta ação é irreversível!"
 
-#: lib/main_installer.py:400 lib/main_installer.py:442
+#: lib/main_installer.py:438
 msgid "Device information:"
 msgstr "Informações do dispositivo:"
 
-#: lib/main_installer.py:401 lib/main_installer.py:469
+#: lib/main_installer.py:439
 msgid "What will be erased:"
 msgstr "O que será apagado:"
 
-#: lib/main_installer.py:409
+#: lib/main_installer.py:447
 msgid "selected device"
 msgstr "dispositivo selecionado"
 
-#: lib/main_installer.py:481
+#: lib/main_installer.py:519
 msgid "Files, documents, and applications"
 msgstr "Arquivos, documentos e aplicativos"
 
-#: lib/main_installer.py:482
+#: lib/main_installer.py:520
 msgid "Operating systems"
 msgstr "Sistemas operacionais"
 
-#: lib/main_installer.py:483
+#: lib/main_installer.py:521
 msgid "Personal data and settings"
 msgstr "Dados pessoais e configurações"
 
-#: lib/main_installer.py:484
+#: lib/main_installer.py:522
 msgid "All partitions and file systems"
 msgstr "Todas as partições e sistemas de arquivos"
 
-#: lib/main_installer.py:511
+#: lib/main_installer.py:549
 msgid "Go Back"
 msgstr "Voltar"
 
-#: lib/main_installer.py:516
+#: lib/main_installer.py:554
 msgid "Continue"
 msgstr "Continuar"
 
-#: lib/main_installer.py:533
+#: lib/main_installer.py:571
 msgid "Preparing to install..."
 msgstr "Preparando para instalar..."
 
-#: lib/main_installer.py:543 lib/main_installer.py:573
+#: lib/main_installer.py:581 lib/main_installer.py:611
 msgid "Show Log"
 msgstr "Mostrar log"
 
-#: lib/main_installer.py:548
+#: lib/main_installer.py:586
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: lib/main_installer.py:569
+#: lib/main_installer.py:607
 msgid "Hide Log"
 msgstr "Ocultar log"
 
-#: lib/main_installer.py:582
+#: lib/main_installer.py:620
 msgid "Installation canceled."
 msgstr "Instalação cancelada."
 
-#: lib/main_installer.py:589
+#: lib/main_installer.py:627
 msgid "Restart Installation"
 msgstr "Reiniciar instalação"
 
-#: lib/main_installer.py:637 lib/main_installer.py:719
+#: lib/main_installer.py:675 lib/main_installer.py:757
 msgid "Unmounting disk..."
 msgstr "Desmontando disco..."
 
-#: lib/main_installer.py:638
+#: lib/main_installer.py:676
 msgid "Erasing disk..."
 msgstr "Apagando disco..."
 
-#: lib/main_installer.py:639
+#: lib/main_installer.py:677
 msgid "Partitioning disk..."
 msgstr "Particionando disco..."
 
-#: lib/main_installer.py:640
+#: lib/main_installer.py:678
 msgid "Formatting partitions..."
 msgstr "Formatando partições..."
 
-#: lib/main_installer.py:641
+#: lib/main_installer.py:679
 msgid "Mounting partition..."
 msgstr "Montando partição..."
 
-#: lib/main_installer.py:655
+#: lib/main_installer.py:693
 msgid "Error at step: "
 msgstr "Erro na etapa: "
 
-#: lib/main_installer.py:657 lib/main_installer.py:671
-#: lib/main_installer.py:696 lib/main_installer.py:715
-#: lib/main_installer.py:729
+#: lib/main_installer.py:695 lib/main_installer.py:709
+#: lib/main_installer.py:734 lib/main_installer.py:753
+#: lib/main_installer.py:767
 msgid "Installation failed: "
 msgstr "Falha na instalação: "
 
-#: lib/main_installer.py:661
+#: lib/main_installer.py:699
 msgid "Mounting EFI partition..."
 msgstr "Montando partição EFI..."
 
-#: lib/main_installer.py:669
+#: lib/main_installer.py:707
 msgid "Error mounting EFI partition:"
 msgstr "Erro ao montar a partição EFI:"
 
-#: lib/main_installer.py:675
+#: lib/main_installer.py:713
 msgid "Copying files..."
 msgstr "Copiando arquivos..."
 
-#: lib/main_installer.py:679
+#: lib/main_installer.py:717
 msgid "Cannot find MiniOS image."
 msgstr "Não foi possível encontrar a imagem do MiniOS."
 
-#: lib/main_installer.py:684
+#: lib/main_installer.py:722
 msgid "Copying EFI files to root..."
 msgstr "Copiando arquivos EFI para a raiz..."
 
-#: lib/main_installer.py:687
+#: lib/main_installer.py:725
 msgid "Copying EFI files to ESP..."
 msgstr "Copiando arquivos EFI para ESP..."
 
-#: lib/main_installer.py:694
+#: lib/main_installer.py:732
 msgid "Error during file copy:"
 msgstr "Erro ao copiar arquivos:"
 
-#: lib/main_installer.py:700
+#: lib/main_installer.py:738
 msgid "Setting up bootloader..."
 msgstr "Configurando o bootloader..."
 
-#: lib/main_installer.py:713
+#: lib/main_installer.py:751
 msgid "Error setting up bootloader:"
 msgstr "Erro ao configurar o bootloader:"
 
-#: lib/main_installer.py:727
+#: lib/main_installer.py:765
 msgid "Error during unmount:"
 msgstr "Erro ao desmontar:"
 
-#: lib/main_installer.py:731
+#: lib/main_installer.py:769
 msgid "Installation complete!"
 msgstr "Instalação concluída!"
 
-#: lib/main_installer.py:744
+#: lib/main_installer.py:782
 msgid "Installation Error"
 msgstr "Erro de instalação"
 
-#: lib/main_installer.py:762
+#: lib/main_installer.py:800
 msgid "Config file not found"
 msgstr "Arquivo de configuração não encontrado"
 
-#: lib/main_installer.py:783
+#: lib/main_installer.py:802
+#, python-brace-format
+msgid "Standard config file not found at {src_config}."
+msgstr "Arquivo de configuração padrão não encontrado em {src_config}."
+
+#: lib/main_installer.py:821
 msgid "Launch Error"
 msgstr "Erro ao iniciar"
 
-#: lib/main_installer.py:810
+#: lib/main_installer.py:848
 msgid "Root Privileges Required"
 msgstr "Privilégios de root necessários"
 
-#: lib/main_installer.py:812
+#: lib/main_installer.py:850
 msgid "This installer must be run as root."
 msgstr "Este instalador deve ser executado como root."
 
@@ -450,3 +602,118 @@ msgstr "Falha ao criar a segunda partição em "
 #: lib/disk_utils.py:232
 msgid "Failed to erase "
 msgstr "Falha ao apagar "
+
+#: lib/copy_utils.py:71
+msgid "Copying MiniOS files: "
+msgstr "Copiando arquivos do MiniOS: "
+
+#: lib/copy_utils.py:73
+msgid "Copied file: "
+msgstr "Arquivo copiado: "
+
+#: lib/copy_utils.py:80
+msgid "Created directory: "
+msgstr "Diretório criado: "
+
+#: lib/copy_utils.py:101
+msgid "Copied EFI file: "
+msgstr "Arquivo EFI copiado: "
+
+#: lib/copy_utils.py:243
+#, python-brace-format
+msgid "Warning: No translations found for {lang}, using English fallback"
+msgstr ""
+"Aviso: Nenhuma tradução encontrada para {lang}, usando inglês como "
+"alternativa"
+
+#: lib/copy_utils.py:249
+msgid "Error: grub.english.cfg template not found"
+msgstr "Erro: modelo grub.english.cfg não encontrado"
+
+#: lib/copy_utils.py:289
+#, python-brace-format
+msgid "Using localized theme: {theme}"
+msgstr "Usando tema localizado: {theme}"
+
+#: lib/copy_utils.py:291
+#, python-brace-format
+msgid "Localized theme not found for {lang}, using default"
+msgstr "Tema localizado não encontrado para {lang}, usando o padrão"
+
+#: lib/copy_utils.py:297
+#, python-brace-format
+msgid "Generated localized GRUB config for {lang}"
+msgstr "Configuração GRUB localizada gerada para {lang}"
+
+#: lib/copy_utils.py:301
+#, python-brace-format
+msgid "Error generating localized GRUB config: {error}"
+msgstr "Erro ao gerar configuração GRUB localizada: {error}"
+
+#: lib/copy_utils.py:314
+msgid "GRUB directory not found, skipping GRUB boot menu configuration"
+msgstr ""
+"Diretório GRUB não encontrado, pulando configuração do menu de inicialização "
+"GRUB"
+
+#: lib/copy_utils.py:322
+msgid "multilingual menu"
+msgstr "menu multilíngue"
+
+#: lib/copy_utils.py:326
+#, python-brace-format
+msgid "Applied {config} GRUB boot menu from {source}"
+msgstr "Aplicado menu de inicialização GRUB {config} de {source}"
+
+#: lib/copy_utils.py:329
+#, python-brace-format
+msgid ""
+"Warning: {config} configuration file not found, keeping original grub.cfg"
+msgstr ""
+"Aviso: arquivo de configuração {config} não encontrado, mantendo grub.cfg "
+"original"
+
+#: lib/copy_utils.py:335
+#, python-brace-format
+msgid "Generating localized GRUB menu for language: {lang}"
+msgstr "Gerando menu GRUB localizado para o idioma: {lang}"
+
+#: lib/copy_utils.py:338
+#, python-brace-format
+msgid "Applied {lang} GRUB boot menu"
+msgstr "Aplicado menu de inicialização GRUB em {lang}"
+
+#: lib/copy_utils.py:341
+#, python-brace-format
+msgid "Failed to generate {lang} config, falling back to English"
+msgstr "Falha ao gerar configuração em {lang}, usando inglês como alternativa"
+
+#: lib/copy_utils.py:345
+msgid "Applied English GRUB boot menu as fallback"
+msgstr "Aplicado menu de inicialização GRUB em inglês como alternativa"
+
+#: lib/copy_utils.py:347
+msgid "Warning: No fallback configuration available, keeping original grub.cfg"
+msgstr ""
+"Aviso: nenhuma configuração alternativa disponível, mantendo grub.cfg "
+"original"
+
+#~ msgid ""
+#~ "GRUB boot menu with support for multiple languages.\n"
+#~ "Users can switch between different languages in the boot menu."
+#~ msgstr ""
+#~ "Menu de inicialização GRUB com suporte para múltiplos idiomas.\n"
+#~ "Usuários podem alternar entre idiomas diferentes no menu de inicialização."
+
+#~ msgid "English only menu"
+#~ msgstr "Menu apenas em inglês"
+
+#~ msgid ""
+#~ "GRUB boot menu in English only.\n"
+#~ "Better suited for customization and modifications."
+#~ msgstr ""
+#~ "Menu de inicialização GRUB apenas em inglês.\n"
+#~ "Melhor adequado para personalização e modificações."
+
+#~ msgid "Setting up bootloader."
+#~ msgstr "Configurando o bootloader."

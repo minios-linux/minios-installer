@@ -1,101 +1,51 @@
 .TH MINIOS-INSTALLER 1 "August 2025" "MiniOS" "User Commands"
 .SH NAME
-minios-installer \- Graphical tool for installing MiniOS to disk
+minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
 .B minios-installer
 .SH DESCRIPTION
 .B minios-installer
-is a GTK3 graphical utility for installing MiniOS from a live session to a permanent disk installation. It provides a step-by-step interface for disk selection, partitioning, formatting, file copying, and bootloader configuration.
+is a GTK3 graphical utility for installing MiniOS from a live session to a permanent disk installation. It provides a simple interface for disk selection, filesystem choice, and automated installation.
 .PP
-The installer supports both BIOS and UEFI systems with automatic detection and configuration. It creates the necessary partitions, formats them with the selected filesystem, copies all MiniOS files, and installs the appropriate bootloader (GRUB or Syslinux).
+The installer supports both BIOS and UEFI systems with automatic detection. It creates appropriate partitions, formats them with the selected filesystem, copies MiniOS files, and installs GRUB bootloader.
 .PP
-The application requires administrative privileges and uses PolicyKit for authentication. All operations that modify the system are performed with proper privilege escalation.
-.SH FEATURES
-.TP
-.B Automatic disk detection
-Scans and displays all available storage devices with detailed information including size, model, and interface type.
-.TP
-.B Multiple filesystem support
-Supports ext2, ext3, ext4, btrfs, xfs, f2fs, and FAT32 filesystems with automatic tool detection.
-.TP
-.B UEFI and BIOS support
-Automatically detects the boot mode and creates appropriate partitions (GPT with EFI system partition for UEFI, MBR for BIOS).
-.TP
-.B Real-time progress tracking
-Displays detailed progress information during disk partitioning, formatting, file copying, and bootloader installation.
-.TP
-.B Safe installation process
-Includes confirmation dialogs, device unmounting, and error handling to prevent data loss.
-.SH INSTALLATION PROCESS
-The installer performs the following steps:
+Requires administrative privileges via PolicyKit authentication.
+.SH USAGE
+1. Select target disk from available devices
 .PP
-1. \fBDisk Selection\fR - Choose target disk from available devices
+2. Choose filesystem type (ext4, ext2, btrfs, FAT32, or NTFS)
 .PP
-2. \fBFilesystem Selection\fR - Choose filesystem type (ext4 recommended)
+3. Select GRUB boot menu language
 .PP
-3. \fBConfirmation\fR - Review selections and confirm installation
-.PP
-4. \fBPartitioning\fR - Create partition table and partitions
-.PP
-5. \fBFormatting\fR - Format partitions with selected filesystem
-.PP
-6. \fBFile Copying\fR - Copy MiniOS system files from live session
-.PP
-7. \fBBootloader Installation\fR - Install and configure GRUB or Syslinux
-.PP
-8. \fBCompletion\fR - Display installation results and cleanup
-.SH FILES
-.TP
-.I /usr/share/applications/minios-installer.desktop
-Desktop entry file for application menu.
-.TP
-.I /usr/share/polkit-1/actions/org.minios.installer.policy
-PolicyKit policy file for administrative operations.
-.TP
-.I /usr/share/minios-installer/style.css
-Application stylesheet for custom GUI styling.
-.TP
-.I /usr/lib/minios-installer/
-Installation directory containing Python modules and main application.
+4. Confirm installation and wait for completion
 .SH SUPPORTED FILESYSTEMS
 .TP
-.B ext2, ext3, ext4
-Standard Linux filesystems (ext4 recommended for best performance).
+.B ext4
+Recommended for Linux installations (journaling, good performance)
+.TP
+.B ext2
+Minimal overhead, suitable for USB drives (no journaling)
 .TP
 .B btrfs
-Modern copy-on-write filesystem with advanced features.
+Advanced features like snapshots and compression
 .TP
-.B xfs
-High-performance journaling filesystem.
+.B FAT32
+Universal compatibility with Windows/Mac (4GB file limit)
 .TP
-.B f2fs
-Flash-friendly filesystem optimized for SSDs.
-.TP
-.B vfat (FAT32)
-Compatible with Windows systems (not recommended for Linux-only installations).
-.SH REQUIREMENTS
-.TP
-.B Hardware
-Minimum 2GB RAM, 4GB disk space, x86-64 processor.
-.TP
-.B Software
-Running MiniOS live session with GTK3 environment.
-.TP
-.B Privileges
-Administrative access via PolicyKit authentication.
+.B NTFS
+Windows-compatible with large file support
+.SH FILES
+.I /usr/share/applications/minios-installer.desktop
+.br
+.I /usr/share/polkit-1/actions/org.minios.installer.policy
+.br
+.I /usr/lib/minios-installer/
 .SH NOTES
 .PP
-The installer only works from within a MiniOS live session and copies the currently running system to the target disk. It does not download or install additional packages.
+Only works from MiniOS live session. All data on target disk will be erased.
 .PP
-All data on the target disk will be completely erased during installation. Ensure important data is backed up before proceeding.
-.PP
-UEFI Secure Boot is supported when using GPT partitioning and GRUB bootloader.
-.SH SEE ALSO
-.BR minios-configurator (1),
-.BR fdisk (8),
-.BR mkfs (8),
-.BR grub-install (8)
+Minimum requirements: 2GB RAM, 4GB disk space, x86-64 processor.
 .SH AUTHOR
 crims0n <crims0n@minios.dev>
-.SH REPORTING BUGS
-Report bugs to: https://github.com/minios-linux/minios-installer/issues
+.SH BUGS
+https://github.com/minios-linux/minios-installer/issues

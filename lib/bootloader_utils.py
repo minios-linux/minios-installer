@@ -333,42 +333,38 @@ def _write_mbr(device: str, boot_dir: str, log_cb: Callable) -> None:
 
 def _set_active_partition(device: str, primary: str, log_cb: Callable) -> None:
     """
-    Set the primary partition as active and deactivate others.
+    Set the primary partition as active using sfdisk.
     """
-    # Deactivate existing active partitions
-    try:
-        fdisk_output = subprocess.check_output(
-            ['fdisk', '-l', device],
-            stderr=subprocess.STDOUT,
-            text=True
-        )
-    except subprocess.CalledProcessError:
-        fdisk_output = ""
-    
-    old_parts = []
-    for line in fdisk_output.splitlines():
-        m = re.match(r'^(\S+)\s+\*', line)
-        if m and m.group(1).startswith(device):
-            num = re.sub(r'.*[^0-9]', '', m.group(1))
-            if num:
-                old_parts.append(num)
-    
-    # Build fdisk commands: toggle off old, toggle on new, then write
-    cmds = []
-    for old in old_parts:
-        cmds += ['a', old]
+    # Extract partition number
     part_num = re.sub(r'.*[^0-9]', '', primary)
-    cmds += ['a', part_num, 'w']
-    fd_input = "\n".join(cmds) + "\n"
-    # Run fdisk commands and log output
-    proc = subprocess.run(
-        ['fdisk', device],
-        input=fd_input, text=True,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    for line in proc.stdout.splitlines():
-        log_cb(line)
-    for line in proc.stderr.splitlines():
-        log_cb(line)
+    if not part_num:
+        log_cb(_("Error: Could not extract partition number from {primary}").format(primary=primary))
+        return
     
-    log_cb(_("Set partition active: {primary}.").format(primary=primary))
+    # Use sfdisk to set partition as bootable
+    try:
+        proc = subprocess.run(
+            ['sfdisk', '-A', device, part_num],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            timeout=30
+        )
+        
+        # Log output for debugging
+        if proc.stdout:
+            for line in proc.stdout.splitlines():
+                log_cb(f"[sfdisk] {line}")
+        if proc.stderr:
+            for line in proc.stderr.splitlines():
+                log_cb(f"[sfdisk error] {line}")
+        
+        if proc.returncode == 0:
+            log_cb(_("Set partition active: {primary}").format(primary=primary))
+        else:
+            log_cb(_("Error: sfdisk returned exit code {code}").format(code=proc.returncode))
+            
+    except subprocess.TimeoutExpired:
+        log_cb(_("Error: sfdisk command timed out"))
+    except FileNotFoundError:
+        log_cb(_("Error: sfdisk not found - install util-linux package"))
+    except Exception as e:
+        log_cb(_("Error running sfdisk: {error}").format(error=str(e)))
