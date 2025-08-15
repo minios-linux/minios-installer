@@ -244,13 +244,13 @@ def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path
         return False
     
     # Get template from english config (has the structure we want)
-    english_cfg_path = os.path.join(grub_dir, 'grub.english.cfg')
-    if not os.path.exists(english_cfg_path):
-        log_cb(_("Error: grub.english.cfg template not found"))
+    template_cfg_path = os.path.join(grub_dir, 'grub.template.cfg')
+    if not os.path.exists(template_cfg_path):
+        log_cb(_("Error: grub.template.cfg template not found"))
         return False
         
     try:
-        with open(english_cfg_path, 'r', encoding='utf-8') as f:
+        with open(template_cfg_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
         
         # Apply translations to the template
@@ -337,11 +337,11 @@ def _process_grub_config(dst: str, config_type: str, log_cb: Callable) -> None:
         if _generate_localized_grub_config(grub_dir, lang_code, grub_cfg_path, log_cb):
             log_cb(_("Applied {lang} GRUB boot menu").format(lang=lang_code))
         else:
-            # Fallback to English if localized generation failed
-            log_cb(_("Failed to generate {lang} config, falling back to English").format(lang=lang_code))
-            english_cfg_path = os.path.join(grub_dir, 'grub.english.cfg')
-            if os.path.exists(english_cfg_path):
-                shutil.copy2(english_cfg_path, grub_cfg_path)
-                log_cb(_("Applied English GRUB boot menu as fallback"))
+            # Fallback to template if localized generation failed
+            log_cb(_("Failed to generate {lang} config, falling back to template").format(lang=lang_code))
+            template_cfg_path = os.path.join(grub_dir, 'grub.template.cfg')
+            if os.path.exists(template_cfg_path):
+                shutil.copy2(template_cfg_path, grub_cfg_path)
+                log_cb(_("Applied template GRUB boot menu as fallback"))
             else:
                 log_cb(_("Warning: No fallback configuration available, keeping original grub.cfg"))

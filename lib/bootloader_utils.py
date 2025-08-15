@@ -15,44 +15,90 @@ import subprocess
 from typing import Optional, Callable
 import gettext
 
+# Import SYSLINUX support
+try:
+    from bootloader_utils_syslinux import install_syslinux_bootloader
+except ImportError:
+    # Fallback if the module is not available
+    def install_syslinux_bootloader(device: str, primary: str, efi: Optional[str], boot_dir: str,
+                                   progress_cb: Callable, log_cb: Callable) -> None:
+        # Use EXTLINUX as fallback
+        install_extlinux_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
+
 # Initialize gettext
 gettext.bindtextdomain('minios-installer', '/usr/share/locale')
 gettext.textdomain('minios-installer')
 _ = gettext.gettext
 
 
+def detect_available_bootloaders(boot_dir: str) -> dict:
+    """
+    Detect which bootloaders are available based on present files.
+    Returns a dictionary with availability status for each bootloader.
+    """
+    available = {
+        'grub': False,
+        'syslinux': False
+    }
+    
+    # Check for GRUB i386-pc files (needed for BIOS installation)
+    grub_bios_files = [
+        os.path.join(boot_dir, 'grub', 'i386-pc', 'boot.img'),
+        os.path.join(boot_dir, 'grub', 'i386-pc', 'core.img'),
+        os.path.join(boot_dir, 'grub', 'i386-pc', 'grub-bios-setup')
+    ]
+    
+    # GRUB is available if we have essential BIOS files (any of them indicates BIOS support)
+    if any(os.path.exists(f) for f in grub_bios_files):
+        available['grub'] = True
+    
+    # Check for SYSLINUX files
+    arch = subprocess.check_output(['uname', '-m'], text=True).strip()
+    syslinux_files = [
+        os.path.join(boot_dir, 'syslinux.cfg'),
+        os.path.join(boot_dir, 'ldlinux.sys'),
+        os.path.join(boot_dir, 'extlinux.x64' if arch == 'x86_64' else 'extlinux.x32')
+    ]
+    
+    # SYSLINUX is available if we have configuration and executable
+    if os.path.exists(syslinux_files[0]) and os.path.exists(syslinux_files[2]):
+        available['syslinux'] = True
+    
+    return available
+
+
+def get_bootloader_description(bootloader: str) -> str:
+    """Get user-friendly description for a bootloader."""
+    descriptions = {
+        'grub': _("GRUB - Modern bootloader with advanced features"),
+        'syslinux': _("SYSLINUX - Lightweight bootloader for legacy systems")
+    }
+    return descriptions.get(bootloader, bootloader)
+
+
 def detect_bootloader_type(boot_dir: str) -> str:
     """
     Detect which bootloader to use based on available files.
-    Returns 'grub' if GRUB files are present, 'extlinux' otherwise.
+    Uses the same logic as detect_available_bootloaders().
     """
-    # Check for GRUB files
-    grub_files = [
-        os.path.join(boot_dir, 'grub', 'i386-pc'),
-        os.path.join(boot_dir, 'grub', 'x86_64-efi'),  
-        os.path.join(boot_dir, 'grub', 'grub.cfg')
-    ]
+    available = detect_available_bootloaders(boot_dir)
     
-    # If any essential GRUB files exist, use GRUB
-    if any(os.path.exists(f) for f in grub_files):
+    # Prefer GRUB if available
+    if available.get('grub', False):
         return 'grub'
     
-    # Check for EXTLINUX files
-    arch = subprocess.check_output(['uname', '-m'], text=True).strip()
-    extlinux_exe = 'extlinux.x64' if arch == 'x86_64' else 'extlinux.x32'
-    extlinux_path = os.path.join(boot_dir, extlinux_exe)
+    # Fall back to SYSLINUX if available
+    if available.get('syslinux', False):
+        return 'syslinux'
     
-    if os.path.exists(extlinux_path):
-        return 'extlinux'
-    
-    # Default to GRUB (since it's now the default in build system)
-    return 'grub'
+    # Final fallback to extlinux for backward compatibility
+    return 'extlinux'
 
 
 def install_bootloader(device: str, primary: str, efi: Optional[str], 
-                      progress_cb: Callable, log_cb: Callable) -> None:
+                      progress_cb: Callable, log_cb: Callable, bootloader_choice: Optional[str] = None) -> None:
     """
-    Install the appropriate bootloader (GRUB or EXTLINUX) based on available files.
+    Install the appropriate bootloader (GRUB or SYSLINUX) based on user choice or available files.
     Aborts immediately if cancellation is requested.
     """
     # Check for user cancellation
@@ -64,13 +110,27 @@ def install_bootloader(device: str, primary: str, efi: Optional[str],
     boot_dir = os.path.join("/mnt/install", os.path.basename(primary), "minios", "boot")
     log_cb(_("Entering bootloader directory: {boot_dir}").format(boot_dir=boot_dir))
     
-    # Detect bootloader type
-    bootloader_type = detect_bootloader_type(boot_dir)
-    log_cb(_("Detected bootloader type: {type}").format(type=bootloader_type))
+    # Use user choice or detect automatically
+    if bootloader_choice:
+        bootloader_type = bootloader_choice
+        log_cb(_("Using user-selected bootloader: {type}").format(type=bootloader_type))
+    else:
+        bootloader_type = detect_bootloader_type(boot_dir)
+        log_cb(_("Auto-detected bootloader type: {type}").format(type=bootloader_type))
+    
+    # Validate the choice is actually available
+    available = detect_available_bootloaders(boot_dir)
+    if bootloader_type not in available or not available[bootloader_type]:
+        # Fall back to auto-detection
+        bootloader_type = detect_bootloader_type(boot_dir)
+        log_cb(_("Selected bootloader not available, falling back to: {type}").format(type=bootloader_type))
     
     if bootloader_type == 'grub':
         install_grub_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
+    elif bootloader_type == 'syslinux':
+        install_syslinux_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
     else:
+        # Fallback to extlinux for backward compatibility
         install_extlinux_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
 
 

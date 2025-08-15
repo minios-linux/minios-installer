@@ -30,7 +30,7 @@ from disk_utils import find_available_disks, get_disk_size_mib, start_disk_monit
 from mount_utils import mount_partition, unmount_partitions, force_unmount_device
 from format_utils import format_partitions, check_filesystem_support, detect_filesystem_tools
 from copy_utils import copy_minios_files, copy_efi_files, find_minios_source
-from bootloader_utils import install_bootloader
+from bootloader_utils import install_bootloader, detect_available_bootloaders, get_bootloader_description
 from disk_utils import partition_disk, zero_fill_disk
 
 gi.require_version('Gtk', '3.0')
@@ -89,6 +89,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.use_gpt             = False
         self.create_efi          = False
         self.grub_config_type    = "multilang"  # "multilang" or language code like "ru_RU"
+        self.selected_bootloader = None  # "grub", "syslinux", or None for auto-detect
         self.cancel_requested    = False
 
         self.p1 = None
@@ -324,6 +325,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         hfs.pack_start(eb, False, False, 0)
         vb_fs.pack_start(hfs, False, False, 0)
         
+        # Bootloader selection (only for BIOS systems)
+        self._add_bootloader_selection(vb_fs)
+        
         # GRUB boot menu language selection
         grub_config_label = Gtk.Label(label=_("GRUB Boot Menu Language:"))
         grub_config_label.set_halign(Gtk.Align.START)
@@ -422,6 +426,80 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if lang_code is not None:
             self.grub_config_type = lang_code
 
+    def _add_bootloader_selection(self, parent_box):
+        """Add bootloader selection UI if multiple bootloaders are available."""
+        # Check what bootloaders are available
+        minios_source = find_minios_source()
+        if not minios_source:
+            return  # No source found, can't check bootloaders
+        
+        boot_dir = os.path.join(minios_source, "boot")
+        available_bootloaders = detect_available_bootloaders(boot_dir)
+        
+        # Only show selection if more than one bootloader is available
+        available_list = [name for name, available in available_bootloaders.items() if available]
+        if len(available_list) <= 1:
+            return  # Only one or no bootloaders available
+        
+        # Create bootloader selection UI
+        bootloader_label = Gtk.Label(label=_("BIOS Bootloader:"))
+        bootloader_label.set_halign(Gtk.Align.START)
+        bootloader_label.set_margin_top(12)
+        parent_box.pack_start(bootloader_label, False, False, 0)
+        
+        hbl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.bootloader_combo = Gtk.ComboBoxText(hexpand=True)
+        
+        # Add available bootloaders with simple names
+        bootloader_names = {
+            'grub': 'GRUB',
+            'syslinux': 'SYSLINUX'
+        }
+        for bootloader in available_list:
+            name = bootloader_names.get(bootloader, bootloader.upper())
+            self.bootloader_combo.append(bootloader, name)
+        
+        self.bootloader_combo.set_active(0)  # Select first available by default
+        self.selected_bootloader = available_list[0] if available_list else None
+        self.bootloader_combo.connect("changed", self._on_bootloader_changed)
+        hbl.pack_start(self.bootloader_combo, True, True, 0)
+
+        info = Gtk.Image.new_from_icon_name("dialog-information", Gtk.IconSize.SMALL_TOOLBAR)
+        eb = Gtk.EventBox()
+        eb.add(info)
+        eb.set_tooltip_markup(
+            _("<b>GRUB</b>\n"
+              "  + Modern bootloader with advanced features.\n"
+              "  + Better compatibility with complex configurations.\n"
+              "  + Support for advanced boot scenarios.\n"
+              "  - May not work with Ventoy (requires GRUB2 mode).\n"
+              "  - May have issues with older systems (Debian 10, for example).\n\n"
+              "<b>SYSLINUX</b>\n"
+              "  + Lightweight and fast bootloader.\n"
+              "  + Better compatibility with Ventoy and older systems.\n"
+              "  + Simple and reliable for basic setups.\n"
+              "  - Limited advanced features.\n\n")
+        )
+        hbl.pack_start(eb, False, False, 0)
+        
+        bootloader_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        bootloader_box.pack_start(hbl, False, False, 0)
+        
+        # Add info about bootloader selection
+        info_label = Gtk.Label()
+        info_label.set_markup("<small><i>" + _('This selection only affects BIOS boot. EFI systems always use GRUB.') + "</i></small>")
+        info_label.set_halign(Gtk.Align.START)
+        info_label.set_line_wrap(True)
+        info_label.get_style_context().add_class("dim-label")
+        bootloader_box.pack_start(info_label, False, False, 0)
+        
+        parent_box.pack_start(bootloader_box, False, False, 6)
+
+    def _on_bootloader_changed(self, combo):
+        """Handle bootloader selection change."""
+        bootloader_id = combo.get_active_id()
+        self.selected_bootloader = bootloader_id
+
     def _update_install_sensitive(self):
         if hasattr(self, 'btn_install'):
             ok = bool(self.selected_device and self.selected_filesystem)
@@ -462,7 +540,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         header_box.pack_start(warning_icon, False, False, 0)
         
         warning_label = Gtk.Label()
-        warning_label.set_markup(f'<span size="x-large" weight="bold" foreground="red">{_("WARNING: This action is irreversible!")}</span>')
+        warning_label.set_markup('<span size="x-large" weight="bold" foreground="red">' + _("WARNING: This action is irreversible!") + '</span>')
         warning_label.set_halign(Gtk.Align.CENTER)
         header_box.pack_start(warning_label, False, False, 0)
         
@@ -477,7 +555,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         device_info_icon = Gtk.Image.new_from_icon_name("drive-harddisk", Gtk.IconSize.MENU)
         device_label_box.pack_start(device_info_icon, False, False, 0)
         device_label_widget = Gtk.Label()
-        device_label_widget.set_markup(f'<b>{_("Device information:")}</b>')
+        device_label_widget.set_markup('<b>' + _("Device information:") + '</b>')
         device_label_box.pack_start(device_label_widget, False, False, 0)
         device_frame.set_label_widget(device_label_box)
         
@@ -504,7 +582,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         erase_icon = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)
         erase_label_box.pack_start(erase_icon, False, False, 0)
         erase_label_widget = Gtk.Label()
-        erase_label_widget.set_markup(f'<b>{_("What will be erased:")}</b>')
+        erase_label_widget.set_markup('<b>' + _("What will be erased:") + '</b>')
         erase_label_box.pack_start(erase_label_widget, False, False, 0)
         erase_frame.set_label_widget(erase_label_box)
         
@@ -741,7 +819,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
                         dev, p1,
                         p2 if self.create_efi else None,
                         self._report_progress,
-                        self._log_async
+                        self._log_async,
+                        self.selected_bootloader
                     )
                 except Exception as e:
                     if self.cancel_requested:
@@ -799,7 +878,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 buttons=Gtk.ButtonsType.OK,
                 text=_("Config file not found")
             )
-            dlg.format_secondary_text(_(f"Standard config file not found at {src_config}."))
+            dlg.format_secondary_text(_("Standard config file not found at {}.").format(src_config))
             dlg.run()
             dlg.destroy()
             return
