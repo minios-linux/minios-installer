@@ -7,7 +7,7 @@ minios-installer \- Install MiniOS to disk from live session
 .B minios-installer
 is a GTK3 graphical utility for installing MiniOS from a live session to a permanent disk installation. It provides a simple interface for disk selection, filesystem choice, and automated installation.
 .PP
-The installer supports both BIOS and UEFI systems with automatic detection. It creates appropriate partitions, formats them with the selected filesystem, copies MiniOS files, and installs GRUB bootloader.
+The installer supports both BIOS and UEFI systems with automatic detection. It creates appropriate partitions, formats them with the selected filesystem, copies MiniOS files, and installs the appropriate bootloader (SYSLINUX for BIOS, GRUB for UEFI).
 .PP
 Requires administrative privileges via PolicyKit authentication.
 .SH USAGE
@@ -15,9 +15,11 @@ Requires administrative privileges via PolicyKit authentication.
 .PP
 2. Choose filesystem type (ext4, ext2, btrfs, FAT32, or NTFS)
 .PP
-3. Select GRUB boot menu language
+3. Select boot menu language
 .PP
-4. Confirm installation and wait for completion
+4. Optionally configure MiniOS settings via integrated configurator
+.PP
+5. Confirm installation and wait for completion
 .SH SUPPORTED FILESYSTEMS
 .TP
 .B ext4
