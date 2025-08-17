@@ -15,15 +15,7 @@ import subprocess
 from typing import Optional, Callable
 import gettext
 
-# Import SYSLINUX support
-try:
-    from bootloader_utils_syslinux import install_syslinux_bootloader
-except ImportError:
-    # Fallback if the module is not available
-    def install_syslinux_bootloader(device: str, primary: str, efi: Optional[str], boot_dir: str,
-                                   progress_cb: Callable, log_cb: Callable) -> None:
-        # Use EXTLINUX as fallback
-        install_extlinux_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
+# SYSLINUX support is now integrated directly in this file
 
 # Initialize gettext
 gettext.bindtextdomain('minios-installer', '/usr/share/locale')
@@ -31,74 +23,20 @@ gettext.textdomain('minios-installer')
 _ = gettext.gettext
 
 
-def detect_available_bootloaders(boot_dir: str) -> dict:
+def detect_bootloader_type() -> str:
     """
-    Detect which bootloaders are available based on present files.
-    Returns a dictionary with availability status for each bootloader.
+    Always return SYSLINUX for BIOS boot as it loads GRUB2.
+    SYSLINUX is the only supported BIOS bootloader.
     """
-    available = {
-        'grub': False,
-        'syslinux': False
-    }
-    
-    # Check for GRUB i386-pc files (needed for BIOS installation)
-    grub_bios_files = [
-        os.path.join(boot_dir, 'grub', 'i386-pc', 'boot.img'),
-        os.path.join(boot_dir, 'grub', 'i386-pc', 'core.img'),
-        os.path.join(boot_dir, 'grub', 'i386-pc', 'grub-bios-setup')
-    ]
-    
-    # GRUB is available if we have essential BIOS files (any of them indicates BIOS support)
-    if any(os.path.exists(f) for f in grub_bios_files):
-        available['grub'] = True
-    
-    # Check for SYSLINUX files
-    arch = subprocess.check_output(['uname', '-m'], text=True).strip()
-    syslinux_files = [
-        os.path.join(boot_dir, 'syslinux.cfg'),
-        os.path.join(boot_dir, 'ldlinux.sys'),
-        os.path.join(boot_dir, 'extlinux.x64' if arch == 'x86_64' else 'extlinux.x32')
-    ]
-    
-    # SYSLINUX is available if we have configuration and executable
-    if os.path.exists(syslinux_files[0]) and os.path.exists(syslinux_files[2]):
-        available['syslinux'] = True
-    
-    return available
-
-
-def get_bootloader_description(bootloader: str) -> str:
-    """Get user-friendly description for a bootloader."""
-    descriptions = {
-        'grub': _("GRUB - Modern bootloader with advanced features"),
-        'syslinux': _("SYSLINUX - Lightweight bootloader for legacy systems")
-    }
-    return descriptions.get(bootloader, bootloader)
-
-
-def detect_bootloader_type(boot_dir: str) -> str:
-    """
-    Detect which bootloader to use based on available files.
-    Uses the same logic as detect_available_bootloaders().
-    """
-    available = detect_available_bootloaders(boot_dir)
-    
-    # Prefer GRUB if available
-    if available.get('grub', False):
-        return 'grub'
-    
-    # Fall back to SYSLINUX if available
-    if available.get('syslinux', False):
-        return 'syslinux'
-    
-    # Final fallback to extlinux for backward compatibility
-    return 'extlinux'
+    # Always use SYSLINUX for BIOS - it loads GRUB2 via minimalist config
+    return 'syslinux'
 
 
 def install_bootloader(device: str, primary: str, efi: Optional[str], 
-                      progress_cb: Callable, log_cb: Callable, bootloader_choice: Optional[str] = None) -> None:
+                      progress_cb: Callable, log_cb: Callable) -> None:
     """
-    Install the appropriate bootloader (GRUB or SYSLINUX) based on user choice or available files.
+    Install SYSLINUX bootloader for BIOS boot.
+    SYSLINUX is the only supported BIOS bootloader and loads GRUB2.
     Aborts immediately if cancellation is requested.
     """
     # Check for user cancellation
@@ -110,151 +48,9 @@ def install_bootloader(device: str, primary: str, efi: Optional[str],
     boot_dir = os.path.join("/mnt/install", os.path.basename(primary), "minios", "boot")
     log_cb(_("Entering bootloader directory: {boot_dir}").format(boot_dir=boot_dir))
     
-    # Use user choice or detect automatically
-    if bootloader_choice:
-        bootloader_type = bootloader_choice
-        log_cb(_("Using user-selected bootloader: {type}").format(type=bootloader_type))
-    else:
-        bootloader_type = detect_bootloader_type(boot_dir)
-        log_cb(_("Auto-detected bootloader type: {type}").format(type=bootloader_type))
-    
-    # Validate the choice is actually available
-    available = detect_available_bootloaders(boot_dir)
-    if bootloader_type not in available or not available[bootloader_type]:
-        # Fall back to auto-detection
-        bootloader_type = detect_bootloader_type(boot_dir)
-        log_cb(_("Selected bootloader not available, falling back to: {type}").format(type=bootloader_type))
-    
-    if bootloader_type == 'grub':
-        install_grub_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
-    elif bootloader_type == 'syslinux':
-        install_syslinux_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
-    else:
-        # Fallback to extlinux for backward compatibility
-        install_extlinux_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
-
-
-def install_grub_bootloader(device: str, primary: str, efi: Optional[str], boot_dir: str,
-                           progress_cb: Callable, log_cb: Callable) -> None:
-    """
-    Install GRUB bootloader using files from the MiniOS image.
-    """
-    progress_cb(96, _("Installing GRUB bootloader..."))
-    
-    # Paths to GRUB files in the image
-    grub_dir = os.path.join(boot_dir, 'grub')
-    arch = subprocess.check_output(['uname', '-m'], text=True).strip()
-    grub_pc_dir = os.path.join(grub_dir, 'i386-pc')
-    
-    # For BIOS boot, we need to install GRUB using the image files
-    if device != primary:
-        # Try portable grub-bios-setup from the image first
-        grub_bios_setup = os.path.join(grub_pc_dir, 'grub-bios-setup')
-        
-        if os.path.exists(grub_bios_setup):
-            # Make it executable
-            os.chmod(grub_bios_setup, 0o755)
-            log_cb(_("Using portable grub-bios-setup from image"))
-            
-            try:
-                # Use the portable grub-bios-setup tool
-                cmd = [
-                    grub_bios_setup,
-                    '--directory=' + grub_pc_dir,
-                    '--device-map=/dev/null',
-                    device
-                ]
-                
-                proc = subprocess.run(cmd, capture_output=True, text=True, cwd=grub_pc_dir)
-                for line in proc.stdout.splitlines():
-                    log_cb(line)
-                for line in proc.stderr.splitlines():
-                    log_cb(line)
-                    
-                if proc.returncode == 0:
-                    log_cb(_("GRUB installed successfully using grub-bios-setup"))
-                    _set_active_partition(device, primary, log_cb)
-                else:
-                    log_cb(_("grub-bios-setup failed (code {code}), trying manual installation...").format(code=proc.returncode))
-                    install_grub_manual(device, primary, boot_dir, grub_pc_dir, log_cb)
-                    
-            except Exception as e:
-                log_cb(_("grub-bios-setup failed with exception: {error}").format(error=str(e)))
-                install_grub_manual(device, primary, boot_dir, grub_pc_dir, log_cb)
-        else:
-            # Fallback to manual installation
-            log_cb(_("grub-bios-setup not found in image, using manual installation..."))
-            install_grub_manual(device, primary, boot_dir, grub_pc_dir, log_cb)
-    
-    log_cb(_("GRUB bootloader installation completed"))
-
-
-def install_grub_manual(device: str, primary: str, boot_dir: str, grub_pc_dir: str, log_cb: Callable) -> None:
-    """
-    Manually install GRUB using boot images from the MiniOS image.
-    Uses boot.img for MBR and diskboot.img for partition boot record.
-    """
-    log_cb(_("Performing manual GRUB installation..."))
-    log_cb(_("Device: {device}, Primary partition: {primary}").format(device=device, primary=primary))
-    log_cb(_("GRUB directory: {grub_dir}").format(grub_dir=grub_pc_dir))
-    
-    # Stage 1: Install boot.img to MBR (first 440 bytes)
-    boot_img = os.path.join(grub_pc_dir, 'boot.img')
-    if os.path.exists(boot_img):
-        boot_img_size = os.path.getsize(boot_img)
-        log_cb(_("Installing boot.img (size: {size} bytes) to MBR").format(size=boot_img_size))
-        subprocess.check_call(
-            ['dd', 'if=' + boot_img, 'of=' + device, 'bs=440', 'count=1', 'conv=notrunc'],
-            stderr=subprocess.DEVNULL
-        )
-        log_cb(_("Installed GRUB stage 1 (boot.img) to MBR"))
-    else:
-        # Fallback to boot_hybrid.img if available
-        boot_hybrid = os.path.join(grub_pc_dir, 'boot_hybrid.img')
-        if os.path.exists(boot_hybrid):
-            subprocess.check_call(
-                ['dd', 'if=' + boot_hybrid, 'of=' + device, 'bs=440', 'count=1', 'conv=notrunc'],
-                stderr=subprocess.DEVNULL
-            )
-            log_cb(_("Installed GRUB boot_hybrid.img to MBR as fallback"))
-        else:
-            raise RuntimeError(_("No GRUB boot images found in {dir}").format(dir=grub_pc_dir))
-    
-    # Stage 2: Install diskboot.img to partition boot sector if it exists
-    diskboot_img = os.path.join(grub_pc_dir, 'diskboot.img') 
-    if os.path.exists(diskboot_img):
-        diskboot_img_size = os.path.getsize(diskboot_img)
-        log_cb(_("Installing diskboot.img (size: {size} bytes) to partition").format(size=diskboot_img_size))
-        # Write to the beginning of the primary partition
-        subprocess.check_call(
-            ['dd', 'if=' + diskboot_img, 'of=' + primary, 'bs=512', 'count=1', 'conv=notrunc'],
-            stderr=subprocess.DEVNULL
-        )
-        log_cb(_("Installed GRUB stage 1.5 (diskboot.img) to partition"))
-    else:
-        log_cb(_("diskboot.img not found, skipping partition boot sector installation"))
-    
-    # Stage 3: Install core.img if available
-    core_img = os.path.join(grub_pc_dir, 'core.img')
-    if os.path.exists(core_img):
-        try:
-            subprocess.check_call(
-                ['dd', 'if=' + core_img, 'of=' + device, 'bs=512', 'seek=1', 'conv=notrunc'],
-                stderr=subprocess.DEVNULL
-            )
-            log_cb(_("Installed core.img to boot gap"))
-        except subprocess.CalledProcessError as e:
-            log_cb(_("Warning: Failed to install core.img: {error}").format(error=str(e)))
-    else:
-        log_cb(_("Warning: core.img not found in image - GRUB may not boot properly"))
-    
-    # Set active partition
-    _set_active_partition(device, primary, log_cb)
-    
-    # Verify installation
-    _verify_grub_installation(device, primary, log_cb)
-    
-    log_cb(_("GRUB bootloader installation completed"))
+    # Always use SYSLINUX for BIOS boot (implemented via EXTLINUX)
+    log_cb(_("Preparing bootloader installation..."))
+    install_extlinux_bootloader(device, primary, efi, boot_dir, progress_cb, log_cb)
 
 
 def install_extlinux_bootloader(device: str, primary: str, efi: Optional[str], boot_dir: str,
@@ -344,39 +140,6 @@ def install_extlinux_bootloader(device: str, primary: str, efi: Optional[str], b
             pass
     
     log_cb(_("EXTLINUX bootloader installation completed"))
-
-
-def _verify_grub_installation(device: str, primary: str, log_cb: Callable) -> None:
-    """
-    Verify GRUB installation by checking MBR and partition boot sector.
-    """
-    try:
-        # Check MBR signature
-        with open(device, 'rb') as f:
-            mbr = f.read(512)
-            if len(mbr) >= 2:
-                signature = mbr[-2:]
-                if signature == b'\x55\xaa':
-                    log_cb(_("MBR signature OK (0x55AA)"))
-                else:
-                    log_cb(_("Warning: MBR signature incorrect: {sig}").format(sig=signature.hex()))
-            
-            # Check for GRUB signature in MBR
-            if b'GRUB' in mbr[:440]:
-                log_cb(_("GRUB signature found in MBR"))
-            else:
-                log_cb(_("Warning: GRUB signature not found in MBR"))
-        
-        # Check partition boot sector
-        with open(primary, 'rb') as f:
-            pbs = f.read(512)
-            if b'GRUB' in pbs:
-                log_cb(_("GRUB signature found in partition boot sector"))
-            else:
-                log_cb(_("Warning: GRUB signature not found in partition boot sector"))
-    
-    except Exception as e:
-        log_cb(_("Warning: Failed to verify GRUB installation: {error}").format(error=str(e)))
 
 
 def _write_mbr(device: str, boot_dir: str, log_cb: Callable) -> None:

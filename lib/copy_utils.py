@@ -21,7 +21,7 @@ _ = gettext.gettext
 
 
 def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callable, 
-                     config_override: Optional[str] = None, grub_config_type: str = "multilang") -> None:
+                     config_override: Optional[str] = None, boot_config_type: str = "multilang") -> None:
     """
     Copy MiniOS files from src to dst with progress reporting.
     """
@@ -80,7 +80,10 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
         log_cb(_("Created directory: ") + p)
     
     # Handle GRUB configuration selection
-    _process_grub_config(dst, grub_config_type, log_cb)
+    _process_grub_config(dst, boot_config_type, log_cb)
+    
+    # Handle SYSLINUX configuration selection  
+    _process_syslinux_config(dst, boot_config_type, log_cb)
 
 
 def copy_efi_files(src: str, dst: str, log_cb: Callable) -> None:
@@ -300,6 +303,20 @@ def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path
     except Exception as e:
         log_cb(_("Error generating localized GRUB config: {error}").format(error=str(e)))
         return False
+
+
+
+def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> None:
+    """
+    Process SYSLINUX boot configuration:
+    """
+    boot_dir = os.path.join(dst, 'minios', 'boot')
+    syslinux_cfg_path = os.path.join(boot_dir, 'syslinux.cfg')
+    
+    if os.path.exists(syslinux_cfg_path):
+        log_cb(_("SYSLINUX configuration already exists"))
+    else:
+        log_cb(_("Warning: SYSLINUX configuration not found"))
 
 
 def _process_grub_config(dst: str, config_type: str, log_cb: Callable) -> None:
