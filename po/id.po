@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-17 15:37+0300\n"
+"POT-Creation-Date: 2025-08-17 19:42+0300\n"
 "PO-Revision-Date: 2025-05-26 17:32+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -426,51 +426,51 @@ msgstr "Hak akses root diperlukan"
 msgid "This installer must be run as root."
 msgstr "Installer ini harus dijalankan sebagai root."
 
-#: lib/disk_utils.py:87
+#: lib/disk_utils.py:89
 msgid "Failed to retrieve disk list."
 msgstr "Gagal mengambil daftar disk."
 
-#: lib/disk_utils.py:96
+#: lib/disk_utils.py:98
 msgid "Failed to detect live media device"
 msgstr "Gagal mendeteksi perangkat media langsung"
 
-#: lib/disk_utils.py:101
+#: lib/disk_utils.py:103
 msgid "Failed to detect root disk"
 msgstr "Gagal mendeteksi disk root"
 
-#: lib/disk_utils.py:168
+#: lib/disk_utils.py:170
 msgid "Failed to get disk size."
 msgstr "Gagal mendapatkan ukuran disk."
 
-#: lib/disk_utils.py:175
+#: lib/disk_utils.py:177
 msgid "Could not parse disk size."
 msgstr "Tidak dapat mengurai ukuran disk."
 
-#: lib/disk_utils.py:187
+#: lib/disk_utils.py:189
 msgid "Failed to set GPT label on "
 msgstr "Gagal mengatur label GPT pada "
 
-#: lib/disk_utils.py:191 lib/disk_utils.py:205 lib/disk_utils.py:218
+#: lib/disk_utils.py:193 lib/disk_utils.py:207 lib/disk_utils.py:220
 msgid "Failed to create primary partition on "
 msgstr "Gagal membuat partisi utama pada "
 
-#: lib/disk_utils.py:195
+#: lib/disk_utils.py:197
 msgid "Failed to create EFI partition on "
 msgstr "Gagal membuat partisi EFI pada "
 
-#: lib/disk_utils.py:198 lib/disk_utils.py:212
+#: lib/disk_utils.py:200 lib/disk_utils.py:214
 msgid "Failed to set boot flag."
 msgstr "Gagal mengatur flag boot."
 
-#: lib/disk_utils.py:201 lib/disk_utils.py:215
+#: lib/disk_utils.py:203 lib/disk_utils.py:217
 msgid "Failed to set MSDOS label on "
 msgstr "Gagal mengatur label MSDOS pada "
 
-#: lib/disk_utils.py:209
+#: lib/disk_utils.py:211
 msgid "Failed to create second partition on "
 msgstr "Gagal membuat partisi kedua pada "
 
-#: lib/disk_utils.py:232
+#: lib/disk_utils.py:234
 msgid "Failed to erase "
 msgstr "Gagal menghapus "
 

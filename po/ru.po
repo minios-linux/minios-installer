@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-17 15:37+0300\n"
+"POT-Creation-Date: 2025-08-17 19:42+0300\n"
 "PO-Revision-Date: 2025-05-26 17:08+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
@@ -427,51 +427,51 @@ msgstr "Требуются права администратора"
 msgid "This installer must be run as root."
 msgstr "Этот установщик должен быть запущен от имени root."
 
-#: lib/disk_utils.py:87
+#: lib/disk_utils.py:89
 msgid "Failed to retrieve disk list."
 msgstr "Не удалось получить список дисков."
 
-#: lib/disk_utils.py:96
+#: lib/disk_utils.py:98
 msgid "Failed to detect live media device"
 msgstr "Не удалось обнаружить устройство загрузочного носителя"
 
-#: lib/disk_utils.py:101
+#: lib/disk_utils.py:103
 msgid "Failed to detect root disk"
 msgstr "Не удалось обнаружить корневой диск"
 
-#: lib/disk_utils.py:168
+#: lib/disk_utils.py:170
 msgid "Failed to get disk size."
 msgstr "Не удалось определить размер диска."
 
-#: lib/disk_utils.py:175
+#: lib/disk_utils.py:177
 msgid "Could not parse disk size."
 msgstr "Не удалось распознать размер диска."
 
-#: lib/disk_utils.py:187
+#: lib/disk_utils.py:189
 msgid "Failed to set GPT label on "
 msgstr "Не удалось установить метку GPT на "
 
-#: lib/disk_utils.py:191 lib/disk_utils.py:205 lib/disk_utils.py:218
+#: lib/disk_utils.py:193 lib/disk_utils.py:207 lib/disk_utils.py:220
 msgid "Failed to create primary partition on "
 msgstr "Не удалось создать основной раздел на "
 
-#: lib/disk_utils.py:195
+#: lib/disk_utils.py:197
 msgid "Failed to create EFI partition on "
 msgstr "Не удалось создать раздел EFI на "
 
-#: lib/disk_utils.py:198 lib/disk_utils.py:212
+#: lib/disk_utils.py:200 lib/disk_utils.py:214
 msgid "Failed to set boot flag."
 msgstr "Не удалось установить загрузочный флаг."
 
-#: lib/disk_utils.py:201 lib/disk_utils.py:215
+#: lib/disk_utils.py:203 lib/disk_utils.py:217
 msgid "Failed to set MSDOS label on "
 msgstr "Не удалось установить метку MSDOS на "
 
-#: lib/disk_utils.py:209
+#: lib/disk_utils.py:211
 msgid "Failed to create second partition on "
 msgstr "Не удалось создать второй раздел на "
 
-#: lib/disk_utils.py:232
+#: lib/disk_utils.py:234
 msgid "Failed to erase "
 msgstr "Не удалось стереть "
 

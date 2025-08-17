@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-17 15:37+0300\n"
+"POT-Creation-Date: 2025-08-17 19:42+0300\n"
 "PO-Revision-Date: 2025-05-26 17:18+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -429,51 +429,51 @@ msgstr "Se requieren privilegios de root"
 msgid "This installer must be run as root."
 msgstr "Este instalador debe ejecutarse como root."
 
-#: lib/disk_utils.py:87
+#: lib/disk_utils.py:89
 msgid "Failed to retrieve disk list."
 msgstr "No se pudo obtener la lista de discos."
 
-#: lib/disk_utils.py:96
+#: lib/disk_utils.py:98
 msgid "Failed to detect live media device"
 msgstr "No se pudo detectar el dispositivo de medios en vivo"
 
-#: lib/disk_utils.py:101
+#: lib/disk_utils.py:103
 msgid "Failed to detect root disk"
 msgstr "No se pudo detectar el disco raíz"
 
-#: lib/disk_utils.py:168
+#: lib/disk_utils.py:170
 msgid "Failed to get disk size."
 msgstr "No se pudo obtener el tamaño del disco."
 
-#: lib/disk_utils.py:175
+#: lib/disk_utils.py:177
 msgid "Could not parse disk size."
 msgstr "No se pudo analizar el tamaño del disco."
 
-#: lib/disk_utils.py:187
+#: lib/disk_utils.py:189
 msgid "Failed to set GPT label on "
 msgstr "No se pudo establecer la etiqueta GPT en "
 
-#: lib/disk_utils.py:191 lib/disk_utils.py:205 lib/disk_utils.py:218
+#: lib/disk_utils.py:193 lib/disk_utils.py:207 lib/disk_utils.py:220
 msgid "Failed to create primary partition on "
 msgstr "No se pudo crear la partición primaria en "
 
-#: lib/disk_utils.py:195
+#: lib/disk_utils.py:197
 msgid "Failed to create EFI partition on "
 msgstr "No se pudo crear la partición EFI en "
 
-#: lib/disk_utils.py:198 lib/disk_utils.py:212
+#: lib/disk_utils.py:200 lib/disk_utils.py:214
 msgid "Failed to set boot flag."
 msgstr "No se pudo establecer el indicador de arranque."
 
-#: lib/disk_utils.py:201 lib/disk_utils.py:215
+#: lib/disk_utils.py:203 lib/disk_utils.py:217
 msgid "Failed to set MSDOS label on "
 msgstr "No se pudo establecer la etiqueta MSDOS en "
 
-#: lib/disk_utils.py:209
+#: lib/disk_utils.py:211
 msgid "Failed to create second partition on "
 msgstr "No se pudo crear la segunda partición en "
 
-#: lib/disk_utils.py:232
+#: lib/disk_utils.py:234
 msgid "Failed to erase "
 msgstr "No se pudo borrar "
 
