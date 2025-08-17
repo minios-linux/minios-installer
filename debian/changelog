@@ -2,13 +2,13 @@ minios-installer (2.3) unstable; urgency=medium
 
   * Add function to extract boot file names from /proc/cmdline and enhance
     MiniOS source detection
-  * Enhance bootloader utilities to support GRUB detection and installation
+  * Consolidate bootloader utilities and remove code duplication
   * Improve error handling in main installer
-  * Add language selection in installer UI
-  * Add support for translation of grub configuration files
+  * Add multilingual boot menu language selection in installer UI
+  * Add support for multilingual GRUB configuration files
   * Fix fdisk partition activation using sfdisk for better reliability
 
- -- crims0n <crims0n@minios.dev>  Sun, 10 Aug 2025 19:46:15 +0000
+ -- crims0n <crims0n@minios.dev>  Sat, 16 Aug 2025 19:46:15 +0300
 
 minios-installer (2.2) unstable; urgency=medium
 

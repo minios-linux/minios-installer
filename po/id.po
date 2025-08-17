@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-15 14:35+0300\n"
+"POT-Creation-Date: 2025-08-17 15:37+0300\n"
 "PO-Revision-Date: 2025-05-26 17:32+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -15,57 +15,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: lib/bootloader_utils_syslinux.py:29
-#, fuzzy
-msgid "Installing SYSLINUX bootloader..."
-msgstr "Menginstal bootloader EXTLINUX..."
-
-#: lib/bootloader_utils_syslinux.py:44 lib/bootloader_utils.py:280
-msgid "Remounted boot directory with exec."
-msgstr "Direktori boot dipasang ulang dengan eksekusi."
-
-#: lib/bootloader_utils_syslinux.py:46 lib/bootloader_utils.py:282
-msgid "Failed to remount boot directory; proceeding."
-msgstr "Gagal memasang ulang direktori boot; melanjutkan."
-
-#: lib/bootloader_utils_syslinux.py:48 lib/bootloader_utils.py:284
-msgid "Made extlinux executable."
-msgstr "extlinux dibuat dapat dieksekusi."
-
-#: lib/bootloader_utils_syslinux.py:56
-#, fuzzy, python-brace-format
-msgid "Copied syslinux to fallback: {fallback_name}"
-msgstr "extlinux disalin ke fallback: {fallback_name}"
-
-#: lib/bootloader_utils_syslinux.py:74
-#, fuzzy, python-brace-format
-msgid "syslinux install failed (code {code}), trying fallback in /tmp..."
-msgstr "Instalasi extlinux gagal (kode {code}), mencoba fallback di /tmp..."
-
-#: lib/bootloader_utils_syslinux.py:89 lib/bootloader_utils.py:325
-#, python-brace-format
-msgid "Error installing boot loader (fallback code {code})."
-msgstr "Kesalahan saat menginstal boot loader (kode fallback {code})."
-
-#: lib/bootloader_utils_syslinux.py:92 lib/bootloader_utils.py:328
-msgid "Boot loader installation succeeded via fallback."
-msgstr "Instalasi boot loader berhasil melalui fallback."
-
-#: lib/bootloader_utils_syslinux.py:94
-#, fuzzy, python-brace-format
-msgid "Ran syslinux installer (code {code})."
-msgstr "extlinux installer dijalankan (kode {code})."
-
-#: lib/bootloader_utils_syslinux.py:109
-#, fuzzy
-msgid "Removed fallback binary: syslinux.exe."
-msgstr "Biner fallback dihapus: extlinux.exe."
-
-#: lib/bootloader_utils_syslinux.py:113
-#, fuzzy
-msgid "SYSLINUX bootloader installation completed"
-msgstr "Instalasi bootloader EXTLINUX selesai"
 
 #: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
 msgid "Failed to format "
@@ -75,216 +24,97 @@ msgstr "Gagal memformat "
 msgid "Failed to format EFI "
 msgstr "Gagal memformat EFI "
 
-#: lib/bootloader_utils.py:73
-msgid "GRUB - Modern bootloader with advanced features"
-msgstr ""
-
-#: lib/bootloader_utils.py:74
-msgid "SYSLINUX - Lightweight bootloader for legacy systems"
-msgstr ""
-
-#: lib/bootloader_utils.py:107 lib/main_installer.py:706 lib/copy_utils.py:61
+#: lib/bootloader_utils.py:45 lib/main_installer.py:622 lib/copy_utils.py:61
 #: lib/copy_utils.py:62
 msgid "Installation canceled by user."
 msgstr "Instalasi dibatalkan oleh pengguna."
 
-#: lib/bootloader_utils.py:111
+#: lib/bootloader_utils.py:49
 #, python-brace-format
 msgid "Entering bootloader directory: {boot_dir}"
 msgstr "Memasuki direktori bootloader: {boot_dir}"
 
-#: lib/bootloader_utils.py:116
-#, fuzzy, python-brace-format
-msgid "Using user-selected bootloader: {type}"
-msgstr "Terdeteksi jenis bootloader: {type}"
+#: lib/bootloader_utils.py:52
+msgid "Preparing bootloader installation..."
+msgstr "Mempersiapkan instalasi bootloader..."
 
-#: lib/bootloader_utils.py:119
-#, fuzzy, python-brace-format
-msgid "Auto-detected bootloader type: {type}"
-msgstr "Terdeteksi jenis bootloader: {type}"
-
-#: lib/bootloader_utils.py:126
-#, fuzzy, python-brace-format
-msgid "Selected bootloader not available, falling back to: {type}"
-msgstr "Terdeteksi jenis bootloader: {type}"
-
-#: lib/bootloader_utils.py:142
-msgid "Installing GRUB bootloader..."
-msgstr "Menginstal bootloader GRUB..."
-
-#: lib/bootloader_utils.py:157
-msgid "Using portable grub-bios-setup from image"
-msgstr "Menggunakan grub-bios-setup portabel dari gambar"
-
-#: lib/bootloader_utils.py:175
-msgid "GRUB installed successfully using grub-bios-setup"
-msgstr "GRUB berhasil diinstal menggunakan grub-bios-setup"
-
-#: lib/bootloader_utils.py:178
-#, python-brace-format
-msgid "grub-bios-setup failed (code {code}), trying manual installation..."
-msgstr "grub-bios-setup gagal (kode {code}), mencoba instalasi manual..."
-
-#: lib/bootloader_utils.py:182
-#, python-brace-format
-msgid "grub-bios-setup failed with exception: {error}"
-msgstr "grub-bios-setup gagal dengan pengecualian: {error}"
-
-#: lib/bootloader_utils.py:186
-msgid "grub-bios-setup not found in image, using manual installation..."
-msgstr ""
-"grub-bios-setup tidak ditemukan dalam gambar, menggunakan instalasi manual..."
-
-#: lib/bootloader_utils.py:189 lib/bootloader_utils.py:257
-msgid "GRUB bootloader installation completed"
-msgstr "Instalasi bootloader GRUB selesai"
-
-#: lib/bootloader_utils.py:197
-msgid "Performing manual GRUB installation..."
-msgstr "Melakukan instalasi GRUB manual..."
-
-#: lib/bootloader_utils.py:198
-#, python-brace-format
-msgid "Device: {device}, Primary partition: {primary}"
-msgstr "Perangkat: {device}, Partisi utama: {primary}"
-
-#: lib/bootloader_utils.py:199
-#, python-brace-format
-msgid "GRUB directory: {grub_dir}"
-msgstr "Direktori GRUB: {grub_dir}"
-
-#: lib/bootloader_utils.py:205
-#, python-brace-format
-msgid "Installing boot.img (size: {size} bytes) to MBR"
-msgstr "Menginstal boot.img (ukuran: {size} bytes) ke MBR"
-
-#: lib/bootloader_utils.py:210
-msgid "Installed GRUB stage 1 (boot.img) to MBR"
-msgstr "Menginstal GRUB tahap 1 (boot.img) ke MBR"
-
-#: lib/bootloader_utils.py:219
-msgid "Installed GRUB boot_hybrid.img to MBR as fallback"
-msgstr "Menginstal GRUB boot_hybrid.img ke MBR sebagai cadangan"
-
-#: lib/bootloader_utils.py:221
-#, python-brace-format
-msgid "No GRUB boot images found in {dir}"
-msgstr "Tidak ada gambar boot GRUB yang ditemukan di {dir}"
-
-#: lib/bootloader_utils.py:227
-#, python-brace-format
-msgid "Installing diskboot.img (size: {size} bytes) to partition"
-msgstr "Menginstal diskboot.img (ukuran: {size} bytes) ke partisi"
-
-#: lib/bootloader_utils.py:233
-msgid "Installed GRUB stage 1.5 (diskboot.img) to partition"
-msgstr "Menginstal GRUB tahap 1.5 (diskboot.img) ke partisi"
-
-#: lib/bootloader_utils.py:235
-msgid "diskboot.img not found, skipping partition boot sector installation"
-msgstr "diskboot.img tidak ditemukan, melewati instalasi sektor boot partisi"
-
-#: lib/bootloader_utils.py:245
-msgid "Installed core.img to boot gap"
-msgstr "Menginstal core.img ke celah boot"
-
-#: lib/bootloader_utils.py:247
-#, python-brace-format
-msgid "Warning: Failed to install core.img: {error}"
-msgstr "Peringatan: Gagal menginstal core.img: {error}"
-
-#: lib/bootloader_utils.py:249
-msgid "Warning: core.img not found in image - GRUB may not boot properly"
-msgstr ""
-"Peringatan: core.img tidak ditemukan dalam gambar - GRUB mungkin tidak boot "
-"dengan benar"
-
-#: lib/bootloader_utils.py:265
+#: lib/bootloader_utils.py:61
 msgid "Installing EXTLINUX bootloader..."
 msgstr "Menginstal bootloader EXTLINUX..."
 
-#: lib/bootloader_utils.py:292
+#: lib/bootloader_utils.py:76
+msgid "Remounted boot directory with exec."
+msgstr "Direktori boot dipasang ulang dengan eksekusi."
+
+#: lib/bootloader_utils.py:78
+msgid "Failed to remount boot directory; proceeding."
+msgstr "Gagal memasang ulang direktori boot; melanjutkan."
+
+#: lib/bootloader_utils.py:80
+msgid "Made extlinux executable."
+msgstr "extlinux dibuat dapat dieksekusi."
+
+#: lib/bootloader_utils.py:88
 #, python-brace-format
 msgid "Copied extlinux to fallback: {fallback_name}"
 msgstr "extlinux disalin ke fallback: {fallback_name}"
 
-#: lib/bootloader_utils.py:310
+#: lib/bootloader_utils.py:106
 #, python-brace-format
 msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
 msgstr "Instalasi extlinux gagal (kode {code}), mencoba fallback di /tmp..."
 
-#: lib/bootloader_utils.py:330
+#: lib/bootloader_utils.py:121
+#, python-brace-format
+msgid "Error installing boot loader (fallback code {code})."
+msgstr "Kesalahan saat menginstal boot loader (kode fallback {code})."
+
+#: lib/bootloader_utils.py:124
+msgid "Boot loader installation succeeded via fallback."
+msgstr "Instalasi boot loader berhasil melalui fallback."
+
+#: lib/bootloader_utils.py:126
 #, python-brace-format
 msgid "Ran extlinux installer (code {code})."
 msgstr "extlinux installer dijalankan (kode {code})."
 
-#: lib/bootloader_utils.py:342
+#: lib/bootloader_utils.py:138
 msgid "Removed fallback binary: extlinux.exe."
 msgstr "Biner fallback dihapus: extlinux.exe."
 
-#: lib/bootloader_utils.py:346
+#: lib/bootloader_utils.py:142
 msgid "EXTLINUX bootloader installation completed"
 msgstr "Instalasi bootloader EXTLINUX selesai"
 
-#: lib/bootloader_utils.py:360
-msgid "MBR signature OK (0x55AA)"
-msgstr "Tanda tangan MBR OK (0x55AA)"
-
-#: lib/bootloader_utils.py:362
-#, python-brace-format
-msgid "Warning: MBR signature incorrect: {sig}"
-msgstr "Peringatan: Tanda tangan MBR tidak benar: {sig}"
-
-#: lib/bootloader_utils.py:366
-msgid "GRUB signature found in MBR"
-msgstr "Tanda tangan GRUB ditemukan di MBR"
-
-#: lib/bootloader_utils.py:368
-msgid "Warning: GRUB signature not found in MBR"
-msgstr "Peringatan: Tanda tangan GRUB tidak ditemukan di MBR"
-
-#: lib/bootloader_utils.py:374
-msgid "GRUB signature found in partition boot sector"
-msgstr "Tanda tangan GRUB ditemukan di sektor boot partisi"
-
-#: lib/bootloader_utils.py:376
-msgid "Warning: GRUB signature not found in partition boot sector"
-msgstr "Peringatan: Tanda tangan GRUB tidak ditemukan di sektor boot partisi"
-
-#: lib/bootloader_utils.py:379
-#, python-brace-format
-msgid "Warning: Failed to verify GRUB installation: {error}"
-msgstr "Peringatan: Gagal memverifikasi instalasi GRUB: {error}"
-
-#: lib/bootloader_utils.py:391
+#: lib/bootloader_utils.py:154
 #, python-brace-format
 msgid "Wrote MBR to {device}."
 msgstr "MBR ditulis ke {device}."
 
-#: lib/bootloader_utils.py:401
+#: lib/bootloader_utils.py:164
 #, python-brace-format
 msgid "Error: Could not extract partition number from {primary}"
 msgstr "Kesalahan: Tidak dapat mengekstrak nomor partisi dari {primary}"
 
-#: lib/bootloader_utils.py:421
+#: lib/bootloader_utils.py:184
 #, python-brace-format
 msgid "Set partition active: {primary}"
 msgstr "Partisi diatur sebagai aktif: {primary}"
 
-#: lib/bootloader_utils.py:423
+#: lib/bootloader_utils.py:186
 #, python-brace-format
 msgid "Error: sfdisk returned exit code {code}"
 msgstr "Kesalahan: sfdisk mengembalikan kode keluar {code}"
 
-#: lib/bootloader_utils.py:426
+#: lib/bootloader_utils.py:189
 msgid "Error: sfdisk command timed out"
 msgstr "Kesalahan: perintah sfdisk melebihi batas waktu"
 
-#: lib/bootloader_utils.py:428
+#: lib/bootloader_utils.py:191
 msgid "Error: sfdisk not found - install util-linux package"
 msgstr "Kesalahan: sfdisk tidak ditemukan - instal paket util-linux"
 
-#: lib/bootloader_utils.py:430
+#: lib/bootloader_utils.py:193
 #, python-brace-format
 msgid "Error running sfdisk: {error}"
 msgstr "Kesalahan saat menjalankan sfdisk: {error}"
@@ -305,51 +135,51 @@ msgstr "Tidak dapat menentukan tipe sistem berkas dari "
 msgid "Failed to mount "
 msgstr "Gagal memasang "
 
-#: lib/main_installer.py:171
+#: lib/main_installer.py:170
 msgid "USB Device"
 msgstr "Perangkat USB"
 
-#: lib/main_installer.py:173
+#: lib/main_installer.py:172
 msgid "SATA Drive"
 msgstr "Drive SATA"
 
-#: lib/main_installer.py:175
+#: lib/main_installer.py:174
 msgid "IDE Drive"
 msgstr "Drive IDE"
 
-#: lib/main_installer.py:177
+#: lib/main_installer.py:176
 msgid "NVMe SSD"
 msgstr "SSD NVMe"
 
-#: lib/main_installer.py:179
+#: lib/main_installer.py:178
 msgid "MMC/SD Card"
 msgstr "Kartu MMC/SD"
 
-#: lib/main_installer.py:181
+#: lib/main_installer.py:180
 msgid "Hard Disk Drive"
 msgstr "Disco duro"
 
-#: lib/main_installer.py:221
+#: lib/main_installer.py:220
 msgid "Warning: This appears to be a system disk"
 msgstr "Peringatan: ini tampaknya adalah disk sistem"
 
-#: lib/main_installer.py:225
+#: lib/main_installer.py:224
 msgid "Warning: This disk has mounted partitions"
 msgstr "Peringatan: disk ini memiliki partisi yang terpasang"
 
-#: lib/main_installer.py:258
+#: lib/main_installer.py:257
 msgid "Please select a target disk and filesystem:"
 msgstr "Silakan pilih disk target dan sistem berkas:"
 
-#: lib/main_installer.py:267
+#: lib/main_installer.py:266
 msgid "Select Target Disk:"
 msgstr "Pilih Disk Target:"
 
-#: lib/main_installer.py:284
+#: lib/main_installer.py:283
 msgid "Select Filesystem Type:"
 msgstr "Pilih Tipe Sistem Berkas:"
 
-#: lib/main_installer.py:298
+#: lib/main_installer.py:297
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -418,221 +248,181 @@ msgstr ""
 "  - Persistensi berbasis FUSE mengurangi performa.\n"
 "\n"
 
-#: lib/main_installer.py:332
-msgid "GRUB Boot Menu Language:"
-msgstr "Bahasa Menu Boot GRUB:"
+#: lib/main_installer.py:328
+msgid "Boot Menu Language:"
+msgstr "Bahasa Menu Boot:"
 
-#: lib/main_installer.py:342
+#: lib/main_installer.py:338
 msgid "Multilingual menu"
 msgstr "Menu multibahasa"
 
-#: lib/main_installer.py:364
+#: lib/main_installer.py:360
 msgid "Install"
 msgstr "Instal"
 
-#: lib/main_installer.py:374
+#: lib/main_installer.py:370
 msgid "Configure MiniOS before installation"
 msgstr "Konfigurasi MiniOS sebelum instalasi"
 
-#: lib/main_installer.py:445
-msgid "BIOS Bootloader:"
-msgstr ""
-
-#: lib/main_installer.py:476
-msgid ""
-"<b>GRUB</b>\n"
-"  + Modern bootloader with advanced features.\n"
-"  + Better compatibility with complex configurations.\n"
-"  + Support for advanced boot scenarios.\n"
-"  - May not work with Ventoy (requires GRUB2 mode).\n"
-"  - May have issues with older systems (Debian 10, for example).\n"
-"\n"
-"<b>SYSLINUX</b>\n"
-"  + Lightweight and fast bootloader.\n"
-"  + Better compatibility with Ventoy and older systems.\n"
-"  + Simple and reliable for basic setups.\n"
-"  - Limited advanced features.\n"
-"\n"
-msgstr ""
-"<b>GRUB</b>\n"
-"  + Bootloader modern dengan fitur-fitur canggih.\n"
-"  + Kompatibilitas yang lebih baik dengan konfigurasi yang kompleks.\n"
-"  + Dukungan untuk skenario boot tingkat lanjut.\n"
-"  - Mungkin tidak berfungsi dengan Ventoy (memerlukan mode GRUB2).\n"
-"  - Mungkin mengalami masalah dengan sistem yang lebih lama (misalnya Debian 10).\n"
-"\n"
-"<b>SYSLINUX</b>\n"
-"  + Bootloader yang ringan dan cepat.\n"
-"  + Kompatibilitas yang lebih baik dengan Ventoy dan sistem lama.\n"
-"  + Sederhana dan andal untuk pengaturan dasar.\n"
-"  - Fitur-fitur canggih yang terbatas.\n"
-"\n"
-
-
-#: lib/main_installer.py:497
-msgid "This selection only affects BIOS boot. EFI systems always use GRUB."
-msgstr ""
-
-#: lib/main_installer.py:522 lib/main_installer.py:550
+#: lib/main_installer.py:438 lib/main_installer.py:466
 msgid "WARNING: This action is irreversible!"
 msgstr "PERINGATAN: tindakan ini tidak dapat dibatalkan!"
 
-#: lib/main_installer.py:523 lib/main_installer.py:565
+#: lib/main_installer.py:439 lib/main_installer.py:481
 msgid "Device information:"
 msgstr "Informasi perangkat:"
 
-#: lib/main_installer.py:524 lib/main_installer.py:592
+#: lib/main_installer.py:440 lib/main_installer.py:508
 msgid "What will be erased:"
 msgstr "Apa yang akan dihapus:"
 
-#: lib/main_installer.py:532
+#: lib/main_installer.py:448
 msgid "selected device"
 msgstr "perangkat yang dipilih"
 
-#: lib/main_installer.py:604
+#: lib/main_installer.py:520
 msgid "Files, documents, and applications"
 msgstr "Berkas, dokumen, dan aplikasi"
 
-#: lib/main_installer.py:605
+#: lib/main_installer.py:521
 msgid "Operating systems"
 msgstr "Sistem operasi"
 
-#: lib/main_installer.py:606
+#: lib/main_installer.py:522
 msgid "Personal data and settings"
 msgstr "Data pribadi dan pengaturan"
 
-#: lib/main_installer.py:607
+#: lib/main_installer.py:523
 msgid "All partitions and file systems"
 msgstr "Semua partisi dan sistem berkas"
 
-#: lib/main_installer.py:634
+#: lib/main_installer.py:550
 msgid "Go Back"
 msgstr "Kembali"
 
-#: lib/main_installer.py:639
+#: lib/main_installer.py:555
 msgid "Continue"
 msgstr "Lanjutkan"
 
-#: lib/main_installer.py:656
+#: lib/main_installer.py:572
 msgid "Preparing to install..."
 msgstr "Mempersiapkan instalasi..."
 
-#: lib/main_installer.py:666 lib/main_installer.py:696
+#: lib/main_installer.py:582 lib/main_installer.py:612
 msgid "Show Log"
 msgstr "Tampilkan Log"
 
-#: lib/main_installer.py:671
+#: lib/main_installer.py:587
 msgid "Cancel"
 msgstr "Batal"
 
-#: lib/main_installer.py:692
+#: lib/main_installer.py:608
 msgid "Hide Log"
 msgstr "Sembunyikan Log"
 
-#: lib/main_installer.py:705
+#: lib/main_installer.py:621
 msgid "Installation canceled."
 msgstr "Instalasi dibatalkan."
 
-#: lib/main_installer.py:712
+#: lib/main_installer.py:628
 msgid "Restart Installation"
 msgstr "Mulai ulang instalasi"
 
-#: lib/main_installer.py:760 lib/main_installer.py:843
+#: lib/main_installer.py:676 lib/main_installer.py:758
 msgid "Unmounting disk..."
 msgstr "Melepas disk..."
 
-#: lib/main_installer.py:761
+#: lib/main_installer.py:677
 msgid "Erasing disk..."
 msgstr "Menghapus disk..."
 
-#: lib/main_installer.py:762
+#: lib/main_installer.py:678
 msgid "Partitioning disk..."
 msgstr "Mempartisi disk..."
 
-#: lib/main_installer.py:763
+#: lib/main_installer.py:679
 msgid "Formatting partitions..."
 msgstr "Memformat partisi..."
 
-#: lib/main_installer.py:764
+#: lib/main_installer.py:680
 msgid "Mounting partition..."
 msgstr "Memasang partisi..."
 
-#: lib/main_installer.py:778
+#: lib/main_installer.py:694
 msgid "Error at step: "
 msgstr "Kesalahan pada langkah: "
 
-#: lib/main_installer.py:780 lib/main_installer.py:794
-#: lib/main_installer.py:819 lib/main_installer.py:839
-#: lib/main_installer.py:853
+#: lib/main_installer.py:696 lib/main_installer.py:710
+#: lib/main_installer.py:735 lib/main_installer.py:754
+#: lib/main_installer.py:768
 msgid "Installation failed: "
 msgstr "Instalasi gagal: "
 
-#: lib/main_installer.py:784
+#: lib/main_installer.py:700
 msgid "Mounting EFI partition..."
 msgstr "Memasang partisi EFI..."
 
-#: lib/main_installer.py:792
+#: lib/main_installer.py:708
 msgid "Error mounting EFI partition:"
 msgstr "Kesalahan saat memasang partisi EFI:"
 
-#: lib/main_installer.py:798
+#: lib/main_installer.py:714
 msgid "Copying files..."
 msgstr "Menyalin file..."
 
-#: lib/main_installer.py:802
+#: lib/main_installer.py:718
 msgid "Cannot find MiniOS image."
 msgstr "Tidak dapat menemukan image MiniOS."
 
-#: lib/main_installer.py:807
+#: lib/main_installer.py:723
 msgid "Copying EFI files to root..."
 msgstr "Menyalin file EFI ke root..."
 
-#: lib/main_installer.py:810
+#: lib/main_installer.py:726
 msgid "Copying EFI files to ESP..."
 msgstr "Menyalin file EFI ke ESP..."
 
-#: lib/main_installer.py:817
+#: lib/main_installer.py:733
 msgid "Error during file copy:"
 msgstr "Kesalahan saat menyalin file:"
 
-#: lib/main_installer.py:823
+#: lib/main_installer.py:739
 msgid "Setting up bootloader..."
 msgstr "Menyiapkan bootloader..."
 
-#: lib/main_installer.py:837
+#: lib/main_installer.py:752
 msgid "Error setting up bootloader:"
 msgstr "Kesalahan saat menyiapkan bootloader:"
 
-#: lib/main_installer.py:851
+#: lib/main_installer.py:766
 msgid "Error during unmount:"
 msgstr "Kesalahan saat melepas:"
 
-#: lib/main_installer.py:855
+#: lib/main_installer.py:770
 msgid "Installation complete!"
 msgstr "Instalasi selesai!"
 
-#: lib/main_installer.py:868
+#: lib/main_installer.py:783
 msgid "Installation Error"
 msgstr "Kesalahan Instalasi"
 
-#: lib/main_installer.py:886
+#: lib/main_installer.py:801
 msgid "Config file not found"
 msgstr "Berkas konfigurasi tidak ditemukan"
 
-#: lib/main_installer.py:888
-#, fuzzy
+#: lib/main_installer.py:803
 msgid "Standard config file not found at {}."
-msgstr "File konfigurasi standar tidak ditemukan di {src_config}."
+msgstr "Berkas konfigurasi standar tidak ditemukan di {}."
 
-#: lib/main_installer.py:907
+#: lib/main_installer.py:822
 msgid "Launch Error"
 msgstr "Kesalahan Peluncuran"
 
-#: lib/main_installer.py:934
+#: lib/main_installer.py:849
 msgid "Root Privileges Required"
 msgstr "Hak akses root diperlukan"
 
-#: lib/main_installer.py:936
+#: lib/main_installer.py:851
 msgid "This installer must be run as root."
 msgstr "Installer ini harus dijalankan sebagai root."
 
@@ -696,55 +486,63 @@ msgstr "File disalin: "
 msgid "Created directory: "
 msgstr "Direktori dibuat: "
 
-#: lib/copy_utils.py:101
+#: lib/copy_utils.py:104
 msgid "Copied EFI file: "
 msgstr "File EFI disalin: "
 
-#: lib/copy_utils.py:243
+#: lib/copy_utils.py:246
 #, python-brace-format
 msgid "Warning: No translations found for {lang}, using English fallback"
 msgstr ""
 "Peringatan: Tidak ditemukan terjemahan untuk {lang}, menggunakan bahasa "
 "Inggris sebagai cadangan"
 
-#: lib/copy_utils.py:249
+#: lib/copy_utils.py:252
 msgid "Error: grub.template.cfg template not found"
 msgstr "Kesalahan: template grub.template.cfg tidak ditemukan"
 
-#: lib/copy_utils.py:289
+#: lib/copy_utils.py:292
 #, python-brace-format
 msgid "Using localized theme: {theme}"
 msgstr "Menggunakan tema lokal: {theme}"
 
-#: lib/copy_utils.py:291
+#: lib/copy_utils.py:294
 #, python-brace-format
 msgid "Localized theme not found for {lang}, using default"
 msgstr "Tema lokal tidak ditemukan untuk {lang}, menggunakan tema default"
 
-#: lib/copy_utils.py:297
+#: lib/copy_utils.py:300
 #, python-brace-format
 msgid "Generated localized GRUB config for {lang}"
 msgstr "Konfigurasi GRUB terlokalisasi untuk {lang} berhasil dibuat"
 
-#: lib/copy_utils.py:301
+#: lib/copy_utils.py:304
 #, python-brace-format
 msgid "Error generating localized GRUB config: {error}"
 msgstr "Kesalahan saat membuat konfigurasi GRUB terlokalisasi: {error}"
 
-#: lib/copy_utils.py:314
+#: lib/copy_utils.py:317
+msgid "SYSLINUX configuration already exists"
+msgstr "Konfigurasi SYSLINUX sudah ada"
+
+#: lib/copy_utils.py:319
+msgid "Warning: SYSLINUX configuration not found"
+msgstr "Peringatan: Konfigurasi SYSLINUX tidak ditemukan"
+
+#: lib/copy_utils.py:331
 msgid "GRUB directory not found, skipping GRUB boot menu configuration"
 msgstr "Direktori GRUB tidak ditemukan, melewati konfigurasi menu boot GRUB"
 
-#: lib/copy_utils.py:322
+#: lib/copy_utils.py:339
 msgid "multilingual menu"
 msgstr "menu multibahasa"
 
-#: lib/copy_utils.py:326
+#: lib/copy_utils.py:343
 #, python-brace-format
 msgid "Applied {config} GRUB boot menu from {source}"
 msgstr "Menerapkan menu boot GRUB {config} dari {source}"
 
-#: lib/copy_utils.py:329
+#: lib/copy_utils.py:346
 #, python-brace-format
 msgid ""
 "Warning: {config} configuration file not found, keeping original grub.cfg"
@@ -752,51 +550,27 @@ msgstr ""
 "Peringatan: file konfigurasi {config} tidak ditemukan, mempertahankan grub."
 "cfg asli"
 
-#: lib/copy_utils.py:335
+#: lib/copy_utils.py:352
 #, python-brace-format
 msgid "Generating localized GRUB menu for language: {lang}"
 msgstr "Membuat menu GRUB terlokalisasi untuk bahasa: {lang}"
 
-#: lib/copy_utils.py:338
+#: lib/copy_utils.py:355
 #, python-brace-format
 msgid "Applied {lang} GRUB boot menu"
 msgstr "Menerapkan menu boot GRUB untuk bahasa {lang}"
 
-#: lib/copy_utils.py:341
+#: lib/copy_utils.py:358
 #, python-brace-format
 msgid "Failed to generate {lang} config, falling back to template"
 msgstr "Gagal membuat konfigurasi {lang}, kembali ke templat"
 
-#: lib/copy_utils.py:345
+#: lib/copy_utils.py:362
 msgid "Applied template GRUB boot menu as fallback"
 msgstr "Menerapkan menu boot GRUB templat sebagai fallback"
 
-#: lib/copy_utils.py:347
+#: lib/copy_utils.py:364
 msgid "Warning: No fallback configuration available, keeping original grub.cfg"
 msgstr ""
 "Peringatan: tidak ada konfigurasi cadangan yang tersedia, mempertahankan "
 "grub.cfg asli"
-
-#, fuzzy
-#~ msgid "Made syslinux executable."
-#~ msgstr "extlinux dibuat dapat dieksekusi."
-
-#~ msgid ""
-#~ "GRUB boot menu with support for multiple languages.\n"
-#~ "Users can switch between different languages in the boot menu."
-#~ msgstr ""
-#~ "Menu boot GRUB dengan dukungan untuk beberapa bahasa.\n"
-#~ "Pengguna dapat beralih antara bahasa yang berbeda di menu boot."
-
-#~ msgid "English only menu"
-#~ msgstr "Menu hanya bahasa Inggris"
-
-#~ msgid ""
-#~ "GRUB boot menu in English only.\n"
-#~ "Better suited for customization and modifications."
-#~ msgstr ""
-#~ "Menu boot GRUB hanya dalam bahasa Inggris.\n"
-#~ "Lebih cocok untuk kustomisasi dan modifikasi."
-
-#~ msgid "Setting up bootloader."
-#~ msgstr "Menyiapkan bootloader."
