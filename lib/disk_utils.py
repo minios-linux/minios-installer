@@ -40,12 +40,14 @@ def format_size_to_gb(size_str: str) -> str:
     
     # Extract number and unit
     import re
-    match = re.match(r'([0-9.]+)([KMGTPB]?)', size_str.upper())
+    match = re.match(r'([0-9.,]+)([KMGTPB]?)', size_str.upper())
     if not match:
         return size_str  # Return original if can't parse
     
     number_str, unit = match.groups()
     try:
+        # Replace comma with dot for proper float parsing
+        number_str = number_str.replace(',', '.')
         number = float(number_str)
     except ValueError:
         return size_str  # Return original if can't parse number
