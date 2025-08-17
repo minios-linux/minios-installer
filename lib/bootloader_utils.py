@@ -45,7 +45,7 @@ def install_bootloader(device: str, primary: str, efi: Optional[str],
         raise RuntimeError(_("Installation canceled by user."))
     
     # Prepare paths
-    boot_dir = os.path.join("/mnt/install", os.path.basename(primary), "minios", "boot")
+    boot_dir = os.path.join("/mnt/install", os.path.basename(primary), "minios", "boot", "syslinux")
     log_cb(_("Entering bootloader directory: {boot_dir}").format(boot_dir=boot_dir))
     
     # Always use SYSLINUX for BIOS boot (implemented via EXTLINUX)
