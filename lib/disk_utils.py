@@ -223,11 +223,11 @@ def partition_disk(device: str, fs: str, use_gpt: bool) -> None:
 
 def zero_fill_disk(device: str) -> None:
     """
-    Overwrite the beginning of the disk with zeros.
+    Overwrite the beginning of the disk with zeros (2MB).
     """
     try:
         subprocess.check_call(
-            ['dd', 'if=/dev/zero', f'of={device}', 'bs=4096', 'count=273', 'status=none'],
+            ['dd', 'if=/dev/zero', f'of={device}', 'bs=1M', 'count=2', 'status=none'],
             stderr=subprocess.DEVNULL
         )
     except subprocess.CalledProcessError:
