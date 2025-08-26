@@ -1,3 +1,14 @@
+minios-installer (2.4) unstable; urgency=medium
+
+  * Add missing dependency for gir1.2-udisks-2.0 in debian control file
+  * Add automatic bootloader type detection based on MiniOS image boot structure
+  * Support all bootloader variants: grub-only, syslinux-grub, syslinux-native
+  * Implement GRUB-only installation using pre-built boot.img and core.img files
+  * Optimize disk zeroing to 2MB for efficient partition table cleanup
+  * Prioritize syslinux-grub detection when both SYSLINUX and GRUB files present
+
+ -- crims0n <crims0n@minios.dev>  Tue, 26 Aug 2025 13:49:09 +0300
+
 minios-installer (2.3) unstable; urgency=medium
 
   * Add function to extract boot file names from /proc/cmdline and enhance
