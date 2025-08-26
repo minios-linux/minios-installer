@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-17 19:42+0300\n"
+"POT-Creation-Date: 2025-08-26 14:24+0300\n"
 "PO-Revision-Date: 2025-05-26 17:26+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -16,112 +16,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr "Impossibile formattare "
-
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
-msgstr "Impossibile formattare EFI "
-
-#: lib/bootloader_utils.py:45 lib/main_installer.py:622 lib/copy_utils.py:61
-#: lib/copy_utils.py:62
-msgid "Installation canceled by user."
-msgstr "Installazione annullata dall'utente."
-
-#: lib/bootloader_utils.py:49
-#, python-brace-format
-msgid "Entering bootloader directory: {boot_dir}"
-msgstr "Entrata nella cartella del bootloader: {boot_dir}"
-
-#: lib/bootloader_utils.py:52
-msgid "Preparing bootloader installation..."
-msgstr "Preparazione all'installazione del bootloader..."
-
-#: lib/bootloader_utils.py:61
-msgid "Installing EXTLINUX bootloader..."
-msgstr "Installazione bootloader EXTLINUX..."
-
-#: lib/bootloader_utils.py:76
-msgid "Remounted boot directory with exec."
-msgstr "Directory di avvio rimontata con esecuzione."
-
-#: lib/bootloader_utils.py:78
-msgid "Failed to remount boot directory; proceeding."
-msgstr "Impossibile rimontare la directory di boot; si procede."
-
-#: lib/bootloader_utils.py:80
-msgid "Made extlinux executable."
-msgstr "Reso extlinux eseguibile."
-
-#: lib/bootloader_utils.py:88
-#, python-brace-format
-msgid "Copied extlinux to fallback: {fallback_name}"
-msgstr "Extlinux copiato nel fallback: {fallback_name}"
-
-#: lib/bootloader_utils.py:106
-#, python-brace-format
-msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
-msgstr ""
-"Installazione di extlinux fallita (codice {code}), tentativo di fallback in /"
-"tmp..."
-
-#: lib/bootloader_utils.py:121
-#, python-brace-format
-msgid "Error installing boot loader (fallback code {code})."
-msgstr ""
-"Errore durante l'installazione del boot loader (codice fallback {code})."
-
-#: lib/bootloader_utils.py:124
-msgid "Boot loader installation succeeded via fallback."
-msgstr "Installazione del boot loader riuscita tramite fallback."
-
-#: lib/bootloader_utils.py:126
-#, python-brace-format
-msgid "Ran extlinux installer (code {code})."
-msgstr "Eseguito l'installer extlinux (codice {code})."
-
-#: lib/bootloader_utils.py:138
-msgid "Removed fallback binary: extlinux.exe."
-msgstr "Binario di fallback rimosso: extlinux.exe."
-
-#: lib/bootloader_utils.py:142
-msgid "EXTLINUX bootloader installation completed"
-msgstr "Installazione bootloader EXTLINUX completata"
-
-#: lib/bootloader_utils.py:154
-#, python-brace-format
-msgid "Wrote MBR to {device}."
-msgstr "MBR scritto su {device}."
-
-#: lib/bootloader_utils.py:164
-#, python-brace-format
-msgid "Error: Could not extract partition number from {primary}"
-msgstr "Errore: impossibile estrarre il numero della partizione da {primary}"
-
-#: lib/bootloader_utils.py:184
-#, python-brace-format
-msgid "Set partition active: {primary}"
-msgstr "Partizione impostata come attiva: {primary}."
-
-#: lib/bootloader_utils.py:186
-#, python-brace-format
-msgid "Error: sfdisk returned exit code {code}"
-msgstr "Errore: sfdisk ha restituito il codice di uscita {code}"
-
-#: lib/bootloader_utils.py:189
-msgid "Error: sfdisk command timed out"
-msgstr "Errore: il comando sfdisk è scaduto"
-
-#: lib/bootloader_utils.py:191
-msgid "Error: sfdisk not found - install util-linux package"
-msgstr "Errore: sfdisk non trovato - installa il pacchetto util-linux"
-
-#: lib/bootloader_utils.py:193
-#, python-brace-format
-msgid "Error running sfdisk: {error}"
-msgstr "Errore durante l'esecuzione di sfdisk: {error}"
 
 #: lib/mount_utils.py:29
 msgid "Destination "
@@ -138,6 +32,142 @@ msgstr "Impossibile determinare il tipo di filesystem di "
 #: lib/mount_utils.py:42
 msgid "Failed to mount "
 msgstr "Impossibile montare "
+
+#: lib/bootloader_utils.py:74 lib/main_installer.py:622 lib/copy_utils.py:61
+#: lib/copy_utils.py:62
+msgid "Installation canceled by user."
+msgstr "Installazione annullata dall'utente."
+
+#: lib/bootloader_utils.py:79
+#, python-brace-format
+msgid "Detected bootloader type: {type}"
+msgstr "Tipo di bootloader rilevato: {type}"
+
+#: lib/bootloader_utils.py:95
+msgid "Installing GRUB bootloader..."
+msgstr "Installazione bootloader GRUB..."
+
+#: lib/bootloader_utils.py:103
+msgid "GRUB core.img not found in image"
+msgstr "GRUB core.img non trovato nell'immagine"
+
+#: lib/bootloader_utils.py:106
+msgid "GRUB boot.img not found in image"
+msgstr "GRUB boot.img non trovato nell'immagine"
+
+#: lib/bootloader_utils.py:114
+msgid "Installed GRUB boot.img to MBR"
+msgstr "GRUB boot.img installato su MBR"
+
+#: lib/bootloader_utils.py:121
+msgid "Installed GRUB core.img"
+msgstr "GRUB core.img installato"
+
+#: lib/bootloader_utils.py:127
+msgid "GRUB bootloader installation completed"
+msgstr "Installazione bootloader GRUB completata"
+
+#: lib/bootloader_utils.py:130
+#, python-brace-format
+msgid "Error installing GRUB bootloader: {error}"
+msgstr "Errore durante l'installazione del bootloader GRUB: {error}"
+
+#: lib/bootloader_utils.py:139
+msgid "Using native SYSLINUX bootloader"
+msgstr "Uso bootloader SYSLINUX nativo"
+
+#: lib/bootloader_utils.py:140 lib/bootloader_utils.py:152
+#, python-brace-format
+msgid "Entering bootloader directory: {boot_dir}"
+msgstr "Entrata nella cartella del bootloader: {boot_dir}"
+
+#: lib/bootloader_utils.py:151
+msgid "Using SYSLINUX to load GRUB"
+msgstr "Uso SYSLINUX per caricare GRUB"
+
+#: lib/bootloader_utils.py:162
+msgid "Installing EXTLINUX bootloader..."
+msgstr "Installazione bootloader EXTLINUX..."
+
+#: lib/bootloader_utils.py:177
+msgid "Remounted boot directory with exec."
+msgstr "Directory di avvio rimontata con esecuzione."
+
+#: lib/bootloader_utils.py:179
+msgid "Failed to remount boot directory; proceeding."
+msgstr "Impossibile rimontare la directory di boot; si procede."
+
+#: lib/bootloader_utils.py:181
+msgid "Made extlinux executable."
+msgstr "Reso extlinux eseguibile."
+
+#: lib/bootloader_utils.py:189
+#, python-brace-format
+msgid "Copied extlinux to fallback: {fallback_name}"
+msgstr "Extlinux copiato nel fallback: {fallback_name}"
+
+#: lib/bootloader_utils.py:207
+#, python-brace-format
+msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
+msgstr ""
+"Installazione di extlinux fallita (codice {code}), tentativo di fallback in /"
+"tmp..."
+
+#: lib/bootloader_utils.py:222
+#, python-brace-format
+msgid "Error installing boot loader (fallback code {code})."
+msgstr ""
+"Errore durante l'installazione del boot loader (codice fallback {code})."
+
+#: lib/bootloader_utils.py:225
+msgid "Boot loader installation succeeded via fallback."
+msgstr "Installazione del boot loader riuscita tramite fallback."
+
+#: lib/bootloader_utils.py:227
+#, python-brace-format
+msgid "Ran extlinux installer (code {code})."
+msgstr "Eseguito l'installer extlinux (codice {code})."
+
+#: lib/bootloader_utils.py:239
+msgid "Removed fallback binary: extlinux.exe."
+msgstr "Binario di fallback rimosso: extlinux.exe."
+
+#: lib/bootloader_utils.py:243
+msgid "EXTLINUX bootloader installation completed"
+msgstr "Installazione bootloader EXTLINUX completata"
+
+#: lib/bootloader_utils.py:255
+#, python-brace-format
+msgid "Wrote MBR to {device}."
+msgstr "MBR scritto su {device}."
+
+#: lib/bootloader_utils.py:265
+#, python-brace-format
+msgid "Error: Could not extract partition number from {primary}"
+msgstr "Errore: impossibile estrarre il numero della partizione da {primary}"
+
+#: lib/bootloader_utils.py:285
+#, python-brace-format
+msgid "Set partition active: {primary}"
+msgstr "Partizione impostata come attiva: {primary}."
+
+#: lib/bootloader_utils.py:287
+#, python-brace-format
+msgid "Error: sfdisk returned exit code {code}"
+msgstr "Errore: sfdisk ha restituito il codice di uscita {code}"
+
+#: lib/bootloader_utils.py:290
+msgid "Error: sfdisk command timed out"
+msgstr "Errore: il comando sfdisk è scaduto"
+
+#: lib/bootloader_utils.py:292
+msgid "Error: sfdisk not found - install util-linux package"
+msgstr "Errore: sfdisk non trovato - installa il pacchetto util-linux"
+
+#: lib/bootloader_utils.py:294
+#, python-brace-format
+msgid "Error running sfdisk: {error}"
+msgstr "Errore durante l'esecuzione di sfdisk: {error}"
 
 #: lib/main_installer.py:170
 msgid "USB Device"
@@ -479,6 +509,14 @@ msgstr "Impossibile creare la seconda partizione su "
 msgid "Failed to erase "
 msgstr "Impossibile cancellare "
 
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Impossibile formattare "
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Impossibile formattare EFI "
+
 #: lib/copy_utils.py:71
 msgid "Copying MiniOS files: "
 msgstr "Copia dei file MiniOS: "
@@ -579,3 +617,6 @@ msgid "Warning: No fallback configuration available, keeping original grub.cfg"
 msgstr ""
 "Avviso: nessuna configurazione di fallback disponibile, mantengo grub.cfg "
 "originale"
+
+#~ msgid "Preparing bootloader installation..."
+#~ msgstr "Preparazione all'installazione del bootloader..."
