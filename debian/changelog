@@ -6,6 +6,9 @@ minios-installer (2.4) unstable; urgency=medium
   * Implement GRUB-only installation using pre-built boot.img and core.img files
   * Optimize disk zeroing to 2MB for efficient partition table cleanup
   * Prioritize syslinux-grub detection when both SYSLINUX and GRUB files present
+  * Add French and Portuguese (Portugal) translations to language options
+  * Enhance SYSLINUX configuration processing: support localized configs and
+    fallback mechanisms
 
  -- crims0n <crims0n@minios.dev>  Tue, 26 Aug 2025 13:49:09 +0300
 
