@@ -340,9 +340,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
             ("ru_RU", "Русский"),
             ("de_DE", "Deutsch"), 
             ("es_ES", "Español"),
+            ("fr_FR", "Français"),
             ("it_IT", "Italiano"),
             ("id_ID", "Bahasa Indonesia"),
-            ("pt_BR", "Português (Brasil)")
+            ("pt_BR", "Português (Brasil)"),
+            ("pt_PT", "Português (Portugal)")
         ]
         
         self.language_combo = Gtk.ComboBoxText()
