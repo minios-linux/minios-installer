@@ -321,8 +321,16 @@ def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> No
         return
     
     if config_type == "multilang":
-        # Keep multilingual menu - no changes needed
-        log_cb(_("Using multilingual SYSLINUX menu"))
+        # Use multilingual configuration if available
+        multilang_cfg = os.path.join(syslinux_dir, 'syslinux.multilang.cfg')
+        if os.path.exists(multilang_cfg):
+            try:
+                shutil.copy2(multilang_cfg, syslinux_cfg_path)
+                log_cb(_("Using multilingual SYSLINUX menu"))
+            except Exception as e:
+                log_cb(_("Error copying multilingual SYSLINUX config: ") + str(e))
+        else:
+            log_cb(_("Using multilingual SYSLINUX menu"))
         return
     
     # For specific language codes, try to use localized configuration

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-26 14:24+0300\n"
+"POT-Creation-Date: 2025-08-30 23:32+0300\n"
 "PO-Revision-Date: 2025-05-26 17:32+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -32,7 +32,7 @@ msgstr "Tidak dapat menentukan tipe sistem berkas dari "
 msgid "Failed to mount "
 msgstr "Gagal memasang "
 
-#: lib/bootloader_utils.py:74 lib/main_installer.py:622 lib/copy_utils.py:61
+#: lib/bootloader_utils.py:74 lib/main_installer.py:624 lib/copy_utils.py:61
 #: lib/copy_utils.py:62
 msgid "Installation canceled by user."
 msgstr "Instalasi dibatalkan oleh pengguna."
@@ -286,173 +286,173 @@ msgstr "Bahasa Menu Boot:"
 msgid "Multilingual menu"
 msgstr "Menu multibahasa"
 
-#: lib/main_installer.py:360
+#: lib/main_installer.py:362
 msgid "Install"
 msgstr "Instal"
 
-#: lib/main_installer.py:370
+#: lib/main_installer.py:372
 msgid "Configure MiniOS before installation"
 msgstr "Konfigurasi MiniOS sebelum instalasi"
 
-#: lib/main_installer.py:438 lib/main_installer.py:466
+#: lib/main_installer.py:440 lib/main_installer.py:468
 msgid "WARNING: This action is irreversible!"
 msgstr "PERINGATAN: tindakan ini tidak dapat dibatalkan!"
 
-#: lib/main_installer.py:439 lib/main_installer.py:481
+#: lib/main_installer.py:441 lib/main_installer.py:483
 msgid "Device information:"
 msgstr "Informasi perangkat:"
 
-#: lib/main_installer.py:440 lib/main_installer.py:508
+#: lib/main_installer.py:442 lib/main_installer.py:510
 msgid "What will be erased:"
 msgstr "Apa yang akan dihapus:"
 
-#: lib/main_installer.py:448
+#: lib/main_installer.py:450
 msgid "selected device"
 msgstr "perangkat yang dipilih"
 
-#: lib/main_installer.py:520
+#: lib/main_installer.py:522
 msgid "Files, documents, and applications"
 msgstr "Berkas, dokumen, dan aplikasi"
 
-#: lib/main_installer.py:521
+#: lib/main_installer.py:523
 msgid "Operating systems"
 msgstr "Sistem operasi"
 
-#: lib/main_installer.py:522
+#: lib/main_installer.py:524
 msgid "Personal data and settings"
 msgstr "Data pribadi dan pengaturan"
 
-#: lib/main_installer.py:523
+#: lib/main_installer.py:525
 msgid "All partitions and file systems"
 msgstr "Semua partisi dan sistem berkas"
 
-#: lib/main_installer.py:550
+#: lib/main_installer.py:552
 msgid "Go Back"
 msgstr "Kembali"
 
-#: lib/main_installer.py:555
+#: lib/main_installer.py:557
 msgid "Continue"
 msgstr "Lanjutkan"
 
-#: lib/main_installer.py:572
+#: lib/main_installer.py:574
 msgid "Preparing to install..."
 msgstr "Mempersiapkan instalasi..."
 
-#: lib/main_installer.py:582 lib/main_installer.py:612
+#: lib/main_installer.py:584 lib/main_installer.py:614
 msgid "Show Log"
 msgstr "Tampilkan Log"
 
-#: lib/main_installer.py:587
+#: lib/main_installer.py:589
 msgid "Cancel"
 msgstr "Batal"
 
-#: lib/main_installer.py:608
+#: lib/main_installer.py:610
 msgid "Hide Log"
 msgstr "Sembunyikan Log"
 
-#: lib/main_installer.py:621
+#: lib/main_installer.py:623
 msgid "Installation canceled."
 msgstr "Instalasi dibatalkan."
 
-#: lib/main_installer.py:628
+#: lib/main_installer.py:630
 msgid "Restart Installation"
 msgstr "Mulai ulang instalasi"
 
-#: lib/main_installer.py:676 lib/main_installer.py:758
+#: lib/main_installer.py:678 lib/main_installer.py:760
 msgid "Unmounting disk..."
 msgstr "Melepas disk..."
 
-#: lib/main_installer.py:677
+#: lib/main_installer.py:679
 msgid "Erasing disk..."
 msgstr "Menghapus disk..."
 
-#: lib/main_installer.py:678
+#: lib/main_installer.py:680
 msgid "Partitioning disk..."
 msgstr "Mempartisi disk..."
 
-#: lib/main_installer.py:679
+#: lib/main_installer.py:681
 msgid "Formatting partitions..."
 msgstr "Memformat partisi..."
 
-#: lib/main_installer.py:680
+#: lib/main_installer.py:682
 msgid "Mounting partition..."
 msgstr "Memasang partisi..."
 
-#: lib/main_installer.py:694
+#: lib/main_installer.py:696
 msgid "Error at step: "
 msgstr "Kesalahan pada langkah: "
 
-#: lib/main_installer.py:696 lib/main_installer.py:710
-#: lib/main_installer.py:735 lib/main_installer.py:754
-#: lib/main_installer.py:768
+#: lib/main_installer.py:698 lib/main_installer.py:712
+#: lib/main_installer.py:737 lib/main_installer.py:756
+#: lib/main_installer.py:770
 msgid "Installation failed: "
 msgstr "Instalasi gagal: "
 
-#: lib/main_installer.py:700
+#: lib/main_installer.py:702
 msgid "Mounting EFI partition..."
 msgstr "Memasang partisi EFI..."
 
-#: lib/main_installer.py:708
+#: lib/main_installer.py:710
 msgid "Error mounting EFI partition:"
 msgstr "Kesalahan saat memasang partisi EFI:"
 
-#: lib/main_installer.py:714
+#: lib/main_installer.py:716
 msgid "Copying files..."
 msgstr "Menyalin file..."
 
-#: lib/main_installer.py:718
+#: lib/main_installer.py:720
 msgid "Cannot find MiniOS image."
 msgstr "Tidak dapat menemukan image MiniOS."
 
-#: lib/main_installer.py:723
+#: lib/main_installer.py:725
 msgid "Copying EFI files to root..."
 msgstr "Menyalin file EFI ke root..."
 
-#: lib/main_installer.py:726
+#: lib/main_installer.py:728
 msgid "Copying EFI files to ESP..."
 msgstr "Menyalin file EFI ke ESP..."
 
-#: lib/main_installer.py:733
+#: lib/main_installer.py:735
 msgid "Error during file copy:"
 msgstr "Kesalahan saat menyalin file:"
 
-#: lib/main_installer.py:739
+#: lib/main_installer.py:741
 msgid "Setting up bootloader..."
 msgstr "Menyiapkan bootloader..."
 
-#: lib/main_installer.py:752
+#: lib/main_installer.py:754
 msgid "Error setting up bootloader:"
 msgstr "Kesalahan saat menyiapkan bootloader:"
 
-#: lib/main_installer.py:766
+#: lib/main_installer.py:768
 msgid "Error during unmount:"
 msgstr "Kesalahan saat melepas:"
 
-#: lib/main_installer.py:770
+#: lib/main_installer.py:772
 msgid "Installation complete!"
 msgstr "Instalasi selesai!"
 
-#: lib/main_installer.py:783
+#: lib/main_installer.py:785
 msgid "Installation Error"
 msgstr "Kesalahan Instalasi"
 
-#: lib/main_installer.py:801
+#: lib/main_installer.py:803
 msgid "Config file not found"
 msgstr "Berkas konfigurasi tidak ditemukan"
 
-#: lib/main_installer.py:803
+#: lib/main_installer.py:805
 msgid "Standard config file not found at {}."
 msgstr "Berkas konfigurasi standar tidak ditemukan di {}."
 
-#: lib/main_installer.py:822
+#: lib/main_installer.py:824
 msgid "Launch Error"
 msgstr "Kesalahan Peluncuran"
 
-#: lib/main_installer.py:849
+#: lib/main_installer.py:851
 msgid "Root Privileges Required"
 msgstr "Hak akses root diperlukan"
 
-#: lib/main_installer.py:851
+#: lib/main_installer.py:853
 msgid "This installer must be run as root."
 msgstr "Installer ini harus dijalankan sebagai root."
 
@@ -559,28 +559,60 @@ msgstr "Konfigurasi GRUB terlokalisasi untuk {lang} berhasil dibuat"
 msgid "Error generating localized GRUB config: {error}"
 msgstr "Kesalahan saat membuat konfigurasi GRUB terlokalisasi: {error}"
 
-#: lib/copy_utils.py:317
-msgid "SYSLINUX configuration already exists"
-msgstr "Konfigurasi SYSLINUX sudah ada"
+#: lib/copy_utils.py:320
+msgid "SYSLINUX directory not found, skipping SYSLINUX configuration"
+msgstr "Direktori SYSLINUX tidak ditemukan, melewati konfigurasi SYSLINUX"
 
-#: lib/copy_utils.py:319
-msgid "Warning: SYSLINUX configuration not found"
-msgstr "Peringatan: Konfigurasi SYSLINUX tidak ditemukan"
+#: lib/copy_utils.py:329 lib/copy_utils.py:333
+msgid "Using multilingual SYSLINUX menu"
+msgstr "Menggunakan menu SYSLINUX multibahasa"
 
 #: lib/copy_utils.py:331
+msgid "Error copying multilingual SYSLINUX config: "
+msgstr "Kesalahan saat menyalin konfigurasi SYSLINUX multibahasa: "
+
+#: lib/copy_utils.py:345
+msgid "Using localized SYSLINUX configuration for: "
+msgstr "Menggunakan konfigurasi SYSLINUX terlokalisasi untuk: "
+
+#: lib/copy_utils.py:347
+msgid "Error copying localized SYSLINUX config: "
+msgstr "Kesalahan saat menyalin konfigurasi SYSLINUX terlokalisasi: "
+
+#: lib/copy_utils.py:354
+msgid "Localized SYSLINUX config not found for "
+msgstr "Konfigurasi SYSLINUX terlokalisasi tidak ditemukan untuk "
+
+#: lib/copy_utils.py:354
+msgid ", using English"
+msgstr ", menggunakan bahasa Inggris"
+
+#: lib/copy_utils.py:356
+msgid "Error copying English SYSLINUX config: "
+msgstr "Kesalahan saat menyalin konfigurasi SYSLINUX bahasa Inggris: "
+
+#: lib/copy_utils.py:358
+msgid "Warning: No localized SYSLINUX configurations found"
+msgstr "Peringatan: Tidak ditemukan konfigurasi SYSLINUX terlokalisasi"
+
+#: lib/copy_utils.py:360
+msgid "SYSLINUX lang directory not found, keeping default configuration"
+msgstr "Direktori bahasa SYSLINUX tidak ditemukan, mempertahankan konfigurasi default"
+
+#: lib/copy_utils.py:372
 msgid "GRUB directory not found, skipping GRUB boot menu configuration"
 msgstr "Direktori GRUB tidak ditemukan, melewati konfigurasi menu boot GRUB"
 
-#: lib/copy_utils.py:339
+#: lib/copy_utils.py:380
 msgid "multilingual menu"
 msgstr "menu multibahasa"
 
-#: lib/copy_utils.py:343
+#: lib/copy_utils.py:384
 #, python-brace-format
 msgid "Applied {config} GRUB boot menu from {source}"
 msgstr "Menerapkan menu boot GRUB {config} dari {source}"
 
-#: lib/copy_utils.py:346
+#: lib/copy_utils.py:387
 #, python-brace-format
 msgid ""
 "Warning: {config} configuration file not found, keeping original grub.cfg"
@@ -588,30 +620,33 @@ msgstr ""
 "Peringatan: file konfigurasi {config} tidak ditemukan, mempertahankan "
 "grub.cfg asli"
 
-#: lib/copy_utils.py:352
+#: lib/copy_utils.py:393
 #, python-brace-format
 msgid "Generating localized GRUB menu for language: {lang}"
 msgstr "Membuat menu GRUB terlokalisasi untuk bahasa: {lang}"
 
-#: lib/copy_utils.py:355
+#: lib/copy_utils.py:396
 #, python-brace-format
 msgid "Applied {lang} GRUB boot menu"
 msgstr "Menerapkan menu boot GRUB untuk bahasa {lang}"
 
-#: lib/copy_utils.py:358
+#: lib/copy_utils.py:399
 #, python-brace-format
 msgid "Failed to generate {lang} config, falling back to template"
 msgstr "Gagal membuat konfigurasi {lang}, kembali ke templat"
 
-#: lib/copy_utils.py:362
+#: lib/copy_utils.py:403
 msgid "Applied template GRUB boot menu as fallback"
 msgstr "Menerapkan menu boot GRUB templat sebagai fallback"
 
-#: lib/copy_utils.py:364
+#: lib/copy_utils.py:405
 msgid "Warning: No fallback configuration available, keeping original grub.cfg"
 msgstr ""
 "Peringatan: tidak ada konfigurasi cadangan yang tersedia, mempertahankan "
 "grub.cfg asli"
+
+#~ msgid "SYSLINUX configuration already exists"
+#~ msgstr "Konfigurasi SYSLINUX sudah ada"
 
 #~ msgid "Preparing bootloader installation..."
 #~ msgstr "Mempersiapkan instalasi bootloader..."

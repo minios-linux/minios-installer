@@ -10,7 +10,7 @@ minios-installer (2.4) unstable; urgency=medium
   * Enhance SYSLINUX configuration processing: support localized configs and
     fallback mechanisms
 
- -- crims0n <crims0n@minios.dev>  Sat, 30 Aug 2025 20:38:09 +0300
+ -- crims0n <crims0n@minios.dev>  Sat, 30 Aug 2025 23:39:31 +0300
 
 minios-installer (2.3) unstable; urgency=medium
 

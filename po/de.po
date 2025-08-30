@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-26 14:24+0300\n"
+"POT-Creation-Date: 2025-08-30 23:32+0300\n"
 "PO-Revision-Date: 2025-05-26 17:12+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -33,7 +33,7 @@ msgstr "Dateisystemtyp konnte nicht bestimmt werden für "
 msgid "Failed to mount "
 msgstr "Fehler beim Einhängen von "
 
-#: lib/bootloader_utils.py:74 lib/main_installer.py:622 lib/copy_utils.py:61
+#: lib/bootloader_utils.py:74 lib/main_installer.py:624 lib/copy_utils.py:61
 #: lib/copy_utils.py:62
 msgid "Installation canceled by user."
 msgstr "Installation vom Benutzer abgebrochen."
@@ -290,173 +290,173 @@ msgstr "Bootmenü-Sprache:"
 msgid "Multilingual menu"
 msgstr "Mehrsprachiges Menü"
 
-#: lib/main_installer.py:360
+#: lib/main_installer.py:362
 msgid "Install"
 msgstr "Installieren"
 
-#: lib/main_installer.py:370
+#: lib/main_installer.py:372
 msgid "Configure MiniOS before installation"
 msgstr "MiniOS vor der Installation konfigurieren"
 
-#: lib/main_installer.py:438 lib/main_installer.py:466
+#: lib/main_installer.py:440 lib/main_installer.py:468
 msgid "WARNING: This action is irreversible!"
 msgstr "WARNUNG: Diese Aktion ist unwiderruflich!"
 
-#: lib/main_installer.py:439 lib/main_installer.py:481
+#: lib/main_installer.py:441 lib/main_installer.py:483
 msgid "Device information:"
 msgstr "Geräteinformationen:"
 
-#: lib/main_installer.py:440 lib/main_installer.py:508
+#: lib/main_installer.py:442 lib/main_installer.py:510
 msgid "What will be erased:"
 msgstr "Was wird gelöscht:"
 
-#: lib/main_installer.py:448
+#: lib/main_installer.py:450
 msgid "selected device"
 msgstr "ausgewähltes Gerät"
 
-#: lib/main_installer.py:520
+#: lib/main_installer.py:522
 msgid "Files, documents, and applications"
 msgstr "Dateien, Dokumente und Anwendungen"
 
-#: lib/main_installer.py:521
+#: lib/main_installer.py:523
 msgid "Operating systems"
 msgstr "Betriebssysteme"
 
-#: lib/main_installer.py:522
+#: lib/main_installer.py:524
 msgid "Personal data and settings"
 msgstr "Persönliche Daten und Einstellungen"
 
-#: lib/main_installer.py:523
+#: lib/main_installer.py:525
 msgid "All partitions and file systems"
 msgstr "Alle Partitionen und Dateisysteme"
 
-#: lib/main_installer.py:550
+#: lib/main_installer.py:552
 msgid "Go Back"
 msgstr "Zurück"
 
-#: lib/main_installer.py:555
+#: lib/main_installer.py:557
 msgid "Continue"
 msgstr "Weiter"
 
-#: lib/main_installer.py:572
+#: lib/main_installer.py:574
 msgid "Preparing to install..."
 msgstr "Vorbereitung der Installation..."
 
-#: lib/main_installer.py:582 lib/main_installer.py:612
+#: lib/main_installer.py:584 lib/main_installer.py:614
 msgid "Show Log"
 msgstr "Protokoll anzeigen"
 
-#: lib/main_installer.py:587
+#: lib/main_installer.py:589
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: lib/main_installer.py:608
+#: lib/main_installer.py:610
 msgid "Hide Log"
 msgstr "Protokoll ausblenden"
 
-#: lib/main_installer.py:621
+#: lib/main_installer.py:623
 msgid "Installation canceled."
 msgstr "Installation abgebrochen."
 
-#: lib/main_installer.py:628
+#: lib/main_installer.py:630
 msgid "Restart Installation"
 msgstr "Installation neu starten"
 
-#: lib/main_installer.py:676 lib/main_installer.py:758
+#: lib/main_installer.py:678 lib/main_installer.py:760
 msgid "Unmounting disk..."
 msgstr "Datenträger wird ausgehängt..."
 
-#: lib/main_installer.py:677
+#: lib/main_installer.py:679
 msgid "Erasing disk..."
 msgstr "Datenträger wird gelöscht..."
 
-#: lib/main_installer.py:678
+#: lib/main_installer.py:680
 msgid "Partitioning disk..."
 msgstr "Datenträger wird partitioniert..."
 
-#: lib/main_installer.py:679
+#: lib/main_installer.py:681
 msgid "Formatting partitions..."
 msgstr "Partitionen werden formatiert..."
 
-#: lib/main_installer.py:680
+#: lib/main_installer.py:682
 msgid "Mounting partition..."
 msgstr "Partition wird eingehängt..."
 
-#: lib/main_installer.py:694
+#: lib/main_installer.py:696
 msgid "Error at step: "
 msgstr "Fehler bei Schritt: "
 
-#: lib/main_installer.py:696 lib/main_installer.py:710
-#: lib/main_installer.py:735 lib/main_installer.py:754
-#: lib/main_installer.py:768
+#: lib/main_installer.py:698 lib/main_installer.py:712
+#: lib/main_installer.py:737 lib/main_installer.py:756
+#: lib/main_installer.py:770
 msgid "Installation failed: "
 msgstr "Installation fehlgeschlagen: "
 
-#: lib/main_installer.py:700
+#: lib/main_installer.py:702
 msgid "Mounting EFI partition..."
 msgstr "EFI-Partition wird eingehängt..."
 
-#: lib/main_installer.py:708
+#: lib/main_installer.py:710
 msgid "Error mounting EFI partition:"
 msgstr "Fehler beim Einhängen der EFI-Partition:"
 
-#: lib/main_installer.py:714
+#: lib/main_installer.py:716
 msgid "Copying files..."
 msgstr "Dateien werden kopiert..."
 
-#: lib/main_installer.py:718
+#: lib/main_installer.py:720
 msgid "Cannot find MiniOS image."
 msgstr "MiniOS-Abbild konnte nicht gefunden werden."
 
-#: lib/main_installer.py:723
+#: lib/main_installer.py:725
 msgid "Copying EFI files to root..."
 msgstr "EFI-Dateien werden ins Root-Verzeichnis kopiert..."
 
-#: lib/main_installer.py:726
+#: lib/main_installer.py:728
 msgid "Copying EFI files to ESP..."
 msgstr "EFI-Dateien werden auf die ESP kopiert..."
 
-#: lib/main_installer.py:733
+#: lib/main_installer.py:735
 msgid "Error during file copy:"
 msgstr "Fehler beim Kopieren der Dateien:"
 
-#: lib/main_installer.py:739
+#: lib/main_installer.py:741
 msgid "Setting up bootloader..."
 msgstr "Bootloader wird eingerichtet..."
 
-#: lib/main_installer.py:752
+#: lib/main_installer.py:754
 msgid "Error setting up bootloader:"
 msgstr "Fehler beim Einrichten des Bootloaders:"
 
-#: lib/main_installer.py:766
+#: lib/main_installer.py:768
 msgid "Error during unmount:"
 msgstr "Fehler beim Aushängen:"
 
-#: lib/main_installer.py:770
+#: lib/main_installer.py:772
 msgid "Installation complete!"
 msgstr "Installation abgeschlossen!"
 
-#: lib/main_installer.py:783
+#: lib/main_installer.py:785
 msgid "Installation Error"
 msgstr "Installationsfehler"
 
-#: lib/main_installer.py:801
+#: lib/main_installer.py:803
 msgid "Config file not found"
 msgstr "Konfigurationsdatei nicht gefunden"
 
-#: lib/main_installer.py:803
+#: lib/main_installer.py:805
 msgid "Standard config file not found at {}."
 msgstr "Standard-Konfigurationsdatei nicht gefunden unter {}."
 
-#: lib/main_installer.py:822
+#: lib/main_installer.py:824
 msgid "Launch Error"
 msgstr "Startfehler"
 
-#: lib/main_installer.py:849
+#: lib/main_installer.py:851
 msgid "Root Privileges Required"
 msgstr "Root-Rechte erforderlich"
 
-#: lib/main_installer.py:851
+#: lib/main_installer.py:853
 msgid "This installer must be run as root."
 msgstr "Dieses Installationsprogramm muss als root ausgeführt werden."
 
@@ -563,29 +563,61 @@ msgstr "Lokalisierte GRUB-Konfiguration für {lang} erstellt"
 msgid "Error generating localized GRUB config: {error}"
 msgstr "Fehler beim Erzeugen der lokalisierten GRUB-Konfiguration: {error}"
 
-#: lib/copy_utils.py:317
-msgid "SYSLINUX configuration already exists"
-msgstr "SYSLINUX-Konfiguration existiert bereits"
+#: lib/copy_utils.py:320
+msgid "SYSLINUX directory not found, skipping SYSLINUX configuration"
+msgstr "SYSLINUX-Verzeichnis nicht gefunden, überspringe SYSLINUX-Konfiguration"
 
-#: lib/copy_utils.py:319
-msgid "Warning: SYSLINUX configuration not found"
-msgstr "Warnung: SYSLINUX-Konfiguration nicht gefunden"
+#: lib/copy_utils.py:329 lib/copy_utils.py:333
+msgid "Using multilingual SYSLINUX menu"
+msgstr "Mehrsprachiges SYSLINUX-Menü wird verwendet"
 
 #: lib/copy_utils.py:331
+msgid "Error copying multilingual SYSLINUX config: "
+msgstr "Fehler beim Kopieren der mehrsprachigen SYSLINUX-Konfiguration: "
+
+#: lib/copy_utils.py:345
+msgid "Using localized SYSLINUX configuration for: "
+msgstr "Lokalisierte SYSLINUX-Konfiguration wird verwendet für: "
+
+#: lib/copy_utils.py:347
+msgid "Error copying localized SYSLINUX config: "
+msgstr "Fehler beim Kopieren der lokalisierten SYSLINUX-Konfiguration: "
+
+#: lib/copy_utils.py:354
+msgid "Localized SYSLINUX config not found for "
+msgstr "Lokalisierte SYSLINUX-Konfiguration nicht gefunden für "
+
+#: lib/copy_utils.py:354
+msgid ", using English"
+msgstr ", verwende Englisch"
+
+#: lib/copy_utils.py:356
+msgid "Error copying English SYSLINUX config: "
+msgstr "Fehler beim Kopieren der englischen SYSLINUX-Konfiguration: "
+
+#: lib/copy_utils.py:358
+msgid "Warning: No localized SYSLINUX configurations found"
+msgstr "Warnung: Keine lokalisierten SYSLINUX-Konfigurationen gefunden"
+
+#: lib/copy_utils.py:360
+msgid "SYSLINUX lang directory not found, keeping default configuration"
+msgstr "SYSLINUX-Sprachverzeichnis nicht gefunden, Standardkonfiguration wird beibehalten"
+
+#: lib/copy_utils.py:372
 msgid "GRUB directory not found, skipping GRUB boot menu configuration"
 msgstr ""
 "GRUB-Verzeichnis nicht gefunden, überspringe GRUB-Bootmenü-Konfiguration"
 
-#: lib/copy_utils.py:339
+#: lib/copy_utils.py:380
 msgid "multilingual menu"
 msgstr "mehrsprachiges Menü"
 
-#: lib/copy_utils.py:343
+#: lib/copy_utils.py:384
 #, python-brace-format
 msgid "Applied {config} GRUB boot menu from {source}"
 msgstr "{config} GRUB-Bootmenü angewendet von {source}"
 
-#: lib/copy_utils.py:346
+#: lib/copy_utils.py:387
 #, python-brace-format
 msgid ""
 "Warning: {config} configuration file not found, keeping original grub.cfg"
@@ -593,30 +625,33 @@ msgstr ""
 "Warnung: {config} Konfigurationsdatei nicht gefunden, ursprüngliche grub.cfg "
 "wird beibehalten"
 
-#: lib/copy_utils.py:352
+#: lib/copy_utils.py:393
 #, python-brace-format
 msgid "Generating localized GRUB menu for language: {lang}"
 msgstr "Erzeuge lokalisiertes GRUB-Menü für Sprache: {lang}"
 
-#: lib/copy_utils.py:355
+#: lib/copy_utils.py:396
 #, python-brace-format
 msgid "Applied {lang} GRUB boot menu"
 msgstr "{lang} GRUB-Bootmenü angewendet"
 
-#: lib/copy_utils.py:358
+#: lib/copy_utils.py:399
 #, python-brace-format
 msgid "Failed to generate {lang} config, falling back to template"
 msgstr "Fehler beim Erzeugen der {lang}-Konfiguration, verwende Vorlage"
 
-#: lib/copy_utils.py:362
+#: lib/copy_utils.py:403
 msgid "Applied template GRUB boot menu as fallback"
 msgstr "GRUB-Bootmenü-Vorlage als Fallback angewendet"
 
-#: lib/copy_utils.py:364
+#: lib/copy_utils.py:405
 msgid "Warning: No fallback configuration available, keeping original grub.cfg"
 msgstr ""
 "Warnung: Keine Fallback-Konfiguration verfügbar, ursprüngliche grub.cfg wird "
 "beibehalten"
+
+#~ msgid "SYSLINUX configuration already exists"
+#~ msgstr "SYSLINUX-Konfiguration existiert bereits"
 
 #~ msgid "Preparing bootloader installation..."
 #~ msgstr "Vorbereitung der Bootloader-Installation..."
