@@ -1,3 +1,9 @@
+minios-installer (2.7) unstable; urgency=medium
+
+  * Add dracut-based initrd support
+
+ -- crims0n <crims0n@minios.dev>  Mon, 06 Oct 2025 23:12:24 +0300
+
 minios-installer (2.6) unstable; urgency=medium
 
   * Refine Ventoy compatibility symlink creation

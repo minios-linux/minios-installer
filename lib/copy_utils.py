@@ -146,11 +146,12 @@ def find_minios_source() -> Optional[str]:
     Find the MiniOS source directory from common locations.
     Returns the path if found, None otherwise.
     """
+    # Check both livekit and dracut initramfs paths
     candidates = [
         "/run/initramfs/memory/data/minios",
-        "/run/initramfs/memory/iso/minios", 
-        "/run/initramfs/memory/toram",
-        "/run/initramfs/memory/data/from/0/minios"
+        "/run/initramfs/memory/iso/minios",
+        "/lib/live/mount/data/minios",
+        "/lib/live/mount/iso/minios"
     ]
 
     def get_boot_files_from_cmdline():

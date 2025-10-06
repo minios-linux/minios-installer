@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-08-30 23:32+0300\n"
+"POT-Creation-Date: 2025-10-06 23:11+0300\n"
 "PO-Revision-Date: 2025-05-26 17:32+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -16,21 +16,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: lib/mount_utils.py:29
-msgid "Destination "
-msgstr "Tujuan "
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Gagal memformat "
 
-#: lib/mount_utils.py:29
-msgid " is already mounted."
-msgstr " sudah terpasang."
-
-#: lib/mount_utils.py:38
-msgid "Could not determine filesystem type of "
-msgstr "Tidak dapat menentukan tipe sistem berkas dari "
-
-#: lib/mount_utils.py:42
-msgid "Failed to mount "
-msgstr "Gagal memasang "
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Gagal memformat EFI "
 
 #: lib/bootloader_utils.py:74 lib/main_installer.py:624 lib/copy_utils.py:61
 #: lib/copy_utils.py:62
@@ -164,6 +156,22 @@ msgstr "Kesalahan: sfdisk tidak ditemukan - instal paket util-linux"
 #, python-brace-format
 msgid "Error running sfdisk: {error}"
 msgstr "Kesalahan saat menjalankan sfdisk: {error}"
+
+#: lib/mount_utils.py:29
+msgid "Destination "
+msgstr "Tujuan "
+
+#: lib/mount_utils.py:29
+msgid " is already mounted."
+msgstr " sudah terpasang."
+
+#: lib/mount_utils.py:38
+msgid "Could not determine filesystem type of "
+msgstr "Tidak dapat menentukan tipe sistem berkas dari "
+
+#: lib/mount_utils.py:42
+msgid "Failed to mount "
+msgstr "Gagal memasang "
 
 #: lib/main_installer.py:170
 msgid "USB Device"
@@ -460,57 +468,49 @@ msgstr "Installer ini harus dijalankan sebagai root."
 msgid "Failed to retrieve disk list."
 msgstr "Gagal mengambil daftar disk."
 
-#: lib/disk_utils.py:98
+#: lib/disk_utils.py:104
 msgid "Failed to detect live media device"
 msgstr "Gagal mendeteksi perangkat media langsung"
 
-#: lib/disk_utils.py:103
+#: lib/disk_utils.py:109
 msgid "Failed to detect root disk"
 msgstr "Gagal mendeteksi disk root"
 
-#: lib/disk_utils.py:170
+#: lib/disk_utils.py:176
 msgid "Failed to get disk size."
 msgstr "Gagal mendapatkan ukuran disk."
 
-#: lib/disk_utils.py:177
+#: lib/disk_utils.py:183
 msgid "Could not parse disk size."
 msgstr "Tidak dapat mengurai ukuran disk."
 
-#: lib/disk_utils.py:189
+#: lib/disk_utils.py:195
 msgid "Failed to set GPT label on "
 msgstr "Gagal mengatur label GPT pada "
 
-#: lib/disk_utils.py:193 lib/disk_utils.py:207 lib/disk_utils.py:220
+#: lib/disk_utils.py:199 lib/disk_utils.py:213 lib/disk_utils.py:226
 msgid "Failed to create primary partition on "
 msgstr "Gagal membuat partisi utama pada "
 
-#: lib/disk_utils.py:197
+#: lib/disk_utils.py:203
 msgid "Failed to create EFI partition on "
 msgstr "Gagal membuat partisi EFI pada "
 
-#: lib/disk_utils.py:200 lib/disk_utils.py:214
+#: lib/disk_utils.py:206 lib/disk_utils.py:220
 msgid "Failed to set boot flag."
 msgstr "Gagal mengatur flag boot."
 
-#: lib/disk_utils.py:203 lib/disk_utils.py:217
+#: lib/disk_utils.py:209 lib/disk_utils.py:223
 msgid "Failed to set MSDOS label on "
 msgstr "Gagal mengatur label MSDOS pada "
 
-#: lib/disk_utils.py:211
+#: lib/disk_utils.py:217
 msgid "Failed to create second partition on "
 msgstr "Gagal membuat partisi kedua pada "
 
-#: lib/disk_utils.py:234
+#: lib/disk_utils.py:240
 msgid "Failed to erase "
 msgstr "Gagal menghapus "
-
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr "Gagal memformat "
-
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
-msgstr "Gagal memformat EFI "
 
 #: lib/copy_utils.py:71
 msgid "Copying MiniOS files: "
@@ -524,122 +524,131 @@ msgstr "File disalin: "
 msgid "Created directory: "
 msgstr "Direktori dibuat: "
 
-#: lib/copy_utils.py:104
+#: lib/copy_utils.py:109
+msgid "Removed old symlink/file: "
+msgstr "Symlink/berkas lama dihapus: "
+
+#: lib/copy_utils.py:115
+msgid "Created Ventoy compatibility symlinks:"
+msgstr "Symlink kompatibilitas Ventoy dibuat:"
+
+#: lib/copy_utils.py:141
 msgid "Copied EFI file: "
 msgstr "File EFI disalin: "
 
-#: lib/copy_utils.py:246
+#: lib/copy_utils.py:284
 #, python-brace-format
 msgid "Warning: No translations found for {lang}, using English fallback"
 msgstr ""
 "Peringatan: Tidak ditemukan terjemahan untuk {lang}, menggunakan bahasa "
 "Inggris sebagai cadangan"
 
-#: lib/copy_utils.py:252
+#: lib/copy_utils.py:290
 msgid "Error: grub.template.cfg template not found"
 msgstr "Kesalahan: template grub.template.cfg tidak ditemukan"
 
-#: lib/copy_utils.py:292
+#: lib/copy_utils.py:330
 #, python-brace-format
 msgid "Using localized theme: {theme}"
 msgstr "Menggunakan tema lokal: {theme}"
 
-#: lib/copy_utils.py:294
+#: lib/copy_utils.py:332
 #, python-brace-format
 msgid "Localized theme not found for {lang}, using default"
 msgstr "Tema lokal tidak ditemukan untuk {lang}, menggunakan tema default"
 
-#: lib/copy_utils.py:300
+#: lib/copy_utils.py:338
 #, python-brace-format
 msgid "Generated localized GRUB config for {lang}"
 msgstr "Konfigurasi GRUB terlokalisasi untuk {lang} berhasil dibuat"
 
-#: lib/copy_utils.py:304
+#: lib/copy_utils.py:342
 #, python-brace-format
 msgid "Error generating localized GRUB config: {error}"
 msgstr "Kesalahan saat membuat konfigurasi GRUB terlokalisasi: {error}"
 
-#: lib/copy_utils.py:320
+#: lib/copy_utils.py:358
 msgid "SYSLINUX directory not found, skipping SYSLINUX configuration"
 msgstr "Direktori SYSLINUX tidak ditemukan, melewati konfigurasi SYSLINUX"
 
-#: lib/copy_utils.py:329 lib/copy_utils.py:333
+#: lib/copy_utils.py:367 lib/copy_utils.py:371
 msgid "Using multilingual SYSLINUX menu"
 msgstr "Menggunakan menu SYSLINUX multibahasa"
 
-#: lib/copy_utils.py:331
+#: lib/copy_utils.py:369
 msgid "Error copying multilingual SYSLINUX config: "
 msgstr "Kesalahan saat menyalin konfigurasi SYSLINUX multibahasa: "
 
-#: lib/copy_utils.py:345
+#: lib/copy_utils.py:383
 msgid "Using localized SYSLINUX configuration for: "
 msgstr "Menggunakan konfigurasi SYSLINUX terlokalisasi untuk: "
 
-#: lib/copy_utils.py:347
+#: lib/copy_utils.py:385
 msgid "Error copying localized SYSLINUX config: "
 msgstr "Kesalahan saat menyalin konfigurasi SYSLINUX terlokalisasi: "
 
-#: lib/copy_utils.py:354
+#: lib/copy_utils.py:392
 msgid "Localized SYSLINUX config not found for "
 msgstr "Konfigurasi SYSLINUX terlokalisasi tidak ditemukan untuk "
 
-#: lib/copy_utils.py:354
+#: lib/copy_utils.py:392
 msgid ", using English"
 msgstr ", menggunakan bahasa Inggris"
 
-#: lib/copy_utils.py:356
+#: lib/copy_utils.py:394
 msgid "Error copying English SYSLINUX config: "
 msgstr "Kesalahan saat menyalin konfigurasi SYSLINUX bahasa Inggris: "
 
-#: lib/copy_utils.py:358
+#: lib/copy_utils.py:396
 msgid "Warning: No localized SYSLINUX configurations found"
 msgstr "Peringatan: Tidak ditemukan konfigurasi SYSLINUX terlokalisasi"
 
-#: lib/copy_utils.py:360
+#: lib/copy_utils.py:398
 msgid "SYSLINUX lang directory not found, keeping default configuration"
-msgstr "Direktori bahasa SYSLINUX tidak ditemukan, mempertahankan konfigurasi default"
+msgstr ""
+"Direktori bahasa SYSLINUX tidak ditemukan, mempertahankan konfigurasi default"
 
-#: lib/copy_utils.py:372
+#: lib/copy_utils.py:410
 msgid "GRUB directory not found, skipping GRUB boot menu configuration"
 msgstr "Direktori GRUB tidak ditemukan, melewati konfigurasi menu boot GRUB"
 
-#: lib/copy_utils.py:380
+#: lib/copy_utils.py:418
 msgid "multilingual menu"
 msgstr "menu multibahasa"
 
-#: lib/copy_utils.py:384
+#: lib/copy_utils.py:422
 #, python-brace-format
 msgid "Applied {config} GRUB boot menu from {source}"
 msgstr "Menerapkan menu boot GRUB {config} dari {source}"
 
-#: lib/copy_utils.py:387
+#: lib/copy_utils.py:425
 #, python-brace-format
 msgid ""
 "Warning: {config} configuration file not found, keeping original grub.cfg"
 msgstr ""
-"Peringatan: file konfigurasi {config} tidak ditemukan, mempertahankan "
-"grub.cfg asli"
+"Peringatan: file konfigurasi {config} tidak ditemukan, mempertahankan grub."
+"cfg asli"
 
-#: lib/copy_utils.py:393
+#: lib/copy_utils.py:431
 #, python-brace-format
 msgid "Generating localized GRUB menu for language: {lang}"
 msgstr "Membuat menu GRUB terlokalisasi untuk bahasa: {lang}"
 
-#: lib/copy_utils.py:396
+#: lib/copy_utils.py:434
 #, python-brace-format
 msgid "Applied {lang} GRUB boot menu"
 msgstr "Menerapkan menu boot GRUB untuk bahasa {lang}"
 
-#: lib/copy_utils.py:399
+#: lib/copy_utils.py:437
 #, python-brace-format
 msgid "Failed to generate {lang} config, falling back to template"
 msgstr "Gagal membuat konfigurasi {lang}, kembali ke templat"
 
-#: lib/copy_utils.py:403
+#: lib/copy_utils.py:441
 msgid "Applied template GRUB boot menu as fallback"
 msgstr "Menerapkan menu boot GRUB templat sebagai fallback"
 
-#: lib/copy_utils.py:405
+#: lib/copy_utils.py:443
 msgid "Warning: No fallback configuration available, keeping original grub.cfg"
 msgstr ""
 "Peringatan: tidak ada konfigurasi cadangan yang tersedia, mempertahankan "

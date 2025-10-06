@@ -91,8 +91,12 @@ def find_available_disks() -> List[Dict]:
     devices = []
     # Exclude disk from which live media is loaded (always live mode)
     try:
-        # Always use initramfs media mount in live mode
-        src_path = '/run/initramfs/memory/data'
+        # Check both livekit and dracut paths
+        if os.path.exists('/run/initramfs/memory/data'):
+            src_path = '/run/initramfs/memory/data'
+        elif os.path.exists('/lib/live/mount/data'):
+            src_path = '/lib/live/mount/data'
+        
         root_src = run_command(
             ['findmnt', '-n', '-o', 'SOURCE', src_path],
             _("Failed to detect live media device")

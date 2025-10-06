@@ -205,8 +205,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
                     capture_output=True, text=True, timeout=5
                 ).stdout
                 
-                # Check for MiniOS system disk
-                if '/run/initramfs/memory/data' in lsblk_output:
+                # Check for MiniOS system disk (both livekit and dracut)
+                if '/run/initramfs/memory/data' in lsblk_output or '/lib/live/mount/data' in lsblk_output:
                     is_system = True
                 # Check if any partition is mounted
                 elif lsblk_output.strip() and not lsblk_output.strip() == '':
