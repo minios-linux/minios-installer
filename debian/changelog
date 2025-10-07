@@ -1,3 +1,9 @@
+minios-installer (2.7.1) unstable; urgency=medium
+
+  * Fixed paths for dracut initramfs compatibility
+
+ -- crims0n <crims0n@minios.dev>  Tue, 07 Oct 2025 13:09:25 +0300
+
 minios-installer (2.7) unstable; urgency=medium
 
   * Add dracut-based initrd support

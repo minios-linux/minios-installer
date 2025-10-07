@@ -94,8 +94,8 @@ def find_available_disks() -> List[Dict]:
         # Check both livekit and dracut paths
         if os.path.exists('/run/initramfs/memory/data'):
             src_path = '/run/initramfs/memory/data'
-        elif os.path.exists('/lib/live/mount/data'):
-            src_path = '/lib/live/mount/data'
+        elif os.path.exists('/lib/live/mount/medium'):
+            src_path = '/lib/live/mount/medium'
         
         root_src = run_command(
             ['findmnt', '-n', '-o', 'SOURCE', src_path],

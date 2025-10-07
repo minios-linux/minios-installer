@@ -150,7 +150,7 @@ def find_minios_source() -> Optional[str]:
     candidates = [
         "/run/initramfs/memory/data/minios",
         "/run/initramfs/memory/iso/minios",
-        "/lib/live/mount/data/minios",
+        "/lib/live/mount/medium/minios",
         "/lib/live/mount/iso/minios"
     ]
 
