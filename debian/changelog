@@ -1,3 +1,9 @@
+minios-installer (2.7.2) unstable; urgency=medium
+
+  * Remove Ventoy compatibility symlink creation
+
+ -- crims0n <crims0n@minios.dev>  Sun, 12 Oct 2025 02:52:24 +0300
+
 minios-installer (2.7.1) unstable; urgency=medium
 
   * Fixed paths for dracut initramfs compatibility

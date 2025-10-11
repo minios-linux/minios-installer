@@ -79,43 +79,6 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
         os.makedirs(p, exist_ok=True)
         log_cb(_("Created directory: ") + p)
 
-    # Create compatibility symlinks for Ventoy if NAMED_BOOT_FILES is used
-    boot_dir = os.path.join(dst, 'minios', 'boot')
-    if os.path.exists(boot_dir):
-        # Find boot files
-        versioned_vmlinuz = None
-        versioned_initrfs = None
-        has_generic_files = False
-
-        for filename in os.listdir(boot_dir):
-            if filename.startswith('vmlinuz-') and not filename.endswith('.img'):
-                versioned_vmlinuz = filename
-            elif filename.startswith('initrfs-') and filename.endswith('.img'):
-                versioned_initrfs = filename
-            elif filename == 'vmlinuz':
-                has_generic_files = True
-            elif filename == 'initrfs.img':
-                has_generic_files = True
-
-        # Create Ventoy compatibility symlinks if we have versioned files
-        if versioned_vmlinuz and versioned_initrfs and not has_generic_files:
-            vmlinuz_link = os.path.join(boot_dir, 'vmlinuz')
-            initrfs_link = os.path.join(boot_dir, 'initrfs.img')
-
-            # Remove existing files
-            for link_path in [vmlinuz_link, initrfs_link]:
-                if os.path.exists(link_path):
-                    os.unlink(link_path)
-                    log_cb(_("Removed old symlink/file: ") + link_path)
-
-            # Create new compatibility symlinks for Ventoy
-            os.symlink(versioned_vmlinuz, vmlinuz_link)
-            os.symlink(versioned_initrfs, initrfs_link)
-
-            log_cb(_("Created Ventoy compatibility symlinks:"))
-            log_cb(f"  vmlinuz -> {versioned_vmlinuz}")
-            log_cb(f"  initrfs.img -> {versioned_initrfs}")
-
     # Handle GRUB configuration selection
     _process_grub_config(dst, boot_config_type, log_cb)
 
