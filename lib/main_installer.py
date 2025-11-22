@@ -791,6 +791,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _on_launch_configurator(self, button):
         """
         Copy the standard config to a temp file and launch the configurator with it.
+        Use -i flag to inherit parameters from kernel command line.
         """
         src_config = '/etc/live/config.conf'
         if not os.path.exists(src_config):
@@ -813,7 +814,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.temp_config_path = temp_path
 
         try:
-            subprocess.Popen(['minios-configurator', temp_path])
+            # Launch configurator with -i flag to inherit cmdline parameters
+            subprocess.Popen(['minios-configurator', '-i', temp_path])
         except Exception as e:
             dlg = Gtk.MessageDialog(
                 transient_for=self,

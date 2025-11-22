@@ -1,3 +1,11 @@
+minios-installer (2.7.3) unstable; urgency=medium
+
+  * Configurator now inherits settings from current live system when launched
+  * Automatically pre-fill configuration with current boot parameters
+  * Improve installation workflow
+
+ -- crims0n <crims0n@minios.dev>  Sun, 23 Nov 2025 00:45:32 +0300
+
 minios-installer (2.7.2) unstable; urgency=medium
 
   * Remove Ventoy compatibility symlink creation
