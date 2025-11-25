@@ -1,4 +1,4 @@
-minios-installer (2.7.3) unstable; urgency=medium
+minios-installer (2.8.0) unstable; urgency=medium
 
   * Configurator now inherits settings from current live system when launched
   * Automatically pre-fill configuration with current boot parameters

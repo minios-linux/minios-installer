@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-10-06 23:11+0300\n"
+"POT-Creation-Date: 2025-11-25 19:54+0300\n"
 "PO-Revision-Date: 2025-05-26 17:08+0300\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
@@ -18,13 +18,21 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr "Не удалось отформатировать "
+#: lib/mount_utils.py:29
+msgid "Destination "
+msgstr "Путь назначения "
 
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
-msgstr "Не удалось отформатировать EFI "
+#: lib/mount_utils.py:29
+msgid " is already mounted."
+msgstr " уже смонтирован."
+
+#: lib/mount_utils.py:38
+msgid "Could not determine filesystem type of "
+msgstr "Не удалось определить тип файловой системы для "
+
+#: lib/mount_utils.py:42
+msgid "Failed to mount "
+msgstr "Не удалось смонтировать "
 
 #: lib/bootloader_utils.py:74 lib/main_installer.py:624 lib/copy_utils.py:61
 #: lib/copy_utils.py:62
@@ -160,22 +168,6 @@ msgstr "Ошибка: sfdisk не найден — установите паке
 #, python-brace-format
 msgid "Error running sfdisk: {error}"
 msgstr "Ошибка при выполнении sfdisk: {error}"
-
-#: lib/mount_utils.py:29
-msgid "Destination "
-msgstr "Путь назначения "
-
-#: lib/mount_utils.py:29
-msgid " is already mounted."
-msgstr " уже смонтирован."
-
-#: lib/mount_utils.py:38
-msgid "Could not determine filesystem type of "
-msgstr "Не удалось определить тип файловой системы для "
-
-#: lib/mount_utils.py:42
-msgid "Failed to mount "
-msgstr "Не удалось смонтировать "
 
 #: lib/main_installer.py:170
 msgid "USB Device"
@@ -445,23 +437,23 @@ msgstr "Установка завершена!"
 msgid "Installation Error"
 msgstr "Ошибка установки"
 
-#: lib/main_installer.py:803
+#: lib/main_installer.py:804
 msgid "Config file not found"
 msgstr "Файл конфигурации не найден"
 
-#: lib/main_installer.py:805
+#: lib/main_installer.py:806
 msgid "Standard config file not found at {}."
 msgstr "Стандартный файл конфигурации не найден в {}."
 
-#: lib/main_installer.py:824
+#: lib/main_installer.py:826
 msgid "Launch Error"
 msgstr "Ошибка запуска"
 
-#: lib/main_installer.py:851
+#: lib/main_installer.py:853
 msgid "Root Privileges Required"
 msgstr "Требуются права администратора"
 
-#: lib/main_installer.py:853
+#: lib/main_installer.py:855
 msgid "This installer must be run as root."
 msgstr "Этот установщик должен быть запущен от имени root."
 
@@ -469,49 +461,57 @@ msgstr "Этот установщик должен быть запущен от 
 msgid "Failed to retrieve disk list."
 msgstr "Не удалось получить список дисков."
 
-#: lib/disk_utils.py:104
+#: lib/disk_utils.py:102
 msgid "Failed to detect live media device"
 msgstr "Не удалось обнаружить устройство загрузочного носителя"
 
-#: lib/disk_utils.py:109
+#: lib/disk_utils.py:107
 msgid "Failed to detect root disk"
 msgstr "Не удалось обнаружить корневой диск"
 
-#: lib/disk_utils.py:176
+#: lib/disk_utils.py:174
 msgid "Failed to get disk size."
 msgstr "Не удалось определить размер диска."
 
-#: lib/disk_utils.py:183
+#: lib/disk_utils.py:181
 msgid "Could not parse disk size."
 msgstr "Не удалось распознать размер диска."
 
-#: lib/disk_utils.py:195
+#: lib/disk_utils.py:193
 msgid "Failed to set GPT label on "
 msgstr "Не удалось установить метку GPT на "
 
-#: lib/disk_utils.py:199 lib/disk_utils.py:213 lib/disk_utils.py:226
+#: lib/disk_utils.py:197 lib/disk_utils.py:211 lib/disk_utils.py:224
 msgid "Failed to create primary partition on "
 msgstr "Не удалось создать основной раздел на "
 
-#: lib/disk_utils.py:203
+#: lib/disk_utils.py:201
 msgid "Failed to create EFI partition on "
 msgstr "Не удалось создать раздел EFI на "
 
-#: lib/disk_utils.py:206 lib/disk_utils.py:220
+#: lib/disk_utils.py:204 lib/disk_utils.py:218
 msgid "Failed to set boot flag."
 msgstr "Не удалось установить загрузочный флаг."
 
-#: lib/disk_utils.py:209 lib/disk_utils.py:223
+#: lib/disk_utils.py:207 lib/disk_utils.py:221
 msgid "Failed to set MSDOS label on "
 msgstr "Не удалось установить метку MSDOS на "
 
-#: lib/disk_utils.py:217
+#: lib/disk_utils.py:215
 msgid "Failed to create second partition on "
 msgstr "Не удалось создать второй раздел на "
 
-#: lib/disk_utils.py:240
+#: lib/disk_utils.py:238
 msgid "Failed to erase "
 msgstr "Не удалось стереть "
+
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Не удалось отформатировать "
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Не удалось отформатировать EFI "
 
 #: lib/copy_utils.py:71
 msgid "Copying MiniOS files: "
@@ -525,105 +525,97 @@ msgstr "Скопирован файл: "
 msgid "Created directory: "
 msgstr "Создан каталог: "
 
-#: lib/copy_utils.py:109
-msgid "Removed old symlink/file: "
-msgstr "Удалена старая символьная ссылка/файл: "
-
-#: lib/copy_utils.py:115
-msgid "Created Ventoy compatibility symlinks:"
-msgstr "Созданы символьные ссылки для совместимости с Ventoy:"
-
-#: lib/copy_utils.py:141
+#: lib/copy_utils.py:104
 msgid "Copied EFI file: "
 msgstr "Скопирован EFI-файл: "
 
-#: lib/copy_utils.py:284
+#: lib/copy_utils.py:247
 #, python-brace-format
 msgid "Warning: No translations found for {lang}, using English fallback"
 msgstr ""
 "Предупреждение: переводы для {lang} не найдены, используется английский "
 "вариант"
 
-#: lib/copy_utils.py:290
+#: lib/copy_utils.py:253
 msgid "Error: grub.template.cfg template not found"
 msgstr "Ошибка: шаблон grub.template.cfg не найден"
 
-#: lib/copy_utils.py:330
+#: lib/copy_utils.py:293
 #, python-brace-format
 msgid "Using localized theme: {theme}"
 msgstr "Используется локализованная тема: {theme}"
 
-#: lib/copy_utils.py:332
+#: lib/copy_utils.py:295
 #, python-brace-format
 msgid "Localized theme not found for {lang}, using default"
 msgstr ""
 "Локализованная тема для {lang} не найдена, используется тема по умолчанию"
 
-#: lib/copy_utils.py:338
+#: lib/copy_utils.py:301
 #, python-brace-format
 msgid "Generated localized GRUB config for {lang}"
 msgstr "Создан локализованный конфиг GRUB для языка: {lang}"
 
-#: lib/copy_utils.py:342
+#: lib/copy_utils.py:305
 #, python-brace-format
 msgid "Error generating localized GRUB config: {error}"
 msgstr "Ошибка при создании локализованного конфига GRUB: {error}"
 
-#: lib/copy_utils.py:358
+#: lib/copy_utils.py:321
 msgid "SYSLINUX directory not found, skipping SYSLINUX configuration"
 msgstr "Каталог SYSLINUX не найден, пропускаем настройку SYSLINUX"
 
-#: lib/copy_utils.py:367 lib/copy_utils.py:371
+#: lib/copy_utils.py:330 lib/copy_utils.py:334
 msgid "Using multilingual SYSLINUX menu"
 msgstr "Используется многоязычное меню SYSLINUX"
 
-#: lib/copy_utils.py:369
+#: lib/copy_utils.py:332
 msgid "Error copying multilingual SYSLINUX config: "
 msgstr "Ошибка при копировании многоязычной конфигурации SYSLINUX: "
 
-#: lib/copy_utils.py:383
+#: lib/copy_utils.py:346
 msgid "Using localized SYSLINUX configuration for: "
 msgstr "Используется локализованная конфигурация SYSLINUX для: "
 
-#: lib/copy_utils.py:385
+#: lib/copy_utils.py:348
 msgid "Error copying localized SYSLINUX config: "
 msgstr "Ошибка при копировании локализованной конфигурации SYSLINUX: "
 
-#: lib/copy_utils.py:392
+#: lib/copy_utils.py:355
 msgid "Localized SYSLINUX config not found for "
 msgstr "Локализованная конфигурация SYSLINUX не найдена для "
 
-#: lib/copy_utils.py:392
+#: lib/copy_utils.py:355
 msgid ", using English"
 msgstr ", используется английский вариант"
 
-#: lib/copy_utils.py:394
+#: lib/copy_utils.py:357
 msgid "Error copying English SYSLINUX config: "
 msgstr "Ошибка при копировании английской конфигурации SYSLINUX: "
 
-#: lib/copy_utils.py:396
+#: lib/copy_utils.py:359
 msgid "Warning: No localized SYSLINUX configurations found"
 msgstr "Предупреждение: локализованные конфигурации SYSLINUX не найдены"
 
-#: lib/copy_utils.py:398
+#: lib/copy_utils.py:361
 msgid "SYSLINUX lang directory not found, keeping default configuration"
 msgstr ""
 "Каталог языков SYSLINUX не найден, сохраняется конфигурация по умолчанию"
 
-#: lib/copy_utils.py:410
+#: lib/copy_utils.py:373
 msgid "GRUB directory not found, skipping GRUB boot menu configuration"
 msgstr "Каталог GRUB не найден, пропускаем настройку загрузочного меню GRUB"
 
-#: lib/copy_utils.py:418
+#: lib/copy_utils.py:381
 msgid "multilingual menu"
 msgstr "многоязычное меню"
 
-#: lib/copy_utils.py:422
+#: lib/copy_utils.py:385
 #, python-brace-format
 msgid "Applied {config} GRUB boot menu from {source}"
 msgstr "Применено {config} загрузочное меню GRUB из {source}"
 
-#: lib/copy_utils.py:425
+#: lib/copy_utils.py:388
 #, python-brace-format
 msgid ""
 "Warning: {config} configuration file not found, keeping original grub.cfg"
@@ -631,31 +623,37 @@ msgstr ""
 "Предупреждение: файл конфигурации {config} не найден, оставляем оригинальный "
 "grub.cfg"
 
-#: lib/copy_utils.py:431
+#: lib/copy_utils.py:394
 #, python-brace-format
 msgid "Generating localized GRUB menu for language: {lang}"
 msgstr "Генерация локализованного меню GRUB для языка: {lang}"
 
-#: lib/copy_utils.py:434
+#: lib/copy_utils.py:397
 #, python-brace-format
 msgid "Applied {lang} GRUB boot menu"
 msgstr "Применено загрузочное меню GRUB для языка: {lang}"
 
-#: lib/copy_utils.py:437
+#: lib/copy_utils.py:400
 #, python-brace-format
 msgid "Failed to generate {lang} config, falling back to template"
 msgstr "Не удалось создать конфигурацию для языка {lang}, используется шаблон"
 
-#: lib/copy_utils.py:441
+#: lib/copy_utils.py:404
 msgid "Applied template GRUB boot menu as fallback"
 msgstr ""
 "Применено загрузочное меню GRUB из шаблона в качестве резервного варианта"
 
-#: lib/copy_utils.py:443
+#: lib/copy_utils.py:406
 msgid "Warning: No fallback configuration available, keeping original grub.cfg"
 msgstr ""
 "Предупреждение: резервная конфигурация недоступна, сохраняется оригинальный "
 "grub.cfg"
+
+#~ msgid "Removed old symlink/file: "
+#~ msgstr "Удалена старая символьная ссылка/файл: "
+
+#~ msgid "Created Ventoy compatibility symlinks:"
+#~ msgstr "Созданы символьные ссылки для совместимости с Ventoy:"
 
 #~ msgid "SYSLINUX configuration already exists"
 #~ msgstr "Конфигурация SYSLINUX уже существует"
