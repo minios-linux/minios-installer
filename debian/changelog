@@ -1,3 +1,9 @@
+minios-installer (2.8.1) unstable; urgency=medium
+
+  * Auto-detect boot menu language from cmdline locales parameter
+
+ -- crims0n <crims0n@minios.dev>  Wed, 26 Nov 2025 20:18:33 +0300
+
 minios-installer (2.8.0) unstable; urgency=medium
 
   * Configurator now inherits settings from current live system when launched

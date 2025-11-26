@@ -14,6 +14,7 @@ Original idea: FershoUno <https://github.com/FershoUno>
 
 import os
 import sys
+import re
 import gi
 import gettext
 import threading
@@ -88,7 +89,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.selected_filesystem = None
         self.use_gpt             = False
         self.create_efi          = False
-        self.boot_config_type    = "multilang"  # "multilang" or language code like "ru_RU"
+        self.boot_config_type    = self._get_default_boot_config()  # "multilang" or language code like "ru_RU"
         self.cancel_requested    = False
 
         self.p1 = None
@@ -112,6 +113,32 @@ class InstallerWindow(Gtk.ApplicationWindow):
         start_disk_monitoring(self._refresh_disk_list)
 
         self.connect("destroy", self._on_destroy)
+
+    def _get_default_boot_config(self):
+        """
+        Get default boot configuration type from /proc/cmdline.
+        Returns language code (e.g. "ru_RU") for non-English locales,
+        or "multilang" for English.
+        """
+        try:
+            with open('/proc/cmdline', 'r') as f:
+                cmdline = f.read()
+
+            # Extract locales parameter
+            match = re.search(r'locales=([^\s]+)', cmdline)
+            if match:
+                locale_str = match.group(1)
+                # Parse locale: "ru_RU.UTF-8" -> "ru_RU"
+                lang_code = locale_str.split('.')[0]
+
+                # If not English, use the language code
+                if lang_code != "en_US":
+                    return lang_code
+        except Exception:
+            pass
+
+        # Default to multilang for English or if cmdline reading fails
+        return "multilang"
 
     def _on_destroy(self, widget):
         stop_disk_monitoring(self._refresh_disk_list)
