@@ -1,3 +1,10 @@
+minios-installer (2.8.2) unstable; urgency=medium
+
+  * Set boot menu language combo box to value from cmdline
+  * Remove live-config parameters from boot configs for localized menus
+
+ -- crims0n <crims0n@minios.dev>  Thu, 27 Nov 2025 13:56:58 +0300
+
 minios-installer (2.8.1) unstable; urgency=medium
 
   * Auto-detect boot menu language from cmdline locales parameter

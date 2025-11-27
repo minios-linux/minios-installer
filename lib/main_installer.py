@@ -377,7 +377,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.language_combo = Gtk.ComboBoxText()
         for lang_code, lang_name in self.available_languages:
             self.language_combo.append(lang_code, lang_name)
-        self.language_combo.set_active(0)  # Select multilingual by default
+
+        # Set active language based on boot_config_type from cmdline
+        if not self.language_combo.set_active_id(self.boot_config_type):
+            # If language not found in list, default to multilingual
+            self.language_combo.set_active(0)
+
         self.language_combo.connect("changed", self._on_language_changed)
         boot_config_box.pack_start(self.language_combo, False, False, 0)
         

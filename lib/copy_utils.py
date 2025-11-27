@@ -204,6 +204,21 @@ def _calculate_copy_size(src: str) -> int:
     return total
 
 
+def _remove_live_config_params(content: str) -> str:
+    """
+    Remove live-config parameters (locales, timezone, keyboard-layouts) from boot config.
+    These parameters should be in minios/config.conf instead of boot loader configs
+    when installing to disk.
+    """
+    # Remove locales parameter
+    content = re.sub(r'\s+locales=[^\s]+', '', content)
+    # Remove timezone parameter
+    content = re.sub(r'\s+timezone=[^\s]+', '', content)
+    # Remove keyboard-layouts parameter
+    content = re.sub(r'\s+keyboard-layouts=[^\s]+', '', content)
+    return content
+
+
 def _parse_po_file(po_path: str) -> Dict[str, str]:
     """
     Parse a .po file and return a dictionary of msgid -> msgstr mappings.
@@ -237,6 +252,8 @@ def _parse_po_file(po_path: str) -> Dict[str, str]:
 def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path: str, log_cb: Callable) -> bool:
     """
     Generate a localized GRUB configuration using po files.
+    Removes live-config parameters (locales/timezone/keyboard-layouts)
+    as they will be in minios/config.conf instead.
     Writes directly to grub.cfg. Returns True if successful.
     """
     # Parse po file for the language
@@ -294,6 +311,9 @@ def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path
         else:
             log_cb(_("Localized theme not found for {lang}, using default").format(lang=lang_code))
 
+        # Remove live-config parameters (will be in minios/config.conf)
+        localized_content = _remove_live_config_params(localized_content)
+
         # Write localized config directly to grub.cfg
         with open(grub_cfg_path, 'w', encoding='utf-8') as f:
             f.write(localized_content)
@@ -311,7 +331,9 @@ def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> No
     """
     Process SYSLINUX boot configuration:
     - For multilang: Keep default syslinux.cfg (multilingual support)
-    - For specific language: Use localized config from lang/ directory if available
+    - For specific language: Use localized config from lang/ directory,
+      removing live-config parameters (locales/timezone/keyboard-layouts)
+      as they will be in minios/config.conf instead
     """
     boot_dir = os.path.join(dst, 'minios', 'boot')
     syslinux_dir = os.path.join(boot_dir, 'syslinux')
@@ -340,21 +362,37 @@ def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> No
         localized_cfg = os.path.join(lang_dir, f"{config_type}.cfg")
 
         if os.path.exists(localized_cfg):
-            # Replace main syslinux.cfg with localized version
+            # Read, clean, and write localized version
             try:
-                shutil.copy2(localized_cfg, syslinux_cfg_path)
+                with open(localized_cfg, 'r', encoding='utf-8') as f:
+                    content = f.read()
+
+                # Remove live-config parameters (will be in minios/config.conf)
+                content = _remove_live_config_params(content)
+
+                with open(syslinux_cfg_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+
                 log_cb(_("Using localized SYSLINUX configuration for: ") + config_type)
             except Exception as e:
-                log_cb(_("Error copying localized SYSLINUX config: ") + str(e))
+                log_cb(_("Error processing localized SYSLINUX config: ") + str(e))
         else:
             # Fallback to English if localized version not found
             english_cfg = os.path.join(lang_dir, "en_US.cfg")
             if os.path.exists(english_cfg):
                 try:
-                    shutil.copy2(english_cfg, syslinux_cfg_path)
+                    with open(english_cfg, 'r', encoding='utf-8') as f:
+                        content = f.read()
+
+                    # Remove live-config parameters (will be in minios/config.conf)
+                    content = _remove_live_config_params(content)
+
+                    with open(syslinux_cfg_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+
                     log_cb(_("Localized SYSLINUX config not found for ") + config_type + _(", using English"))
                 except Exception as e:
-                    log_cb(_("Error copying English SYSLINUX config: ") + str(e))
+                    log_cb(_("Error processing English SYSLINUX config: ") + str(e))
             else:
                 log_cb(_("Warning: No localized SYSLINUX configurations found"))
     else:
