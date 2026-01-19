@@ -199,7 +199,7 @@ def _calculate_copy_size(src: str) -> int:
                 continue
             try:
                 total += os.path.getsize(os.path.join(root, fn))
-            except:
+            except (OSError, IOError):
                 pass
     return total
 

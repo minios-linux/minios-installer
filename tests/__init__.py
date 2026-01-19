@@ -1,0 +1,1 @@
+# minios-installer tests package

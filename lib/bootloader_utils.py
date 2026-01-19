@@ -161,7 +161,7 @@ def install_extlinux_bootloader(device: str, primary: str, efi: Optional[str], b
     """
     progress_cb(96, _("Installing EXTLINUX bootloader..."))
     
-    arch = subprocess.check_output(['uname', '-m'], text=True).strip()
+    arch = subprocess.check_output(['uname', '-m'], universal_newlines=True).strip()
     exe = 'extlinux.x64' if arch == 'x86_64' else 'extlinux.x32'
     exe_path = os.path.join(boot_dir, exe)
     
@@ -195,7 +195,7 @@ def install_extlinux_bootloader(device: str, primary: str, efi: Optional[str], b
         [exe_path, '--install', boot_dir],
         cwd=boot_dir,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        text=True
+        universal_newlines=True
     )
     for line in proc.stdout.splitlines():
         log_cb(line)
@@ -211,7 +211,7 @@ def install_extlinux_bootloader(device: str, primary: str, efi: Optional[str], b
         proc2 = subprocess.run(
             [tmp_exe, '--install', boot_dir],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True
+            universal_newlines=True
         )
         for line in proc2.stdout.splitlines():
             log_cb(line)
@@ -269,7 +269,7 @@ def _set_active_partition(device: str, primary: str, log_cb: Callable) -> None:
     try:
         proc = subprocess.run(
             ['sfdisk', '-A', device, part_num],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True,
             timeout=30
         )
         

@@ -17,6 +17,6 @@ def run_command(cmd: List[str], error_message: str) -> str:
     Run subprocess.check_output(cmd). On failure, raise RuntimeError(error_message).
     """
     try:
-        return subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
+        return subprocess.check_output(cmd, universal_newlines=True, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         raise RuntimeError(error_message)

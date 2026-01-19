@@ -229,7 +229,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 is_mounted = False
                 lsblk_output = subprocess.run(
                     ['lsblk', '-n', '-o', 'MOUNTPOINT', device_path],
-                    capture_output=True, text=True, timeout=5
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=5
                 ).stdout
                 
                 # Check for MiniOS system disk (both livekit and dracut)
@@ -238,7 +238,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 # Check if any partition is mounted
                 elif lsblk_output.strip() and not lsblk_output.strip() == '':
                     is_mounted = True
-            except:
+            except (subprocess.SubprocessError, OSError, ValueError):
                 is_system = False
                 is_mounted = False
                 

@@ -96,6 +96,9 @@ def find_available_disks() -> List[Dict]:
             src_path = '/run/initramfs/memory/data'
         elif os.path.exists('/lib/live/mount/medium'):
             src_path = '/lib/live/mount/medium'
+        else:
+            # No live media path found, skip live disk detection
+            raise RuntimeError("No live media path found")
         
         root_src = run_command(
             ['findmnt', '-n', '-o', 'SOURCE', src_path],
@@ -159,7 +162,7 @@ def _is_removable_disk(device_path: str) -> bool:
         if os.path.exists(removable_path):
             with open(removable_path, 'r') as f:
                 return f.read().strip() == '1'
-    except:
+    except (OSError, IOError, ValueError):
         pass
     return False
 

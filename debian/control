@@ -11,7 +11,7 @@ Architecture: all
 Depends: ${misc:Depends},
          polkitd | policykit-1,
          pkexec | policykit-1,
-         python3 (>= 3.7),
+         python3 (>= 3.6),
          python3-gi,
          gir1.2-gtk-3.0,
          gir1.2-gio-2.0,
@@ -23,7 +23,7 @@ Depends: ${misc:Depends},
          dosfstools,
          btrfs-progs,
          ntfs-3g,
-         util-linux (>= 2.33),
+         util-linux (>= 2.31),
          minios-configurator (>= 2.0)
 Description: MiniOS Linux installation utility.
  MiniOS Installer is a utility specially designed for quick and easy

@@ -1,3 +1,29 @@
+minios-installer (2.8.3) unstable; urgency=medium
+
+  * Bug fixes:
+    - Fix unbound variable 'src_path' in disk_utils.py when no live media path found
+  * Code quality improvements:
+    - Replace broad exception handlers with specific exception types
+    - Improve error handling across all utility modules
+  * Python 3.6 compatibility:
+    - Lower Python requirement from 3.7 to 3.6 for Debian 10 support
+    - Replace capture_output=True with explicit stdout/stderr pipes
+    - Replace text=True with universal_newlines=True in subprocess calls
+    - Update debian/compat from 12 to 11
+  * Ubuntu 18.04 compatibility:
+    - Lower util-linux requirement from 2.33 to 2.31
+  * Testing infrastructure:
+    - Add comprehensive pytest test suite
+    - Add tests for disk_utils module (size formatting, disk detection,
+      partitioning)
+    - Add tests for mount_utils module (mounting, unmounting, device detection)
+    - Add tests for format_utils module (filesystem tools detection, formatting)
+    - Add tests for command_utils module (command execution)
+    - Add pytest.ini configuration file
+    - Add conftest.py with common fixtures
+
+ -- crims0n <crims0n@minios.dev>  Mon, 19 Jan 2026 17:40:28 +0300
+
 minios-installer (2.8.2) unstable; urgency=medium
 
   * Set boot menu language combo box to value from cmdline

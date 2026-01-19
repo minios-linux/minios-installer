@@ -62,7 +62,7 @@ def unmount_partitions(p1: str, p2: Optional[str], m1: str, m2: Optional[str]) -
         if mount_point and os.path.isdir(mount_point):
             try:
                 shutil.rmtree(mount_point, ignore_errors=True)
-            except:
+            except (OSError, IOError):
                 pass
 
 
@@ -81,7 +81,7 @@ def get_mounted_partitions(target_device: str) -> list:
                     mount_point = parts[1]
                     if device.startswith(target_device):
                         mounted.append((device, mount_point))
-    except:
+    except (OSError, IOError):
         pass
     return mounted
 
@@ -95,5 +95,5 @@ def force_unmount_device(device: str) -> None:
         try:
             subprocess.run(['umount', '-l', dev], 
                          stderr=subprocess.DEVNULL, check=False)
-        except:
+        except (subprocess.SubprocessError, OSError):
             pass
