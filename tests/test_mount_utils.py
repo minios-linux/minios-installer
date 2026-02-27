@@ -79,7 +79,7 @@ class TestUnmountPartitions:
         """Test unmounting single partition."""
         from mount_utils import unmount_partitions
         
-        with patch('os.path.ismount', side_effect=[False, True]), \
+        with patch('os.path.ismount', return_value=True), \
              patch('subprocess.check_call') as mock_check_call, \
              patch('os.path.isdir', return_value=True), \
              patch('shutil.rmtree'):

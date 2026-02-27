@@ -27,7 +27,7 @@ class TestRunCommand:
             assert result == 'output'
             mock_output.assert_called_once_with(
                 ['echo', 'test'],
-                text=True,
+                universal_newlines=True,
                 stderr=subprocess.DEVNULL
             )
 

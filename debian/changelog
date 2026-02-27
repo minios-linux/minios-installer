@@ -1,3 +1,14 @@
+minios-installer (2.8.4) unstable; urgency=medium
+
+  * Fix SYSLINUX localized menu processing for non-UTF8 configs (CP866,
+    ISO-8859-1): preserve source encoding while applying installer-selected
+    boot menu language.
+  * Add tests for localized SYSLINUX config handling, live-config parameter
+    stripping, and language fallback behavior.
+  * Fix test suite regressions in command and unmount tests.
+
+ -- crims0n <crims0n@minios.dev>  Fri, 27 Feb 2026 14:12:02 +0300
+
 minios-installer (2.8.3) unstable; urgency=medium
 
   * Bug fixes:

@@ -219,6 +219,17 @@ def _remove_live_config_params(content: str) -> str:
     return content
 
 
+def _remove_live_config_params_bytes(content: bytes) -> bytes:
+    """
+    Remove live-config parameters from boot config bytes without decoding.
+    This preserves original file encodings (e.g. CP866, ISO-8859-1).
+    """
+    content = re.sub(rb'\s+locales=[^\s]+', b'', content)
+    content = re.sub(rb'\s+timezone=[^\s]+', b'', content)
+    content = re.sub(rb'\s+keyboard-layouts=[^\s]+', b'', content)
+    return content
+
+
 def _parse_po_file(po_path: str) -> Dict[str, str]:
     """
     Parse a .po file and return a dictionary of msgid -> msgstr mappings.
@@ -362,15 +373,15 @@ def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> No
         localized_cfg = os.path.join(lang_dir, f"{config_type}.cfg")
 
         if os.path.exists(localized_cfg):
-            # Read, clean, and write localized version
+            # Read, clean, and write localized version preserving original encoding
             try:
-                with open(localized_cfg, 'r', encoding='utf-8') as f:
+                with open(localized_cfg, 'rb') as f:
                     content = f.read()
 
                 # Remove live-config parameters (will be in minios/config.conf)
-                content = _remove_live_config_params(content)
+                content = _remove_live_config_params_bytes(content)
 
-                with open(syslinux_cfg_path, 'w', encoding='utf-8') as f:
+                with open(syslinux_cfg_path, 'wb') as f:
                     f.write(content)
 
                 log_cb(_("Using localized SYSLINUX configuration for: ") + config_type)
@@ -381,13 +392,13 @@ def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> No
             english_cfg = os.path.join(lang_dir, "en_US.cfg")
             if os.path.exists(english_cfg):
                 try:
-                    with open(english_cfg, 'r', encoding='utf-8') as f:
+                    with open(english_cfg, 'rb') as f:
                         content = f.read()
 
                     # Remove live-config parameters (will be in minios/config.conf)
-                    content = _remove_live_config_params(content)
+                    content = _remove_live_config_params_bytes(content)
 
-                    with open(syslinux_cfg_path, 'w', encoding='utf-8') as f:
+                    with open(syslinux_cfg_path, 'wb') as f:
                         f.write(content)
 
                     log_cb(_("Localized SYSLINUX config not found for ") + config_type + _(", using English"))
