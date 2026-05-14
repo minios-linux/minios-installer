@@ -3,6 +3,7 @@
 minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
 .B minios-installer
+.RI [ --help ]
 .SH DESCRIPTION
 .B minios-installer
 is a GTK3 graphical utility for installing MiniOS from a live session to a permanent disk installation. It provides a simple interface for disk selection, filesystem choice, and automated installation.
@@ -10,6 +11,10 @@ is a GTK3 graphical utility for installing MiniOS from a live session to a perma
 The installer supports both BIOS and UEFI systems with automatic detection. It creates appropriate partitions, formats them with the selected filesystem, copies MiniOS files, and installs the appropriate bootloader (SYSLINUX for BIOS, GRUB for UEFI).
 .PP
 Requires administrative privileges via PolicyKit authentication.
+.SH OPTIONS
+.TP
+.B -h, --help
+Show a short usage message and exit.
 .SH USAGE
 1. Select target disk from available devices
 .PP

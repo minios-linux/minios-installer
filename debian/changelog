@@ -1,3 +1,10 @@
+minios-installer (2.8.5) unstable; urgency=medium
+
+  * Add help option to CLI and GUI launcher
+  * Update documentation
+
+ -- crims0n <crims0n@minios.dev>  Thu, 14 May 2026 15:40:18 +0300
+
 minios-installer (2.8.4) unstable; urgency=medium
 
   * Fix SYSLINUX localized menu processing for non-UTF8 configs (CP866,

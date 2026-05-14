@@ -8,6 +8,28 @@ set -e
 
 TERM=xterm
 
-DIR=/usr/lib/minios-installer
+case "${1:-}" in
+    -h|--help)
+        cat <<'EOF'
+Usage: minios-installer
 
-$DIR/main_installer.py "$@"
+Launch the MiniOS Installer graphical interface.
+
+This command starts the GTK installer for copying MiniOS from the live
+system to a target disk.
+
+For the manual page, run: man minios-installer
+EOF
+        exit 0
+        ;;
+esac
+
+SCRIPT_DIR=$(dirname "$(readlink -f -- "$0")")
+
+if [ -f "$(dirname "$SCRIPT_DIR")/lib/main_installer.py" ]; then
+    DIR="$(dirname "$SCRIPT_DIR")/lib"
+else
+    DIR="/usr/lib/minios-installer"
+fi
+
+exec python3 -u "$DIR/main_installer.py" "$@"
