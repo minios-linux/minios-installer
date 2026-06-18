@@ -2,13 +2,13 @@
 # Copyright (C) 2025 MiniOS Linux.
 # This file is distributed under the same license as the minios-installer package.
 # crims0n <crims0n@minios.dev>, 2025.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2025-11-25 19:54+0300\n"
-"PO-Revision-Date: 2025-05-26 17:23+0300\n"
+"POT-Creation-Date: 2026-06-18 13:35+0300\n"
+"PO-Revision-Date: 2026-06-18 10:35+0000\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -17,24 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: lib/mount_utils.py:29
-msgid "Destination "
-msgstr "Destination "
-
-#: lib/mount_utils.py:29
-msgid " is already mounted."
-msgstr " est déjà monté."
-
-#: lib/mount_utils.py:38
-msgid "Could not determine filesystem type of "
-msgstr "Impossible de déterminer le type de système de fichiers de "
-
-#: lib/mount_utils.py:42
-msgid "Failed to mount "
-msgstr "Impossible de monter "
-
-#: lib/bootloader_utils.py:74 lib/main_installer.py:624 lib/copy_utils.py:61
-#: lib/copy_utils.py:62
+#: lib/bootloader_utils.py:74 lib/copy_utils.py:61 lib/copy_utils.py:62
+#: lib/main_installer.py:656
 msgid "Installation canceled by user."
 msgstr "Installation annulée par l'utilisateur."
 
@@ -109,16 +93,12 @@ msgstr "Extlinux copié dans le fallback : {fallback_name}"
 #: lib/bootloader_utils.py:207
 #, python-brace-format
 msgid "extlinux install failed (code {code}), trying fallback in /tmp..."
-msgstr ""
-"Échec de l'installation d'extlinux (code {code}), tentative de fallback "
-"dans /tmp..."
+msgstr "Échec de l'installation d'extlinux (code {code}), tentative de fallback dans /tmp..."
 
 #: lib/bootloader_utils.py:222
 #, python-brace-format
 msgid "Error installing boot loader (fallback code {code})."
-msgstr ""
-"Erreur lors de l'installation du chargeur de démarrage (code de fallback "
-"{code})."
+msgstr "Erreur lors de l'installation du chargeur de démarrage (code de fallback {code})."
 
 #: lib/bootloader_utils.py:225
 msgid "Boot loader installation succeeded via fallback."
@@ -170,51 +150,233 @@ msgstr "Erreur : sfdisk introuvable - installez le paquet util-linux"
 msgid "Error running sfdisk: {error}"
 msgstr "Erreur lors de l'exécution de sfdisk : {error}"
 
-#: lib/main_installer.py:170
+#: lib/copy_utils.py:71
+msgid "Copying MiniOS files: "
+msgstr "Copie des fichiers MiniOS : "
+
+#: lib/copy_utils.py:73
+msgid "Copied file: "
+msgstr "Fichier copié : "
+
+#: lib/copy_utils.py:80
+msgid "Created directory: "
+msgstr "Répertoire créé : "
+
+#: lib/copy_utils.py:104
+msgid "Copied EFI file: "
+msgstr "Fichier EFI copié : "
+
+#: lib/copy_utils.py:275
+#, python-brace-format
+msgid "Warning: No translations found for {lang}, using English fallback"
+msgstr "Avertissement : aucune traduction trouvée pour {lang}, utilisation de l'anglais par défaut"
+
+#: lib/copy_utils.py:281
+msgid "Error: grub.template.cfg template not found"
+msgstr "Erreur : modèle grub.template.cfg introuvable"
+
+#: lib/copy_utils.py:321
+#, python-brace-format
+msgid "Using localized theme: {theme}"
+msgstr "Utilisation du thème localisé : {theme}"
+
+#: lib/copy_utils.py:323
+#, python-brace-format
+msgid "Localized theme not found for {lang}, using default"
+msgstr "Thème localisé introuvable pour {lang}, utilisation du thème par défaut"
+
+#: lib/copy_utils.py:332
+#, python-brace-format
+msgid "Generated localized GRUB config for {lang}"
+msgstr "Configuration GRUB localisée générée pour {lang}"
+
+#: lib/copy_utils.py:336
+#, python-brace-format
+msgid "Error generating localized GRUB config: {error}"
+msgstr "Erreur lors de la génération de la configuration GRUB localisée : {error}"
+
+#: lib/copy_utils.py:354
+msgid "SYSLINUX directory not found, skipping SYSLINUX configuration"
+msgstr "Répertoire SYSLINUX non trouvé, saut de la configuration SYSLINUX"
+
+#: lib/copy_utils.py:363 lib/copy_utils.py:367
+msgid "Using multilingual SYSLINUX menu"
+msgstr "Utilisation du menu SYSLINUX multilingue"
+
+#: lib/copy_utils.py:365
+msgid "Error copying multilingual SYSLINUX config: "
+msgstr "Erreur lors de la copie de la configuration SYSLINUX multilingue : "
+
+#: lib/copy_utils.py:387
+msgid "Using localized SYSLINUX configuration for: "
+msgstr "Utilisation de la configuration SYSLINUX localisée pour : "
+
+#: lib/copy_utils.py:389
+msgid "Error processing localized SYSLINUX config: "
+msgstr "Erreur lors du traitement de la configuration SYSLINUX localisée : "
+
+#: lib/copy_utils.py:404
+msgid "Localized SYSLINUX config not found for "
+msgstr "Configuration SYSLINUX localisée introuvable pour "
+
+#: lib/copy_utils.py:404
+msgid ", using English"
+msgstr ", utilisation de l'anglais"
+
+#: lib/copy_utils.py:406
+msgid "Error processing English SYSLINUX config: "
+msgstr "Erreur lors du traitement de la configuration SYSLINUX en anglais : "
+
+#: lib/copy_utils.py:408
+msgid "Warning: No localized SYSLINUX configurations found"
+msgstr "Avertissement : aucune configuration SYSLINUX localisée trouvée"
+
+#: lib/copy_utils.py:410
+msgid "SYSLINUX lang directory not found, keeping default configuration"
+msgstr "Répertoire de langue SYSLINUX introuvable, conservation de la configuration par défaut"
+
+#: lib/copy_utils.py:422
+msgid "GRUB directory not found, skipping GRUB boot menu configuration"
+msgstr "Répertoire GRUB non trouvé, saut de la configuration du menu de démarrage GRUB"
+
+#: lib/copy_utils.py:430
+msgid "multilingual menu"
+msgstr "menu multilingue"
+
+#: lib/copy_utils.py:434
+#, python-brace-format
+msgid "Applied {config} GRUB boot menu from {source}"
+msgstr "Menu de démarrage GRUB {config} appliqué depuis {source}"
+
+#: lib/copy_utils.py:437
+#, python-brace-format
+msgid "Warning: {config} configuration file not found, keeping original grub.cfg"
+msgstr "Avertissement : fichier de configuration {config} non trouvé, conservation du grub.cfg original"
+
+#: lib/copy_utils.py:443
+#, python-brace-format
+msgid "Generating localized GRUB menu for language: {lang}"
+msgstr "Génération du menu GRUB localisé pour la langue : {lang}"
+
+#: lib/copy_utils.py:446
+#, python-brace-format
+msgid "Applied {lang} GRUB boot menu"
+msgstr "Menu de démarrage GRUB appliqué pour la langue {lang}"
+
+#: lib/copy_utils.py:449
+#, python-brace-format
+msgid "Failed to generate {lang} config, falling back to template"
+msgstr "Échec de la génération de la configuration {lang}, retour au modèle"
+
+#: lib/copy_utils.py:453
+msgid "Applied template GRUB boot menu as fallback"
+msgstr "Menu de démarrage GRUB du modèle appliqué par défaut"
+
+#: lib/copy_utils.py:455
+msgid "Warning: No fallback configuration available, keeping original grub.cfg"
+msgstr "Avertissement : aucune configuration de secours disponible, conservation du grub.cfg original"
+
+#: lib/disk_utils.py:89
+msgid "Failed to retrieve disk list."
+msgstr "Impossible d'obtenir la liste des disques."
+
+#: lib/disk_utils.py:105
+msgid "Failed to detect live media device"
+msgstr "Impossible de détecter le périphérique média en direct"
+
+#: lib/disk_utils.py:110
+msgid "Failed to detect root disk"
+msgstr "Impossible de détecter le disque racine"
+
+#: lib/disk_utils.py:177
+msgid "Failed to get disk size."
+msgstr "Impossible d'obtenir la taille du disque."
+
+#: lib/disk_utils.py:184
+msgid "Could not parse disk size."
+msgstr "Impossible d'analyser la taille du disque."
+
+#: lib/disk_utils.py:196
+msgid "Failed to set GPT label on "
+msgstr "Impossible de définir le label GPT sur "
+
+#: lib/disk_utils.py:200 lib/disk_utils.py:214 lib/disk_utils.py:227
+msgid "Failed to create primary partition on "
+msgstr "Impossible de créer la partition principale sur "
+
+#: lib/disk_utils.py:204
+msgid "Failed to create EFI partition on "
+msgstr "Impossible de créer la partition EFI sur "
+
+#: lib/disk_utils.py:207 lib/disk_utils.py:221
+msgid "Failed to set boot flag."
+msgstr "Impossible de définir le drapeau de démarrage."
+
+#: lib/disk_utils.py:210 lib/disk_utils.py:224
+msgid "Failed to set MSDOS label on "
+msgstr "Impossible de définir le label MSDOS sur "
+
+#: lib/disk_utils.py:218
+msgid "Failed to create second partition on "
+msgstr "Impossible de créer la deuxième partition sur "
+
+#: lib/disk_utils.py:241
+msgid "Failed to erase "
+msgstr "Impossible d'effacer "
+
+#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
+msgid "Failed to format "
+msgstr "Impossible de formater "
+
+#: lib/format_utils.py:51
+msgid "Failed to format EFI "
+msgstr "Impossible de formater EFI "
+
+#: lib/main_installer.py:197
 msgid "USB Device"
 msgstr "Périphérique USB"
 
-#: lib/main_installer.py:172
+#: lib/main_installer.py:199
 msgid "SATA Drive"
 msgstr "Disque SATA"
 
-#: lib/main_installer.py:174
+#: lib/main_installer.py:201
 msgid "IDE Drive"
 msgstr "Disque IDE"
 
-#: lib/main_installer.py:176
+#: lib/main_installer.py:203
 msgid "NVMe SSD"
 msgstr "SSD NVMe"
 
-#: lib/main_installer.py:178
+#: lib/main_installer.py:205
 msgid "MMC/SD Card"
 msgstr "Carte MMC/SD"
 
-#: lib/main_installer.py:180
+#: lib/main_installer.py:207
 msgid "Hard Disk Drive"
 msgstr "Disque dur"
 
-#: lib/main_installer.py:220
+#: lib/main_installer.py:247
 msgid "Warning: This appears to be a system disk"
 msgstr "Attention : ceci semble être un disque système"
 
-#: lib/main_installer.py:224
+#: lib/main_installer.py:251
 msgid "Warning: This disk has mounted partitions"
 msgstr "Attention : ce disque a des partitions montées"
 
-#: lib/main_installer.py:257
+#: lib/main_installer.py:284
 msgid "Please select a target disk and filesystem:"
 msgstr "Veuillez sélectionner un disque cible et un système de fichiers :"
 
-#: lib/main_installer.py:266
+#: lib/main_installer.py:293
 msgid "Select Target Disk:"
 msgstr "Sélectionnez le disque cible :"
 
-#: lib/main_installer.py:283
+#: lib/main_installer.py:310
 msgid "Select Filesystem Type:"
 msgstr "Sélectionnez le type de système de fichiers :"
 
-#: lib/main_installer.py:297
+#: lib/main_installer.py:324
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -251,24 +413,20 @@ msgstr ""
 "<b>ext4</b> (meilleur choix)\n"
 "  + Stable et possède le journalisation.\n"
 "  + Performances rapides avec prise en charge des gros fichiers.\n"
-"  - Non compatible avec Windows, Mac et la plupart des périphériques "
-"matériels.\n"
+"  - Non compatible avec Windows, Mac et la plupart des périphériques matériels.\n"
 "\n"
 "<b>ext2</b>\n"
 "  + Écriture minimale, préserve la durée de vie de la mémoire flash.\n"
 "  + Structure simple, facile à récupérer.\n"
 "  - Pas de journalisation, risque accru de perte de données si débranché.\n"
-"  - Non compatible avec Windows, Mac et la plupart des périphériques "
-"matériels.\n"
+"  - Non compatible avec Windows, Mac et la plupart des périphériques matériels.\n"
 "\n"
 "<b>btrfs</b>\n"
 "  + Les instantanés permettent un retour en arrière facile.\n"
 "  + Compression intégrée pour économiser de l'espace.\n"
 "  - Une configuration complexe peut être nécessaire.\n"
-"  - Les métadonnées supplémentaires peuvent ralentir les transferts sur clé "
-"USB.\n"
-"  - Non compatible avec Windows, Mac et la plupart des périphériques "
-"matériels.\n"
+"  - Les métadonnées supplémentaires peuvent ralentir les transferts sur clé USB.\n"
+"  - Non compatible avec Windows, Mac et la plupart des périphériques matériels.\n"
 "\n"
 "<b>FAT32</b>\n"
 "  + Lisible universellement par Windows, macOS et Linux.\n"
@@ -279,393 +437,213 @@ msgstr ""
 "\n"
 "<b>NTFS</b>\n"
 "  + Prend en charge les gros fichiers et possède le journalisation.\n"
-"  + Prise en charge native de Windows ; lecture/écriture rapide sous Linux "
-"via ntfs3.\n"
+"  + Prise en charge native de Windows ; lecture/écriture rapide sous Linux via ntfs3.\n"
 "  - Non compatible avec Mac et la plupart des périphériques matériels.\n"
 "  - La persistance basée sur FUSE réduit les performances.\n"
 "\n"
 
-#: lib/main_installer.py:328
+#: lib/main_installer.py:355
 msgid "Boot Menu Language:"
 msgstr "Langue du menu de démarrage :"
 
-#: lib/main_installer.py:338
+#: lib/main_installer.py:365
 msgid "Multilingual menu"
 msgstr "Menu multilingue"
 
-#: lib/main_installer.py:362
+#: lib/main_installer.py:394
 msgid "Install"
 msgstr "Installer"
 
-#: lib/main_installer.py:372
+#: lib/main_installer.py:404
 msgid "Configure MiniOS before installation"
 msgstr "Configurer MiniOS avant l'installation"
 
-#: lib/main_installer.py:440 lib/main_installer.py:468
+#: lib/main_installer.py:472 lib/main_installer.py:500
 msgid "WARNING: This action is irreversible!"
 msgstr "ATTENTION : cette action est irréversible !"
 
-#: lib/main_installer.py:441 lib/main_installer.py:483
+#: lib/main_installer.py:473 lib/main_installer.py:515
 msgid "Device information:"
 msgstr "Informations sur le périphérique :"
 
-#: lib/main_installer.py:442 lib/main_installer.py:510
+#: lib/main_installer.py:474 lib/main_installer.py:542
 msgid "What will be erased:"
 msgstr "Ce qui sera effacé :"
 
-#: lib/main_installer.py:450
+#: lib/main_installer.py:482
 msgid "selected device"
 msgstr "dispositif sélectionné"
 
-#: lib/main_installer.py:522
+#: lib/main_installer.py:554
 msgid "Files, documents, and applications"
 msgstr "Fichiers, documents et applications"
 
-#: lib/main_installer.py:523
+#: lib/main_installer.py:555
 msgid "Operating systems"
 msgstr "Systèmes d'exploitation"
 
-#: lib/main_installer.py:524
+#: lib/main_installer.py:556
 msgid "Personal data and settings"
 msgstr "Données personnelles et paramètres"
 
-#: lib/main_installer.py:525
+#: lib/main_installer.py:557
 msgid "All partitions and file systems"
 msgstr "Toutes les partitions et systèmes de fichiers"
 
-#: lib/main_installer.py:552
+#: lib/main_installer.py:584
 msgid "Go Back"
 msgstr "Retour"
 
-#: lib/main_installer.py:557
+#: lib/main_installer.py:589
 msgid "Continue"
 msgstr "Continuer"
 
-#: lib/main_installer.py:574
+#: lib/main_installer.py:606
 msgid "Preparing to install..."
 msgstr "Préparation de l'installation..."
 
-#: lib/main_installer.py:584 lib/main_installer.py:614
+#: lib/main_installer.py:616 lib/main_installer.py:646
 msgid "Show Log"
 msgstr "Afficher le journal"
 
-#: lib/main_installer.py:589
+#: lib/main_installer.py:621
 msgid "Cancel"
 msgstr "Annuler"
 
-#: lib/main_installer.py:610
+#: lib/main_installer.py:642
 msgid "Hide Log"
 msgstr "Masquer le journal"
 
-#: lib/main_installer.py:623
+#: lib/main_installer.py:655
 msgid "Installation canceled."
 msgstr "Installation annulée."
 
-#: lib/main_installer.py:630
+#: lib/main_installer.py:662
 msgid "Restart Installation"
 msgstr "Redémarrer l'installation"
 
-#: lib/main_installer.py:678 lib/main_installer.py:760
+#: lib/main_installer.py:710 lib/main_installer.py:792
 msgid "Unmounting disk..."
 msgstr "Démontage du disque..."
 
-#: lib/main_installer.py:679
+#: lib/main_installer.py:711
 msgid "Erasing disk..."
 msgstr "Effacement du disque..."
 
-#: lib/main_installer.py:680
+#: lib/main_installer.py:712
 msgid "Partitioning disk..."
 msgstr "Partitionnement du disque..."
 
-#: lib/main_installer.py:681
+#: lib/main_installer.py:713
 msgid "Formatting partitions..."
 msgstr "Formatage des partitions..."
 
-#: lib/main_installer.py:682
+#: lib/main_installer.py:714
 msgid "Mounting partition..."
 msgstr "Montage de la partition..."
 
-#: lib/main_installer.py:696
+#: lib/main_installer.py:728
 msgid "Error at step: "
 msgstr "Erreur à l'étape: "
 
-#: lib/main_installer.py:698 lib/main_installer.py:712
-#: lib/main_installer.py:737 lib/main_installer.py:756
-#: lib/main_installer.py:770
+#: lib/main_installer.py:730 lib/main_installer.py:744
+#: lib/main_installer.py:769 lib/main_installer.py:788
+#: lib/main_installer.py:802
 msgid "Installation failed: "
 msgstr "Échec de l'installation : "
 
-#: lib/main_installer.py:702
+#: lib/main_installer.py:734
 msgid "Mounting EFI partition..."
 msgstr "Montage de la partition EFI..."
 
-#: lib/main_installer.py:710
+#: lib/main_installer.py:742
 msgid "Error mounting EFI partition:"
 msgstr "Erreur lors du montage de la partition EFI :"
 
-#: lib/main_installer.py:716
+#: lib/main_installer.py:748
 msgid "Copying files..."
 msgstr "Copie des fichiers..."
 
-#: lib/main_installer.py:720
+#: lib/main_installer.py:752
 msgid "Cannot find MiniOS image."
 msgstr "Impossible de trouver l'image MiniOS."
 
-#: lib/main_installer.py:725
+#: lib/main_installer.py:757
 msgid "Copying EFI files to root..."
 msgstr "Copie des fichiers EFI à la racine..."
 
-#: lib/main_installer.py:728
+#: lib/main_installer.py:760
 msgid "Copying EFI files to ESP..."
 msgstr "Copie des fichiers EFI sur l'ESP..."
 
-#: lib/main_installer.py:735
+#: lib/main_installer.py:767
 msgid "Error during file copy:"
 msgstr "Erreur lors de la copie des fichiers :"
 
-#: lib/main_installer.py:741
+#: lib/main_installer.py:773
 msgid "Setting up bootloader..."
 msgstr "Configuration du chargeur d'amorçage..."
 
-#: lib/main_installer.py:754
+#: lib/main_installer.py:786
 msgid "Error setting up bootloader:"
 msgstr "Erreur lors de la configuration du chargeur d'amorçage :"
 
-#: lib/main_installer.py:768
+#: lib/main_installer.py:800
 msgid "Error during unmount:"
 msgstr "Erreur lors du démontage :"
 
-#: lib/main_installer.py:772
+#: lib/main_installer.py:804
 msgid "Installation complete!"
 msgstr "Installation terminée !"
 
-#: lib/main_installer.py:785
+#: lib/main_installer.py:817
 msgid "Installation Error"
 msgstr "Erreur d'installation"
 
-#: lib/main_installer.py:804
+#: lib/main_installer.py:836
 msgid "Config file not found"
 msgstr "Fichier de configuration introuvable"
 
-#: lib/main_installer.py:806
+#: lib/main_installer.py:838
 msgid "Standard config file not found at {}."
 msgstr "Fichier de configuration standard non trouvé à {}."
 
-#: lib/main_installer.py:826
+#: lib/main_installer.py:858
 msgid "Launch Error"
 msgstr "Erreur de lancement"
 
-#: lib/main_installer.py:853
+#: lib/main_installer.py:885
 msgid "Root Privileges Required"
 msgstr "Privilèges root requis"
 
-#: lib/main_installer.py:855
+#: lib/main_installer.py:887
 msgid "This installer must be run as root."
 msgstr "Cet installateur doit être exécuté en tant que root."
 
-#: lib/disk_utils.py:89
-msgid "Failed to retrieve disk list."
-msgstr "Impossible d'obtenir la liste des disques."
+#: lib/mount_utils.py:29
+msgid "Destination "
+msgstr "Destination "
 
-#: lib/disk_utils.py:102
-msgid "Failed to detect live media device"
-msgstr "Impossible de détecter le périphérique média en direct"
+#: lib/mount_utils.py:29
+msgid " is already mounted."
+msgstr " est déjà monté."
 
-#: lib/disk_utils.py:107
-msgid "Failed to detect root disk"
-msgstr "Impossible de détecter le disque racine"
+#: lib/mount_utils.py:38
+msgid "Could not determine filesystem type of "
+msgstr "Impossible de déterminer le type de système de fichiers de "
 
-#: lib/disk_utils.py:174
-msgid "Failed to get disk size."
-msgstr "Impossible d'obtenir la taille du disque."
+#: lib/mount_utils.py:42
+msgid "Failed to mount "
+msgstr "Impossible de monter "
 
-#: lib/disk_utils.py:181
-msgid "Could not parse disk size."
-msgstr "Impossible d'analyser la taille du disque."
+#: share/applications/minios-installer.desktop:4
+msgid "Install MiniOS"
+msgstr "Installer MiniOS"
 
-#: lib/disk_utils.py:193
-msgid "Failed to set GPT label on "
-msgstr "Impossible de définir le label GPT sur "
+#: share/applications/minios-installer.desktop:64
+msgid "Install this system permanently to your hard disk"
+msgstr "Installer ce système de façon permanente sur votre disque dur"
 
-#: lib/disk_utils.py:197 lib/disk_utils.py:211 lib/disk_utils.py:224
-msgid "Failed to create primary partition on "
-msgstr "Impossible de créer la partition principale sur "
-
-#: lib/disk_utils.py:201
-msgid "Failed to create EFI partition on "
-msgstr "Impossible de créer la partition EFI sur "
-
-#: lib/disk_utils.py:204 lib/disk_utils.py:218
-msgid "Failed to set boot flag."
-msgstr "Impossible de définir le drapeau de démarrage."
-
-#: lib/disk_utils.py:207 lib/disk_utils.py:221
-msgid "Failed to set MSDOS label on "
-msgstr "Impossible de définir le label MSDOS sur "
-
-#: lib/disk_utils.py:215
-msgid "Failed to create second partition on "
-msgstr "Impossible de créer la deuxième partition sur "
-
-#: lib/disk_utils.py:238
-msgid "Failed to erase "
-msgstr "Impossible d'effacer "
-
-#: lib/format_utils.py:45 lib/format_utils.py:47 lib/format_utils.py:49
-msgid "Failed to format "
-msgstr "Impossible de formater "
-
-#: lib/format_utils.py:51
-msgid "Failed to format EFI "
-msgstr "Impossible de formater EFI "
-
-#: lib/copy_utils.py:71
-msgid "Copying MiniOS files: "
-msgstr "Copie des fichiers MiniOS : "
-
-#: lib/copy_utils.py:73
-msgid "Copied file: "
-msgstr "Fichier copié : "
-
-#: lib/copy_utils.py:80
-msgid "Created directory: "
-msgstr "Répertoire créé : "
-
-#: lib/copy_utils.py:104
-msgid "Copied EFI file: "
-msgstr "Fichier EFI copié : "
-
-#: lib/copy_utils.py:247
-#, python-brace-format
-msgid "Warning: No translations found for {lang}, using English fallback"
-msgstr ""
-"Avertissement : aucune traduction trouvée pour {lang}, utilisation de "
-"l'anglais par défaut"
-
-#: lib/copy_utils.py:253
-msgid "Error: grub.template.cfg template not found"
-msgstr "Erreur : modèle grub.template.cfg introuvable"
-
-#: lib/copy_utils.py:293
-#, python-brace-format
-msgid "Using localized theme: {theme}"
-msgstr "Utilisation du thème localisé : {theme}"
-
-#: lib/copy_utils.py:295
-#, python-brace-format
-msgid "Localized theme not found for {lang}, using default"
-msgstr ""
-"Thème localisé introuvable pour {lang}, utilisation du thème par défaut"
-
-#: lib/copy_utils.py:301
-#, python-brace-format
-msgid "Generated localized GRUB config for {lang}"
-msgstr "Configuration GRUB localisée générée pour {lang}"
-
-#: lib/copy_utils.py:305
-#, python-brace-format
-msgid "Error generating localized GRUB config: {error}"
-msgstr ""
-"Erreur lors de la génération de la configuration GRUB localisée : {error}"
-
-#: lib/copy_utils.py:321
-msgid "SYSLINUX directory not found, skipping SYSLINUX configuration"
-msgstr "Répertoire SYSLINUX non trouvé, saut de la configuration SYSLINUX"
-
-#: lib/copy_utils.py:330 lib/copy_utils.py:334
-msgid "Using multilingual SYSLINUX menu"
-msgstr "Utilisation du menu SYSLINUX multilingue"
-
-#: lib/copy_utils.py:332
-msgid "Error copying multilingual SYSLINUX config: "
-msgstr "Erreur lors de la copie de la configuration SYSLINUX multilingue : "
-
-#: lib/copy_utils.py:346
-msgid "Using localized SYSLINUX configuration for: "
-msgstr "Utilisation de la configuration SYSLINUX localisée pour : "
-
-#: lib/copy_utils.py:348
-msgid "Error copying localized SYSLINUX config: "
-msgstr "Erreur lors de la copie de la configuration SYSLINUX localisée : "
-
-#: lib/copy_utils.py:355
-msgid "Localized SYSLINUX config not found for "
-msgstr "Configuration SYSLINUX localisée introuvable pour "
-
-#: lib/copy_utils.py:355
-msgid ", using English"
-msgstr ", utilisation de l'anglais"
-
-#: lib/copy_utils.py:357
-msgid "Error copying English SYSLINUX config: "
-msgstr "Erreur lors de la copie de la configuration SYSLINUX anglaise : "
-
-#: lib/copy_utils.py:359
-msgid "Warning: No localized SYSLINUX configurations found"
-msgstr "Avertissement : aucune configuration SYSLINUX localisée trouvée"
-
-#: lib/copy_utils.py:361
-msgid "SYSLINUX lang directory not found, keeping default configuration"
-msgstr ""
-"Répertoire de langue SYSLINUX introuvable, conservation de la configuration "
-"par défaut"
-
-#: lib/copy_utils.py:373
-msgid "GRUB directory not found, skipping GRUB boot menu configuration"
-msgstr ""
-"Répertoire GRUB non trouvé, saut de la configuration du menu de démarrage "
-"GRUB"
-
-#: lib/copy_utils.py:381
-msgid "multilingual menu"
-msgstr "menu multilingue"
-
-#: lib/copy_utils.py:385
-#, python-brace-format
-msgid "Applied {config} GRUB boot menu from {source}"
-msgstr "Menu de démarrage GRUB {config} appliqué depuis {source}"
-
-#: lib/copy_utils.py:388
-#, python-brace-format
-msgid ""
-"Warning: {config} configuration file not found, keeping original grub.cfg"
-msgstr ""
-"Avertissement : fichier de configuration {config} non trouvé, conservation "
-"du grub.cfg original"
-
-#: lib/copy_utils.py:394
-#, python-brace-format
-msgid "Generating localized GRUB menu for language: {lang}"
-msgstr "Génération du menu GRUB localisé pour la langue : {lang}"
-
-#: lib/copy_utils.py:397
-#, python-brace-format
-msgid "Applied {lang} GRUB boot menu"
-msgstr "Menu de démarrage GRUB appliqué pour la langue {lang}"
-
-#: lib/copy_utils.py:400
-#, python-brace-format
-msgid "Failed to generate {lang} config, falling back to template"
-msgstr "Échec de la génération de la configuration {lang}, retour au modèle"
-
-#: lib/copy_utils.py:404
-msgid "Applied template GRUB boot menu as fallback"
-msgstr "Menu de démarrage GRUB du modèle appliqué par défaut"
-
-#: lib/copy_utils.py:406
-msgid "Warning: No fallback configuration available, keeping original grub.cfg"
-msgstr ""
-"Avertissement : aucune configuration de secours disponible, conservation du "
-"grub.cfg original"
-
-#~ msgid "Removed old symlink/file: "
-#~ msgstr "Ancien lien symbolique/fichier supprimé : "
-
-#~ msgid "Created Ventoy compatibility symlinks:"
-#~ msgstr "Liens symboliques de compatibilité Ventoy créés :"
-
-#~ msgid "SYSLINUX configuration already exists"
-#~ msgstr "La configuration de SYSLINUX existe déjà"
-
-#~ msgid "Preparing bootloader installation..."
-#~ msgstr "Préparation de l'installation du chargeur d'amorçage..."
+#: share/applications/minios-installer.desktop:124
+msgid "install;"
+msgstr "installer;"

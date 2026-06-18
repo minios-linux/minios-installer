@@ -1,3 +1,9 @@
+minios-installer (2.8.6) unstable; urgency=medium
+
+  * Improve translation coverage and update translations for all languages
+
+ -- crims0n <crims0n@minios.dev>  Thu, 18 Jun 2026 13:35:52 +0300
+
 minios-installer (2.8.5) unstable; urgency=medium
 
   * Add help option to CLI and GUI launcher
