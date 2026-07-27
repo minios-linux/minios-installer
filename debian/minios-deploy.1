@@ -1,0 +1,201 @@
+.TH MINIOS-DEPLOY 1 "July 2026" "MiniOS" "User Commands"
+.SH NAME
+minios-deploy \- command-line interface for the MiniOS installer
+.SH SYNOPSIS
+.B minios-deploy
+.RI COMMAND
+.RI [ OPTIONS ]
+.SH DESCRIPTION
+.B minios-deploy
+provides a scriptable command-line frontend for the MiniOS installer backend. It is intended for testing, automation, and recovery sessions where the graphical wizard is not convenient.
+.SH COMMANDS
+.TP
+.B list-disks [--json]
+List installable disks detected by the installer.
+.TP
+.B plan DEVICE [--mode MODE] [--filesystem FS] [--placement MODE] [OPTIONS]
+Print the partition plan that would be applied to DEVICE.
+.TP
+.B install DEVICE [OPTIONS]
+Run a live or native installation. Without
+.B --yes
+the command refuses to write to disk. Use
+.B --dry-run
+to preview commands without making changes.
+.SH INSTALL OPTIONS
+.TP
+.B --mode live|native
+Installation mode. Default: live.
+.TP
+.B --filesystem FS
+Root filesystem. Default: ext4. Native mode accepts ext2, ext4, and btrfs.
+.TP
+.B --placement MODE
+Use erase_all, free_space, or alongside_os. Manual partitioning is GUI-only.
+.TP
+.B --alongside-size MIB
+MiniOS capacity to release from the alongside shrink candidate.
+.TP
+.B --swap-size MIB
+Native swap size. Default: 0.
+.TP
+.B --boot-layout LAYOUT
+Use auto, bios_mbr, uefi_mbr, or uefi_gpt.
+.TP
+.B --modules LIST
+Comma-separated module names. Required lower layers are included automatically.
+.TP
+.B --security-profile PROFILE
+Use convenient, balanced, or strict. Defaults to convenient for live and
+balanced for native installations.
+.TP
+.B --persistence-mode none|native|dynfilefs|raw|luks
+Live persistence mode. Native requires a POSIX-compatible target filesystem;
+LUKS is listed only when the running initrd advertises crypto support and also
+requires a crypto-capable source initrd.
+.TP
+.B --persistence-size MIB
+Container persistence size. Default: 4000 MiB. Raw and LUKS are limited to
+4000 MiB on FAT32; DynFileFS is not.
+.TP
+.B --download-packages
+Allow required package downloads. The CLI default is disabled.
+.TP
+.B --boot-menu LANG
+Boot menu language code (e.g. ru_RU) or
+.B multilang
+(default).
+.TP
+.B --dry-run
+Validate and print planned commands without writing to disk. A dry run cannot
+guarantee that the eventual runtime environment will remain unchanged.
+.TP
+.B --yes
+Confirm that the target disk may be erased.
+.TP
+.B --config-file PATH
+Base
+.I config.conf
+to copy and merge with CLI overrides. When omitted and overrides are set, the live system
+.I /etc/live/config.conf
+is used as the base if present.
+.SH LIVE CONFIGURATION
+The following options write the same keys as
+.B minios-configurator
+into the installed
+.IR minios/config.conf .
+Boolean options accept
+.BR true / false
+(also yes/no, on/off, 1/0).
+.SS User
+.TP
+.B --username NAME
+.B LIVE_USERNAME
+.TP
+.B --full-name NAME
+.B LIVE_USER_FULLNAME
+.TP
+.B --user-groups LIST
+.B LIVE_USER_DEFAULT_GROUPS
+.TP
+.B --password PASS
+Plain password; stored as
+.B LIVE_USER_PASSWORD_CRYPTED
+.TP
+.B --root-password PASS
+Plain password; stored as
+.B LIVE_ROOT_PASSWORD_CRYPTED
+.PP
+The password options expose plaintext to shell history and the process list
+while the command is running. Avoid them in shared environments.
+.TP
+.B --link-user-dirs BOOL
+.B LIVE_LINK_USER_DIRS
+.TP
+.B --bind-user-dirs BOOL
+.B LIVE_BIND_USER_DIRS
+.TP
+.B --user-dirs-path PATH
+.B LIVE_USER_DIRS_PATH
+.SS System
+.TP
+.B --noroot BOOL
+.B LIVE_CONFIG_NOROOT
+.TP
+.B --hostname NAME
+.B LIVE_HOSTNAME
+.TP
+.B --locale / --locales LIST
+.B LIVE_LOCALES
+.TP
+.B --timezone ZONE
+.B LIVE_TIMEZONE
+.TP
+.B --default-target TARGET
+.B DEFAULT_TARGET
+(graphical, multi-user, rescue, or full unit names)
+.TP
+.B --enable-services LIST
+.B ENABLE_SERVICES
+.TP
+.B --disable-services LIST
+.B DISABLE_SERVICES
+.SS Keyboard
+.TP
+.B --keyboard-model MODEL
+.B LIVE_KEYBOARD_MODEL
+.TP
+.B --keyboard / --keyboard-layouts LIST
+.B LIVE_KEYBOARD_LAYOUTS
+.TP
+.B --keyboard-options OPTS
+.B LIVE_KEYBOARD_OPTIONS
+.TP
+.B --keyboard-variants LIST
+.B LIVE_KEYBOARD_VARIANTS
+.SS Advanced
+.TP
+.B --module-mode simple|merged
+.B LIVE_MODULE_MODE
+.TP
+.B --live-config-cmdline STRING
+.B LIVE_CONFIG_CMDLINE
+.TP
+.B --config-debug BOOL
+.B LIVE_CONFIG_DEBUG
+.TP
+.B --export-logs BOOL
+.B EXPORT_LOGS
+.SH PLACEMENT MODES
+.TP
+.B erase_all
+Create a new partition table and erase the selected disk.
+.TP
+.B free_space
+Create partitions in suitable unallocated space without shrinking filesystems.
+.TP
+.B alongside_os
+Shrink an eligible unmounted final ext2/ext3/ext4 or NTFS partition.
+.SH LIMITATIONS
+The CLI does not provide manual partition editing or dedicated network flags.
+Manual storage and interactive wired network configuration are available in
+the GTK wizard. BIOS on GPT, extended/logical MBR preserve layouts, LVM, RAID,
+LUKS native roots, and mapped or nested target storage are unsupported.
+.SH EXAMPLES
+.nf
+minios-deploy list-disks
+minios-deploy plan /dev/sdb --mode native --placement free_space
+minios-deploy install /dev/sdb --mode native --placement free_space --yes \\
+  --security-profile balanced --download-packages \\
+  --username alice --password secret \\
+  --hostname workstation --locale ru_RU.UTF-8 \\
+  --timezone Europe/Moscow --keyboard us,ru \\
+  --keyboard-options grp:alt_shift_toggle \\
+  --default-target graphical --enable-services ssh
+.fi
+.SH SEE ALSO
+.BR minios-installer (1),
+.BR minios-configurator (1),
+.BR live-config (7)
+.SH AUTHOR
+crims0n <crims0n@minios.dev>

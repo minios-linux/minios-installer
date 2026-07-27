@@ -1,4 +1,4 @@
-EXECUTABLES = bin/minios-installer
+EXECUTABLES = bin/minios-installer bin/minios-deploy
 LIBRARIES = lib/*.py
 APPLICATIONS = share/applications/minios-installer.desktop
 POLICIES = share/polkit/org.minios.installer.policy
@@ -38,12 +38,12 @@ install: build
 				$(DESTDIR)/$(LOCALEDIR) \
 				$(DESTDIR)/$(SHAREDIR)
 
-	cp $(EXECUTABLES) $(DESTDIR)/$(BINDIR)/
-	cp $(LIBRARIES) $(DESTDIR)/$(LIBDIR)/
+	install -m 755 $(EXECUTABLES) $(DESTDIR)/$(BINDIR)/
+	install -m 644 $(LIBRARIES) $(DESTDIR)/$(LIBDIR)/
 	chmod +x $(DESTDIR)/$(LIBDIR)/main_installer.py
-	cp $(APPLICATIONS) $(DESTDIR)/$(APPLICATIONSDIR)
-	cp $(POLICIES) $(DESTDIR)/$(POLKITACTIONSDIR)
-	cp $(STYLES) $(DESTDIR)/$(SHAREDIR)
+	install -m 644 $(APPLICATIONS) $(DESTDIR)/$(APPLICATIONSDIR)
+	install -m 644 $(POLICIES) $(DESTDIR)/$(POLKITACTIONSDIR)
+	install -m 644 $(STYLES) $(DESTDIR)/$(SHAREDIR)
 
 	@for MO_FILE in $(MO_FILES); do \
 		LOCALE=$$(basename $$MO_FILE .mo); \
@@ -56,6 +56,7 @@ uninstall:
 	
 	# Remove executables
 	rm -f $(DESTDIR)/$(BINDIR)/minios-installer
+	rm -f $(DESTDIR)/$(BINDIR)/minios-deploy
 	
 	# Remove library directory
 	rm -rf $(DESTDIR)/$(LIBDIR)
@@ -80,6 +81,7 @@ uninstall:
 	
 	# Remove man pages (if installed by debhelper)
 	rm -f $(DESTDIR)/usr/share/man/man1/minios-installer.1*
+	rm -f $(DESTDIR)/usr/share/man/man1/minios-deploy.1*
 	
 	# Remove lintian overrides (if installed by debhelper)
 	rm -f $(DESTDIR)/usr/share/lintian/overrides/minios-installer

@@ -12,7 +12,8 @@ import os
 import shutil
 import gettext
 import re
-from typing import Optional, Callable, Dict
+from typing import Iterable, Optional, Callable, Dict
+from module_selection import normalize_selected_modules
 
 # Set up gettext for localization
 gettext.bindtextdomain('minios-installer', '/usr/share/locale')
@@ -20,17 +21,21 @@ gettext.textdomain('minios-installer')
 _ = gettext.gettext
 
 
-def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callable, 
-                     config_override: Optional[str] = None, boot_config_type: str = "multilang") -> None:
+def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callable,
+                       config_override: Optional[str] = None, boot_config_type: str = "multilang",
+                       selected_modules: Optional[Iterable[str]] = None,
+                       cancel_cb: Optional[Callable[[], bool]] = None,
+                       config_hooks: Optional[Dict[str, str]] = None,
+                       boot_options: Optional[Iterable[str]] = None) -> None:
     """
     Copy MiniOS files from src to dst with progress reporting.
     """
-    # Calculate total size for progress reporting
-    total = _calculate_copy_size(src)
+    # Calculate total size for progress reporting (never zero — avoids ZeroDivisionError
+    # when sources are unreadable or only synthetic entries remain).
+    module_names = _module_names_in_source(src)
+    selected_module_names = set(normalize_selected_modules(module_names, selected_modules)) if selected_modules else set(module_names)
+    total = max(_calculate_copy_size(src, selected_module_names), 1)
     copied = 0
-
-    # Get reference to the owner object for cancellation checking
-    owner = getattr(progress_cb, "__self__", None)
 
     entries = []
 
@@ -40,12 +45,19 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
             rel = os.path.relpath(os.path.join(root, fn), src)
             if rel.startswith('changes/'):
                 continue
+            if _is_top_level_module(rel) and fn not in selected_module_names:
+                continue
             entries.append((os.path.join('minios', rel), os.path.join(root, fn)))
 
-    # 2) .disk/info
-    with open('/tmp/info', 'w', encoding='utf-8') as f:
+    # 2) .disk/info (use a private temp to avoid /tmp races)
+    import tempfile
+    _info_temp = None
+    fd, info_src = tempfile.mkstemp(prefix="minios-disk-info-", suffix=".txt")
+    os.close(fd)
+    _info_temp = info_src
+    with open(info_src, 'w', encoding='utf-8') as f:
         f.write('MiniOS')
-    entries.append(('.disk/info', '/tmp/info'))
+    entries.append(('.disk/info', info_src))
 
     # 3) config.conf
     config_dst = 'minios/config.conf'
@@ -56,10 +68,15 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
         if os.path.exists(config_src):
             entries.append((config_dst, config_src))
 
+    for name, hook in (config_hooks or {}).items():
+        if os.path.isfile(hook):
+            entries.append((os.path.join('minios', 'config-hooks', name), hook))
+
     for rel, path in entries:
-        if owner and owner.cancel_requested:
+        if cancel_cb and cancel_cb():
             log_cb(_("Installation canceled by user."))
-            raise RuntimeError(_("Installation canceled by user."))
+            from install_state import InstallCanceled
+            raise InstallCanceled(_("Installation canceled by user."))
 
         dest = os.path.join(dst, rel)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
@@ -73,6 +90,13 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
         log_cb(_("Copied file: ") + path)
         copied += size
 
+    # Clean private .disk/info temp if we created one
+    if _info_temp and os.path.exists(_info_temp):
+        try:
+            os.unlink(_info_temp)
+        except OSError:
+            pass
+
     # Create required directories
     for sub in ('boot', 'modules', 'changes', 'scripts'):
         p = os.path.join(dst, 'minios', sub)
@@ -82,8 +106,9 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
     # Handle GRUB configuration selection
     _process_grub_config(dst, boot_config_type, log_cb)
 
-    # Handle SYSLINUX configuration selection  
+    # Handle SYSLINUX configuration selection
     _process_syslinux_config(dst, boot_config_type, log_cb)
+    _apply_boot_options(dst, boot_options or ())
 
 
 def copy_efi_files(src: str, dst: str, log_cb: Callable) -> None:
@@ -102,6 +127,62 @@ def copy_efi_files(src: str, dst: str, log_cb: Callable) -> None:
             os.makedirs(os.path.dirname(dest_path), exist_ok=True)
             shutil.copy2(src_path, dest_path)
             log_cb(_("Copied EFI file: ") + src_path)
+
+
+def efi_payload_bytes(src: str) -> int:
+    """Require a measurable non-empty fallback EFI tree before partitioning."""
+    efi_dir = os.path.join(src, "boot", "EFI")
+    machine = os.uname().machine.lower()
+    fallback_name = {
+        "x86_64": "BOOTX64.EFI",
+        "amd64": "BOOTX64.EFI",
+        "aarch64": "BOOTAA64.EFI",
+        "arm64": "BOOTAA64.EFI",
+        "i386": "BOOTIA32.EFI",
+        "i686": "BOOTIA32.EFI",
+    }.get(machine)
+    if not fallback_name:
+        raise RuntimeError(
+            _("EFI fallback payload is not supported for this architecture: {architecture}").format(
+                architecture=machine
+            )
+        )
+    fallback = None
+    try:
+        boot_dir_name = next(name for name in os.listdir(efi_dir) if name.lower() == "boot")
+        boot_dir = os.path.join(efi_dir, boot_dir_name)
+        loader_name = next(name for name in os.listdir(boot_dir) if name.lower() == fallback_name.lower())
+        fallback = os.path.join(boot_dir, loader_name)
+    except (OSError, StopIteration):
+        pass
+    if not fallback or not os.path.isfile(fallback) or os.path.getsize(fallback) <= 0:
+        raise RuntimeError(
+            _("EFI fallback loader is missing or empty: EFI/BOOT/{loader}").format(loader=fallback_name)
+        )
+    total = 0
+    try:
+        for root, _dirs, files in os.walk(efi_dir):
+            for name in files:
+                size = os.path.getsize(os.path.join(root, name))
+                if size <= 0:
+                    raise RuntimeError(_("EFI fallback payload contains an empty file."))
+                total += size
+    except OSError as exc:
+        raise RuntimeError(_("EFI fallback payload cannot be measured.")) from exc
+    if total <= 0:
+        raise RuntimeError(_("EFI fallback payload is absent or empty."))
+    return total
+
+
+def verify_efi_payload(src: str, dst: str) -> None:
+    """Every source EFI file must exist at the destination with its full size."""
+    efi_dir = os.path.join(src, "boot", "EFI")
+    for root, _dirs, files in os.walk(efi_dir):
+        for name in files:
+            source = os.path.join(root, name)
+            target = os.path.join(dst, "EFI", os.path.relpath(source, efi_dir))
+            if not os.path.isfile(target) or os.path.getsize(target) != os.path.getsize(source):
+                raise RuntimeError(_("EFI fallback payload copy verification failed."))
 
 
 def find_minios_source() -> Optional[str]:
@@ -187,7 +268,18 @@ def find_minios_source() -> Optional[str]:
     return None
 
 
-def _calculate_copy_size(src: str) -> int:
+def _module_names_in_source(src: str) -> list:
+    try:
+        return sorted(name for name in os.listdir(src) if name.endswith('.sb') and os.path.isfile(os.path.join(src, name)))
+    except OSError:
+        return []
+
+
+def _is_top_level_module(rel: str) -> bool:
+    return rel.endswith('.sb') and os.path.dirname(rel) in ('', '.')
+
+
+def _calculate_copy_size(src: str, selected_module_names: Optional[set] = None) -> int:
     """
     Calculate total size of files to be copied.
     """
@@ -196,6 +288,8 @@ def _calculate_copy_size(src: str) -> int:
         for fn in files:
             rel = os.path.relpath(os.path.join(root, fn), src)
             if rel.startswith('changes/'):
+                continue
+            if selected_module_names is not None and _is_top_level_module(rel) and fn not in selected_module_names:
                 continue
             try:
                 total += os.path.getsize(os.path.join(root, fn))
@@ -228,6 +322,31 @@ def _remove_live_config_params_bytes(content: bytes) -> bytes:
     content = re.sub(rb'\s+timezone=[^\s]+', b'', content)
     content = re.sub(rb'\s+keyboard-layouts=[^\s]+', b'', content)
     return content
+
+
+def _apply_boot_options(dst: str, options: Iterable[str]) -> None:
+    """Add installer-owned live boot parameters to selected GRUB/SYSLINUX menus."""
+    options = tuple(options)
+    if not options:
+        return
+    for relative in ("minios/boot/grub/grub.cfg", "minios/boot/syslinux/syslinux.cfg"):
+        path = os.path.join(dst, relative)
+        if not os.path.isfile(path):
+            continue
+        with open(path, "rb") as fh:
+            content = fh.read()
+        # Replace stale values from the source menu so every session entry has
+        # the requested persistence policy exactly once.
+        content = re.sub(rb"\s+perchmode=[^\s]+", b"", content)
+        content = re.sub(rb"\s+perchsize=[^\s]+", b"", content)
+        tokens = b" " + b" ".join(option.encode("ascii") for option in options)
+        content = re.sub(
+            rb"(?m)^(\s*(?:APPEND|linux|linuxefi)\b[^\r\n]*)",
+            lambda match: match.group(1) + tokens,
+            content,
+        )
+        with open(path, "wb") as fh:
+            fh.write(content)
 
 
 def _parse_po_file(po_path: str) -> Dict[str, str]:
@@ -291,7 +410,7 @@ def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path
         # Define the menu entries to translate
         menu_entries = {
             "Resume previous session": "resume",
-            "Start a new session": "newsession", 
+            "Start a new session": "newsession",
             "Choose session during startup": "choosesession",
             "Fresh start": "freshstart",
             "Copy to RAM": "copyram",
@@ -306,7 +425,7 @@ def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path
                 # Replace the menuentry labels
                 localized_content = localized_content.replace(f'menuentry "{english_text}"', f'menuentry "{localized_text}"')
                 # Replace variable assignments if they exist
-                localized_content = re.sub(f'set {var_name}="{re.escape(english_text)}"', 
+                localized_content = re.sub(f'set {var_name}="{re.escape(english_text)}"',
                                          f'set {var_name}="{localized_text}"', localized_content)
 
         # Set localized theme if available
@@ -413,7 +532,7 @@ def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> No
 def _process_grub_config(dst: str, config_type: str, log_cb: Callable) -> None:
     """
     Process GRUB boot menu language selection:
-    - For multilang: Copy grub.multilang.cfg to grub.cfg 
+    - For multilang: Copy grub.multilang.cfg to grub.cfg
     - For specific language: Generate localized config and copy to grub.cfg
     """
     grub_dir = os.path.join(dst, 'minios', 'boot', 'grub')

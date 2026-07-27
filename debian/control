@@ -12,19 +12,26 @@ Depends: ${misc:Depends},
          polkitd | policykit-1,
          pkexec | policykit-1,
          python3 (>= 3.6),
+         python3-dataclasses | python3 (>= 3.7),
          python3-gi,
          gir1.2-gtk-3.0,
-         gir1.2-gio-2.0,
-         gir1.2-gdk-3.0,
+         gir1.2-glib-2.0,
          gir1.2-pango-1.0,
          gir1.2-udisks-2.0,
          parted,
          e2fsprogs,
          dosfstools,
          btrfs-progs,
+         fdisk,
+         mount,
          ntfs-3g,
+         openssl | whois,
+         python3-minios-security (>= 0.1.0),
+         udev | eudev,
          util-linux (>= 2.31),
-         minios-configurator (>= 2.0)
+         minios-configurator (>= 2.4.4)
+Recommends: minios-live-config (>= 11.0.5.13),
+            user-setup
 Description: MiniOS Linux installation utility.
  MiniOS Installer is a utility specially designed for quick and easy
  install MiniOS on a USB flash drive.

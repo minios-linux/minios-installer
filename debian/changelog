@@ -1,3 +1,71 @@
+minios-installer (3.0.1) unstable; urgency=medium
+
+  * Add automatic structured per-run logs with ISO timestamps, severity levels,
+    installation-plan summaries, backend calls, and reproducible shell commands.
+  * Keep installer log history under /var/log/minios with a latest-run symlink,
+    restricted permissions, legacy-log migration, and /tmp fallback; keep logs
+    on the running MiniOS system instead of copying them to the target.
+  * Capture chroot command output and failures, normalize the chroot APT locale,
+    summarize staged APT packages and size, and redact plaintext passwords and
+    account password hashes from every logged command.
+  * Stage and validate the complete native target package dependency closure
+    before disk changes, including initramfs dependencies absent from the live
+    system, then repair and install packages from the offline target cache.
+  * Report throttled file-copy progress with transferred size, throughput, and
+    elapsed time, reserving 100 percent for successful tar completion.
+  * Mount /dev/pts in target chroots to support package tools without pseudo-TTY
+    warnings.
+  * Remove live-oriented MiniOS applications from native targets while keeping
+    MiniOS Store and required system components.
+  * Keep security profile identifiers as installer-only presets and let explicit
+    live-config command-line settings override profile defaults.
+  * Add regression coverage for logging, password redaction, package staging,
+    copy completion, native cleanup, and BIOS/UEFI boot layouts.
+
+ -- crims0n <crims0n@minios.dev>  Sun, 26 Jul 2026 18:00:00 +0300
+
+minios-installer (3.0.0) unstable; urgency=medium
+
+  * Rework the installer into a multi-step GTK wizard with sidebar navigation,
+    revisitable completed steps, partition previews, and final destructive
+    confirmation.
+  * Add a safe scan, plan, and execute partition pipeline bound to stable device
+    identity and exact geometry.
+  * Add full native installation alongside the live module layout, including
+    target configuration, package preflight, initramfs, and bootloader setup.
+  * Add erase-all, existing free-space, alongside, and native manual placement
+    with interactive geometry controls and optional native swap.
+  * Add native manual partitioning with staged create, delete, shrink, format,
+    filesystem reuse, mount-point assignment, undo/reset, exact-sector previews,
+    destructive confirmation, ordered multi-mount deployment, and UUID fstab.
+  * Add automatic alongside installation for safe, unmounted final ext2/ext3/
+    ext4 and NTFS partitions, with resize-tool detection and an explicit package
+    installation action when required tools are missing.
+  * Add independent firmware and partition-table selection, including UEFI on
+    MBR and shared-ESP UEFI/GPT multiboot installations.
+  * Add selectable MiniOS modules with required lower layers and a minios-deploy
+    CLI for disk listing, plan preview, dry runs, confirmed installs, and live
+    configuration overrides.
+  * Add security-profile selection for live and native installs, with separate
+    SSH and XRDP service controls and a --security-profile command-line option.
+  * Add a Network step with hostname and wired DHCP/static IPv4 configuration.
+    Native static configuration is written as a NetworkManager profile.
+  * Add native, DynFileFS, raw-image, and LUKS live-session persistence modes;
+    show LUKS only with runtime initrd support and verify every source initrd
+    before disk changes.
+  * Calculate required installation space from selected modules, boot assets,
+    persistence, and proportional filesystem reserve instead of fixed defaults.
+  * Generate and persist selected locales for native installations.
+  * Add native cleanup of live-only packages and artifacts after native system
+    configuration, generate missing OpenSSH host keys and SSL snakeoil
+    certificates, and stage required native multiboot packages.
+  * Write minios-configurator-compatible user, system, keyboard, service,
+    network, security, and advanced live configuration.
+  * Update package dependencies, compact MiniOS styling, documentation,
+    translations, command-line validation, and automated tests.
+
+ -- crims0n <crims0n@minios.dev>  Sun, 19 Jul 2026 01:20:44 +0300
+
 minios-installer (2.8.6) unstable; urgency=medium
 
   * Improve translation coverage and update translations for all languages

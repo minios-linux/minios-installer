@@ -1,4 +1,4 @@
-.TH MINIOS-INSTALLER 1 "August 2025" "MiniOS" "User Commands"
+.TH MINIOS-INSTALLER 1 "July 2026" "MiniOS Installer 3.0.1" "User Commands"
 .SH NAME
 minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
@@ -6,41 +6,76 @@ minios-installer \- Install MiniOS to disk from live session
 .RI [ --help ]
 .SH DESCRIPTION
 .B minios-installer
-is a GTK3 graphical utility for installing MiniOS from a live session to a permanent disk installation. It provides a simple interface for disk selection, filesystem choice, and automated installation.
+is a GTK3 graphical wizard for installing MiniOS from a live session to a
+target disk. It supports modular live installations and conventional native
+installations.
 .PP
-The installer supports both BIOS and UEFI systems with automatic detection. It creates appropriate partitions, formats them with the selected filesystem, copies MiniOS files, and installs the appropriate bootloader (SYSLINUX for BIOS, GRUB for UEFI).
+The installer creates and validates an explicit partition plan before any
+destructive operation. Placement modes include erase-all, existing free space,
+alongside a supported final partition, and native GUI manual partitioning.
 .PP
-Requires administrative privileges via PolicyKit authentication.
+Requires administrative privileges.
 .SH OPTIONS
 .TP
 .B -h, --help
 Show a short usage message and exit.
-.SH USAGE
-1. Select target disk from available devices
-.PP
-2. Choose filesystem type (ext4, ext2, btrfs, FAT32, or NTFS)
-.PP
-3. Select boot menu language
-.PP
-4. Optionally configure MiniOS settings via integrated configurator
-.PP
-5. Confirm installation and wait for completion
+.SH WIZARD
+The wizard configures installation mode, security, location, wired network,
+keyboard, users, modules, storage placement, and boot layout before showing the
+final summary. Previously visited pages can be revisited until installation
+starts.
+.SH PLACEMENT MODES
+.TP
+.B Erase all
+Create a new partition table and destroy all data on the target disk.
+.TP
+.B Free space
+Create MiniOS partitions in an existing unallocated region.
+.TP
+.B Alongside
+Shrink an eligible unmounted final ext2, ext3, ext4, or NTFS partition and use
+the released space. Unsupported or unsafe layouts are refused.
+.TP
+.B Manual
+For native GUI installations only. Stage exact-sector create, delete, end-only
+shrink, format, reuse, root, child mount-point, ESP, and swap assignments with
+undo and reset. No destructive operation runs before final confirmation.
 .SH SUPPORTED FILESYSTEMS
 .TP
 .B ext4
-Recommended for Linux installations (journaling, good performance)
+Recommended Linux filesystem for live and native installations.
 .TP
 .B ext2
-Minimal overhead, suitable for USB drives (no journaling)
+Linux filesystem without journaling, supported for live and native installs.
 .TP
 .B btrfs
-Advanced features like snapshots and compression
+Linux filesystem supported for live and native installs.
 .TP
 .B FAT32
-Universal compatibility with Windows/Mac (4GB file limit)
+Live layout only; limited to files smaller than 4 GiB.
 .TP
 .B NTFS
-Windows-compatible with large file support
+Live layout only. Existing NTFS may also be shrunk for alongside placement.
+.SH SECURITY AND NETWORK
+Security profiles are convenient, balanced, and strict. Live mode defaults to
+convenient; native mode defaults to balanced. SSH and XRDP exposure are selected
+separately from the profile.
+.PP
+Network setup covers hostname and wired DHCP or static IPv4. Wi-Fi profiles are
+not created or changed. Native static networking uses NetworkManager when
+available and falls back to ifupdown.
+.SH SESSION PERSISTENCE
+Live installations support native directories, expandable DynFileFS storage,
+fixed-size raw images, and encrypted LUKS images. Container modes use perchsize
+and default to 4000 MiB. Raw and LUKS are limited to 4000 MiB on FAT32;
+DynFileFS is not subject to that single-file limit.
+.PP
+LUKS is shown only when the running initrd advertises
+.IR /run/initramfs/etc/minios-initramfs-crypt .
+Before disk changes, every source initrd is checked for
+.IR etc/minios-initramfs-crypt .
+The initrd creates the per-session changes.luks file and prompts at boot; the
+installer never handles the passphrase. This does not encrypt a native root.
 .SH FILES
 .I /usr/share/applications/minios-installer.desktop
 .br
@@ -49,9 +84,21 @@ Windows-compatible with large file support
 .I /usr/lib/minios-installer/
 .SH NOTES
 .PP
-Only works from MiniOS live session. All data on target disk will be erased.
+Only works from a MiniOS live session. The running live-media disk is excluded
+from target selection. Erase-all destroys all data on the selected disk.
 .PP
-Minimum requirements: 2GB RAM, 4GB disk space, x86-64 processor.
+Required root space is calculated from selected module data, boot assets,
+persistence, and 25 percent filesystem reserve. ESP and native swap space are
+accounted for separately.
+.PP
+UEFI is supported on GPT and primary MBR. BIOS is supported only on primary
+MBR; BIOS on GPT and extended/logical MBR layouts are unsupported. Manual mode
+also rejects LVM, RAID, LUKS, and mapped or nested storage.
+.PP
+Command-line frontend:
+.B minios-deploy
+(see
+.BR minios-deploy (1)).
 .SH AUTHOR
 crims0n <crims0n@minios.dev>
 .SH BUGS

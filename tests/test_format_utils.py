@@ -57,7 +57,7 @@ class TestFormatPartitions:
     """Tests for format_partitions function."""
 
     def test_format_fat32(self):
-        """Test formatting FAT32 partition."""
+        """Test formatting FAT32 partition forces -F 32 (not FAT16 default)."""
         from format_utils import format_partitions
         
         with patch('format_utils.run_command') as mock_run:
@@ -66,6 +66,8 @@ class TestFormatPartitions:
             mock_run.assert_called_once()
             args = mock_run.call_args[0][0]
             assert 'mkfs.vfat' in args
+            assert '-F' in args
+            assert '32' in args
             assert '/dev/sdb1' in args
 
     def test_format_ext4(self):
@@ -121,9 +123,20 @@ class TestFormatPartitions:
             assert call_count[0] == 2
             # First call formats primary partition
             assert 'mkfs.ext4' in calls[0]
-            # Second call formats EFI partition
+            # Second call formats EFI partition as FAT32
             assert 'mkfs.vfat' in calls[1]
+            assert '-F' in calls[1]
+            assert '32' in calls[1]
             assert '/dev/sdb2' in calls[1]
+
+    def test_filesystems_for_boot_mode_live_bios_keeps_legacy_choices(self):
+        from format_utils import filesystems_for_boot_mode
+
+        available = ['ext4', 'ext2', 'btrfs', 'fat32', 'ntfs']
+        assert filesystems_for_boot_mode(available, uefi=False, install_mode='live') == available
+        assert filesystems_for_boot_mode(available, uefi=False, install_mode='native') == ['ext4', 'ext2', 'btrfs']
+        assert filesystems_for_boot_mode(available, uefi=True, install_mode='live') == available
+        assert filesystems_for_boot_mode(available, uefi=True, install_mode='native') == ['ext4', 'ext2', 'btrfs']
 
 
 class TestCheckFilesystemSupport:

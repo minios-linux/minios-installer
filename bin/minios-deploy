@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+SCRIPT_DIR=$(dirname "$(readlink -f -- "$0")")
+DIR="$(dirname "$SCRIPT_DIR")/lib"
+if [ -f "$DIR/minios_deploy.py" ]; then
+    exec python3 -u "$DIR/minios_deploy.py" "$@"
+elif [ -f "/usr/lib/minios-installer/minios_deploy.py" ]; then
+    exec python3 -u "/usr/lib/minios-installer/minios_deploy.py" "$@"
+else
+    echo "Error: could not find minios_deploy.py" >&2
+    exit 1
+fi

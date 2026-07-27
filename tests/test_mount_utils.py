@@ -79,7 +79,7 @@ class TestUnmountPartitions:
         """Test unmounting single partition."""
         from mount_utils import unmount_partitions
         
-        with patch('os.path.ismount', return_value=True), \
+        with patch('os.path.ismount', side_effect=[True, False]), \
              patch('subprocess.check_call') as mock_check_call, \
              patch('os.path.isdir', return_value=True), \
              patch('shutil.rmtree'):
@@ -91,7 +91,7 @@ class TestUnmountPartitions:
         """Test unmounting both partitions."""
         from mount_utils import unmount_partitions
         
-        with patch('os.path.ismount', return_value=True), \
+        with patch('os.path.ismount', side_effect=[True, True, False, False]), \
              patch('subprocess.check_call') as mock_check_call, \
              patch('os.path.isdir', return_value=True), \
              patch('shutil.rmtree'):
@@ -111,7 +111,7 @@ class TestUnmountPartitions:
                 raise subprocess.CalledProcessError(1, 'umount')
             return None
         
-        with patch('os.path.ismount', return_value=True), \
+        with patch('os.path.ismount', side_effect=[True, False]), \
              patch('subprocess.check_call', side_effect=side_effect), \
              patch('os.path.isdir', return_value=True), \
              patch('shutil.rmtree'):
@@ -174,19 +174,20 @@ class TestForceUnmountDevice:
 
     def test_force_unmount_all_partitions(self):
         """Test force unmounting all partitions of a device."""
+        import mount_utils
         from mount_utils import force_unmount_device
         
         proc_mounts = '''/dev/sda1 /mnt/data ext4 rw 0 0
 /dev/sda2 /boot/efi vfat rw 0 0'''
         
-        with patch('builtins.open', mock_open(read_data=proc_mounts)), \
+        with patch('mount_utils.get_mounted_partitions', side_effect=[[("/dev/sda1", "/mnt/data"), ("/dev/sda2", "/boot/efi")], []]), \
              patch('subprocess.run') as mock_run:
             
             force_unmount_device('/dev/sda')
             assert mock_run.call_count == 2
 
-    def test_handles_unmount_errors(self):
-        """Test handling of unmount errors during force unmount."""
+    def test_refuses_when_unmount_errors_leave_mounts_active(self):
+        """Test refusal when unmount errors leave target mounts active."""
         import subprocess
         from mount_utils import force_unmount_device
         
@@ -194,6 +195,42 @@ class TestForceUnmountDevice:
         
         with patch('builtins.open', mock_open(read_data=proc_mounts)), \
              patch('subprocess.run', side_effect=subprocess.SubprocessError("error")):
-            
-            # Should not raise
-            force_unmount_device('/dev/sda')
+
+            with pytest.raises(RuntimeError):
+                force_unmount_device('/dev/sda')
+
+
+class TestGetMountedPartitions:
+    def test_matches_own_partitions_not_sibling_disk(self):
+        from mount_utils import get_mounted_partitions, _is_device_or_partition_of
+
+        assert _is_device_or_partition_of("/dev/nvme0n1p1", "/dev/nvme0n1")
+        assert _is_device_or_partition_of("/dev/sda1", "/dev/sda")
+        assert _is_device_or_partition_of("/dev/sda", "/dev/sda")
+        assert not _is_device_or_partition_of("/dev/nvme0n10p1", "/dev/nvme0n1")
+        assert not _is_device_or_partition_of("/dev/nvme0n10", "/dev/nvme0n1")
+        assert not _is_device_or_partition_of("/dev/sda10", "/dev/sda1")
+
+        mounts = (
+            "/dev/nvme0n1p1 /mnt/a ext4 rw 0 0\n"
+            "/dev/nvme0n10p1 /mnt/b ext4 rw 0 0\n"
+            "/dev/sda1 /mnt/c ext4 rw 0 0\n"
+        )
+        with patch("builtins.open", mock_open(read_data=mounts)):
+            assert get_mounted_partitions("/dev/nvme0n1") == [("/dev/nvme0n1p1", "/mnt/a")]
+            assert get_mounted_partitions("/dev/sda") == [("/dev/sda1", "/mnt/c")]
+
+    def test_matches_by_id_target_via_realpath(self):
+        from mount_utils import get_mounted_partitions
+
+        mounts = "/dev/sda1 /mnt/c ext4 rw 0 0\n"
+
+        def fake_realpath(path):
+            return {
+                "/dev/disk/by-id/ata-test": "/dev/sda",
+                "/dev/sda1": "/dev/sda1",
+            }.get(path, path)
+
+        with patch("builtins.open", mock_open(read_data=mounts)), \
+             patch("os.path.realpath", side_effect=fake_realpath):
+            assert get_mounted_partitions("/dev/disk/by-id/ata-test") == [("/dev/sda1", "/mnt/c")]

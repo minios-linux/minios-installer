@@ -6,6 +6,7 @@ Tests for disk_utils module.
 
 import sys
 import os
+import stat
 import pytest
 from unittest.mock import patch, MagicMock, mock_open
 
@@ -190,11 +191,21 @@ class TestFindAvailableDisks:
         lsblk_output = '''NAME="sda" SIZE="500G" MODEL="Samsung SSD" SERIAL="123" ROTA="0" TRAN="sata"'''
         
         with patch('disk_utils.run_command', return_value=lsblk_output), \
-             patch('os.path.exists', return_value=False):  # No live media paths
+             patch('disk_utils.get_live_root_disk', side_effect=RuntimeError('no live')):
             disks = find_available_disks()
             assert len(disks) == 1
             assert disks[0]['name'] == 'sda'
             assert 'Samsung SSD' in disks[0]['model']
+
+    def test_excludes_live_disk_via_shared_helper(self):
+        from disk_utils import find_available_disks
+
+        lsblk_output = '''NAME="nvme0n1" SIZE="256G" MODEL="Live" SERIAL="1" ROTA="0" TRAN="nvme"
+NAME="sda" SIZE="500G" MODEL="Target" SERIAL="2" ROTA="0" TRAN="sata"'''
+        with patch('disk_utils.run_command', return_value=lsblk_output), \
+             patch('disk_utils.get_live_root_disk', return_value='/dev/nvme0n1'):
+            disks = find_available_disks()
+            assert [d['name'] for d in disks] == ['sda']
 
     def test_multiple_disks(self):
         """Test detection of multiple disks."""
@@ -205,7 +216,7 @@ NAME="sdb" SIZE="1T" MODEL="HDD" SERIAL="2" ROTA="1" TRAN="sata"
 NAME="sdc" SIZE="32G" MODEL="USB" SERIAL="3" ROTA="0" TRAN="usb"'''
         
         with patch('disk_utils.run_command', return_value=lsblk_output), \
-             patch('os.path.exists', return_value=False):
+             patch('disk_utils.get_live_root_disk', side_effect=RuntimeError('no live')):
             disks = find_available_disks()
             assert len(disks) == 3
 
@@ -216,7 +227,7 @@ NAME="sdc" SIZE="32G" MODEL="USB" SERIAL="3" ROTA="0" TRAN="usb"'''
         lsblk_output = '''NAME="sdc" SIZE="32G" MODEL="USB" SERIAL="3" ROTA="0" TRAN="usb"'''
         
         with patch('disk_utils.run_command', return_value=lsblk_output), \
-             patch('os.path.exists', return_value=False):
+             patch('disk_utils.get_live_root_disk', side_effect=RuntimeError('no live')):
             disks = find_available_disks()
             assert disks[0]['icon'] == 'drive-harddisk-usb'
 
@@ -227,7 +238,7 @@ NAME="sdc" SIZE="32G" MODEL="USB" SERIAL="3" ROTA="0" TRAN="usb"'''
         lsblk_output = '''NAME="nvme0n1" SIZE="256G" MODEL="Samsung 970" SERIAL="456" ROTA="0" TRAN="nvme"'''
         
         with patch('disk_utils.run_command', return_value=lsblk_output), \
-             patch('os.path.exists', return_value=False):
+             patch('disk_utils.get_live_root_disk', side_effect=RuntimeError('no live')):
             disks = find_available_disks()
             assert disks[0]['icon'] == 'drive-harddisk-solidstate'
 
@@ -238,7 +249,7 @@ NAME="sdc" SIZE="32G" MODEL="USB" SERIAL="3" ROTA="0" TRAN="usb"'''
         lsblk_output = '''NAME="mmcblk0" SIZE="16G" MODEL="" SERIAL="" ROTA="0" TRAN="mmc"'''
         
         with patch('disk_utils.run_command', return_value=lsblk_output), \
-             patch('os.path.exists', return_value=False):
+             patch('disk_utils.get_live_root_disk', side_effect=RuntimeError('no live')):
             disks = find_available_disks()
             assert disks[0]['icon'] == 'drive-removable-media'
 
@@ -246,14 +257,200 @@ NAME="sdc" SIZE="32G" MODEL="USB" SERIAL="3" ROTA="0" TRAN="usb"'''
         """Test that loop devices are excluded."""
         from disk_utils import find_available_disks
         
-        lsblk_output = '''NAME="loop0" SIZE="1G" MODEL="" SERIAL="" ROTA="0" TRAN=""
-NAME="sda" SIZE="500G" MODEL="SSD" SERIAL="1" ROTA="0" TRAN="sata"'''
+        lsblk_output = '''NAME="loop0" SIZE="1G" MODEL="" SERIAL="" ROTA="0" TRAN="" TYPE="loop"
+NAME="sda" SIZE="500G" MODEL="SSD" SERIAL="1" ROTA="0" TRAN="sata" TYPE="disk"'''
         
         with patch('disk_utils.run_command', return_value=lsblk_output), \
-             patch('os.path.exists', return_value=False):
+             patch('disk_utils.get_live_root_disk', side_effect=RuntimeError('no live')), \
+             patch('disk_utils.get_device_by_id_path', return_value=None):
             disks = find_available_disks()
             assert len(disks) == 1
             assert disks[0]['name'] == 'sda'
+
+    def test_resolve_install_device_refuses_serial_mismatch(self):
+        from disk_utils import resolve_install_device
+
+        expected = {
+            'path': '/dev/sdb',
+            'by_id': '',
+            'serial': 'AAA',
+            'model': 'USB',
+            'size': '32G',
+        }
+        with patch('disk_utils.ensure_safe_target_device', return_value='/dev/sdb'), \
+             patch('disk_utils.get_device_identity', return_value={
+                 'path': '/dev/sdb', 'by_id': '', 'serial': 'BBB', 'model': 'USB', 'size': '32G',
+             }), \
+             patch('disk_utils.get_device_by_id_path', return_value=None):
+            with pytest.raises(RuntimeError, match='serial mismatch'):
+                resolve_install_device('/dev/sdb', expected)
+
+    def test_resolve_install_device_fails_closed_when_by_id_and_probe_identity_disappear(self):
+        from disk_utils import resolve_install_device
+
+        expected = {
+            'path': '/dev/sdb',
+            'by_id': '/dev/disk/by-id/usb-selected',
+            'serial': 'SERIAL-1',
+            'size': '1000000',
+            'model': 'Disk',
+        }
+        with patch('disk_utils.ensure_safe_target_device', return_value='/dev/sdb'), \
+             patch('os.path.exists', return_value=False), \
+             patch('disk_utils.get_device_identity', return_value={
+                 'path': '/dev/sdb', 'by_id': '', 'serial': '', 'size': '', 'model': ''
+             }):
+            with pytest.raises(RuntimeError, match='could not be verified'):
+                resolve_install_device('/dev/sdb', expected)
+
+
+class TestDeviceSafety:
+    """Tests for device path normalization and live-media safety checks."""
+
+    def test_normalize_device_path_adds_dev_prefix(self):
+        from disk_utils import normalize_device_path
+
+        assert normalize_device_path('sdb') == '/dev/sdb'
+        assert normalize_device_path('/dev/sdb') == '/dev/sdb'
+        assert normalize_device_path('nvme0n1') == '/dev/nvme0n1'
+
+    def test_parent_block_device_name_patterns(self):
+        from disk_utils import parent_block_device_name
+
+        assert parent_block_device_name('sda1') == 'sda'
+        assert parent_block_device_name('nvme0n1p1') == 'nvme0n1'
+        assert parent_block_device_name('nvme0n1p12') == 'nvme0n1'
+        assert parent_block_device_name('mmcblk0p1') == 'mmcblk0'
+        assert parent_block_device_name('nvme0n1') == 'nvme0n1'
+        assert parent_block_device_name('sr0') == 'sr0'
+        assert parent_block_device_name('sda') == 'sda'
+
+    def test_rejects_live_disk_target(self):
+        from disk_utils import ensure_safe_target_device
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils._lsblk_type', return_value='disk'), \
+             patch('disk_utils.get_live_root_disk', return_value='/dev/sdb'):
+            with pytest.raises(RuntimeError, match='running live media device'):
+                ensure_safe_target_device('/dev/sdb')
+
+    def test_rejects_live_disk_even_when_message_would_be_translated(self):
+        """Refusal must not depend on English substrings in exception text."""
+        from disk_utils import ensure_safe_target_device
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils.get_live_root_disk', return_value='/dev/sdb'), \
+             patch('disk_utils._', side_effect=lambda s: 'Отказ: ' if s.startswith('Refusing') else s):
+            with pytest.raises(RuntimeError):
+                ensure_safe_target_device('/dev/sdb')
+
+    def test_allows_target_when_live_detection_fails_on_non_live_host(self):
+        """Soft-fail only when we are *not* on a live mount (e.g. testing on a host)."""
+        from disk_utils import ensure_safe_target_device
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        def exists_side(p):
+            # Pretend the two live mount points do *not* exist.
+            if 'initramfs/memory/data' in p or 'initramfs/memory/iso' in p or 'live/mount/medium' in p or 'live/mount/iso' in p:
+                return False
+            return True
+
+        with patch('os.path.exists', side_effect=exists_side), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils._lsblk_type', return_value='disk'), \
+             patch('disk_utils.get_live_root_disk', side_effect=RuntimeError('No live media path found')):
+            assert ensure_safe_target_device('/dev/sdb') == '/dev/sdb'
+
+    def test_rejects_live_disk_bare_name(self):
+        from disk_utils import ensure_safe_target_device
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils._lsblk_type', return_value='disk'), \
+             patch('disk_utils.get_live_root_disk', return_value='/dev/sdb'):
+            with pytest.raises(RuntimeError, match='running live media device'):
+                ensure_safe_target_device('sdb')
+
+    def test_allows_other_disk_and_normalizes(self):
+        from disk_utils import ensure_safe_target_device
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils._lsblk_type', return_value='disk'), \
+             patch('disk_utils.get_live_root_disk', return_value='/dev/sda'):
+            assert ensure_safe_target_device('sdb') == '/dev/sdb'
+
+    def test_rejects_missing_device(self):
+        from disk_utils import ensure_safe_target_device
+
+        with patch('os.path.exists', return_value=False):
+            with pytest.raises(RuntimeError, match='does not exist'):
+                ensure_safe_target_device('/dev/sdz')
+
+    def test_rejects_partition_target(self):
+        from disk_utils import ensure_safe_target_device
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils._lsblk_type', return_value='part'), \
+             patch('disk_utils.get_live_root_disk', return_value='/dev/sda'):
+            with pytest.raises(RuntimeError, match='whole disk'):
+                ensure_safe_target_device('/dev/sdb1')
+
+    def test_rejects_when_type_unknown_and_name_looks_like_partition(self):
+        from disk_utils import ensure_safe_target_device
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils._lsblk_type', return_value=''), \
+             patch('disk_utils.get_live_root_disk', return_value='/dev/sda'):
+            with pytest.raises(RuntimeError, match='whole disk|Could not determine'):
+                ensure_safe_target_device('/dev/sdb1')
+
+    def test_partition_device_path_shared_helper(self):
+        from disk_utils import partition_device_path
+
+        assert partition_device_path('/dev/sda', 1) == '/dev/sda1'
+        assert partition_device_path('/dev/nvme0n1', 2) == '/dev/nvme0n1p2'
+        assert partition_device_path('/dev/mmcblk0', 1) == '/dev/mmcblk0p1'
+        assert partition_device_path('nbd0', 3) == '/dev/nbd0p3'
+        assert partition_device_path('/dev/disk/by-id/ata-VBOX_HARDDISK_VB6a21814d-8b698d04', 1) == '/dev/disk/by-id/ata-VBOX_HARDDISK_VB6a21814d-8b698d04-part1'
+
+    def test_get_live_root_disk_normalizes_pkname(self):
+        from disk_utils import get_live_root_disk
+
+        with patch('disk_utils.get_live_source_mount', return_value='/run/initramfs/memory/data'), \
+             patch('disk_utils.run_command', side_effect=['/dev/sdb1', 'sdb']):
+            assert get_live_root_disk() == '/dev/sdb'
+
+    def test_get_live_root_disk_preserves_optical_whole_disk(self):
+        from disk_utils import get_live_root_disk
+
+        # PKNAME empty for /dev/sr0; TYPE=rom must keep /dev/sr0 (not /dev/sr).
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('disk_utils.get_live_source_mount', return_value='/run/initramfs/memory/data'), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils.run_command', side_effect=['/dev/sr0', '', 'rom']):
+            assert get_live_root_disk() == '/dev/sr0'
+
+    def test_get_live_root_disk_nvme_partition_without_pkname(self):
+        from disk_utils import get_live_root_disk
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('disk_utils.get_live_source_mount', return_value='/run/initramfs/memory/data'), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils.run_command', side_effect=['/dev/nvme0n1p1', '', 'part']):
+            assert get_live_root_disk() == '/dev/nvme0n1'
 
 
 class TestPartitionDisk:
@@ -329,3 +526,22 @@ class TestDiskMonitor:
         
         monitor.callbacks.remove(callback)
         assert callback not in monitor.callbacks
+
+    def test_glib_idle_notification_is_one_shot_when_callback_returns_true(self):
+        from disk_utils import DiskMonitor
+
+        queued = []
+
+        class GLib:
+            @staticmethod
+            def idle_add(callback):
+                queued.append(callback)
+
+        monitor = DiskMonitor()
+        monitor._GLib = GLib()
+        calls = []
+        monitor.callbacks.append(lambda: calls.append("changed") or True)
+        monitor._on_disks_changed(None)
+
+        assert queued[0]() is False
+        assert calls == ["changed"]

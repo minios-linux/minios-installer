@@ -28,7 +28,7 @@ class TestRunCommand:
             mock_output.assert_called_once_with(
                 ['echo', 'test'],
                 universal_newlines=True,
-                stderr=subprocess.DEVNULL
+                stderr=subprocess.STDOUT
             )
 
     def test_command_failure(self):
@@ -70,3 +70,12 @@ class TestRunCommand:
                 assert False, "Should have raised"
             except RuntimeError as e:
                 assert str(e) == 'Specific error message'
+
+    def test_command_failure_includes_output(self):
+        """Test command output is included in failure details."""
+        from command_utils import run_command
+
+        error = subprocess.CalledProcessError(1, 'cmd', output='device busy\n')
+        with patch('subprocess.check_output', side_effect=error):
+            with pytest.raises(RuntimeError, match='device busy'):
+                run_command(['cmd'], 'Specific error message')
