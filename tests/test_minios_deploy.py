@@ -108,8 +108,8 @@ class TestMiniOSDeploy:
              patch('minios_deploy.build_plan', return_value=fake_plan) as build:
             assert minios_deploy.cmd_plan(args) == 0
 
-        assert build.call_args.kwargs['required_root_mib'] == 3456
-        assert build.call_args.kwargs['alongside_size_mib'] == 0
+        assert build.call_args[1]['required_root_mib'] == 3456
+        assert build.call_args[1]['alongside_size_mib'] == 0
 
     def test_luks_persistence_reserves_root_space_and_rejects_native_mode(self):
         import minios_deploy
@@ -125,7 +125,7 @@ class TestMiniOSDeploy:
              patch('minios_deploy._module_space_requirement', return_value=(['00-core.sb'], 4096)) as requirement, \
              patch('minios_deploy.run_live_install') as run:
             assert minios_deploy.cmd_install(args) == 0
-        assert requirement.call_args.args == ('live', '', 2048)
+        assert requirement.call_args[0] == ('live', '', 2048)
         state = run.call_args[0][0]
         assert state.persistence_mode == 'luks'
         assert state.persistence_size_mib == 2048
@@ -476,7 +476,7 @@ class TestMiniOSDeploy:
 
         assert password_hash not in '\n'.join(logs)
         assert '<redacted>' in logs[0]
-        assert run.call_args.args[0][-2] == password_hash
+        assert run.call_args[0][0][-2] == password_hash
 
     def test_chroot_mounts_and_unmounts_dev_pts(self, tmp_path):
         import native_deploy
@@ -490,7 +490,7 @@ class TestMiniOSDeploy:
         with patch('native_deploy.subprocess.run') as run:
             native_deploy._unmount_chroot_api(str(tmp_path), None, lambda _message: None)
 
-        unmounts = [call.args[0] for call in run.call_args_list]
+        unmounts = [mock_call[0][0] for mock_call in run.call_args_list]
         assert unmounts[0] == ['umount', str(tmp_path / 'dev' / 'pts')]
 
     def test_offline_native_keeps_kernel_metadata_inactive(self, tmp_path):

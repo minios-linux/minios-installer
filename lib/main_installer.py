@@ -57,6 +57,8 @@ from partition_scanner import scan_disk
 from user_config_writer import load_config_values
 from minios_security.capabilities import load_capabilities, support_class, supports
 from minios_security.security_profiles import SECURITY_PROFILE_IDS, profile_required_capabilities
+from minios_gui import (LogView, apply_minios_css, ask_confirmation,
+                        resolve_icon, show_error_dialog)
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
@@ -205,6 +207,14 @@ def install_session_summary(state):
                 )
     return lines
 
+
+def native_security_summary_text():
+    return _(
+        "Full install: the security profile is applied directly to the target "
+        "system first, followed by user settings and then live-only cleanup."
+    )
+
+
 FILESYSTEM_HELP_MARKUP = _(
     "<b>ext4</b> (best choice)\n"
     "  + Stable and has journaling.\n"
@@ -236,17 +246,6 @@ def resolve_css_path():
         if os.path.isfile(path):
             return path
     return None
-
-
-def apply_css_if_exists():
-    path = resolve_css_path()
-    if not path:
-        return
-    provider = Gtk.CssProvider()
-    provider.load_from_path(path)
-    screen = Gdk.Screen.get_default()
-    if screen is not None:
-        Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
 def read_available_locales() -> List[str]:
@@ -891,25 +890,35 @@ def describe_module_name(name):
     friendly = stem.replace("-", " ").title()
     if "core" in lower:
         role = _("Core system")
+        icons = ["application-x-executable", "computer", "system-run"]
     elif "kernel" in lower:
         role = _("Kernel and drivers")
+        icons = ["cpu", "application-x-firmware", "system-run"]
     elif "firmware" in lower:
         role = _("Hardware firmware")
+        icons = ["application-x-firmware", "media-flash"]
     elif "gui-base" in lower:
         role = _("Graphical base")
+        icons = ["preferences-desktop-display", "video-display"]
     elif "desktop" in lower or "xfce" in lower or "kde" in lower or "gnome" in lower or "lxqt" in lower:
         role = _("Desktop environment")
+        icons = ["user-desktop", "preferences-desktop"]
     elif "toolbox" in lower:
         role = _("Toolbox utilities")
+        icons = ["applications-utilities", "applications-accessories"]
     elif "ultra" in lower:
         role = _("Ultra applications")
+        icons = ["applications-graphics", "applications-other"]
     elif "apps" in lower or "applications" in lower:
         role = _("Application bundle")
+        icons = ["applications-other", "application-x-addon"]
     elif "firefox" in lower or "browser" in lower:
         role = _("Web browser")
+        icons = ["web-browser", "firefox", "internet-web-browser"]
     else:
         role = _("Custom module")
-    return role, friendly, name
+        icons = ["package-x-generic"]
+    return role, friendly, name, icons
 
 
 def format_module_size(size):
@@ -997,7 +1006,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.set_titlebar(header)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name(ICON_WINDOW)
-        apply_css_if_exists()
+        apply_minios_css(resolve_css_path())
         # Cap growth to the monitor workarea so expanders never push under the panel.
         self._apply_window_size_limits()
 
@@ -1026,8 +1035,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.root = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.root)
 
-        self.sidebar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        self.sidebar.get_style_context().add_class("installer-sidebar")
+        self.sidebar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.sidebar.get_style_context().add_class("minios-sidebar")
         self.sidebar.set_size_request(180, -1)
         self.sidebar.set_margin_top(8)
         self.sidebar.set_margin_bottom(8)
@@ -1254,7 +1263,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
         """
         Password field + hold-to-show eye button.
 
-        - Tab skips the eye (can_focus=False) and moves to the next entry.
         - Password is visible only while the eye is pressed; release/leave hides it.
         """
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -1271,9 +1279,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         button.set_image(Gtk.Image.new_from_icon_name(ICON_EYE_OPEN, Gtk.IconSize.BUTTON))
         button.set_always_show_image(True)
         button.set_tooltip_text(_("Hold to show password"))
-        # Tab must jump entry → next entry, not to the eye.
-        button.set_can_focus(False)
-        button.set_focus_on_click(False)
+        button.get_accessible().set_name(_("Hold to show password"))
 
         def set_visible(visible):
             entry.set_visibility(bool(visible))
@@ -1302,21 +1308,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _on_delete_event(self, *_args):
         if not self.install_running:
             return False
-        dlg = Gtk.MessageDialog(
-            transient_for=self,
-            modal=True,
-            message_type=Gtk.MessageType.QUESTION,
-            buttons=Gtk.ButtonsType.NONE,
-            text=_("Cancel installation?"),
-        )
-        dlg.format_secondary_text(
-            _("The install may already have written to the selected disk. Cancel requests a cooperative stop.")
-        )
-        dlg.add_button(_("Keep Installing"), Gtk.ResponseType.CANCEL)
-        dlg.add_button(_("Cancel Install"), Gtk.ResponseType.OK)
-        response = dlg.run()
-        dlg.destroy()
-        if response == Gtk.ResponseType.OK:
+        if ask_confirmation(
+                self,
+                _("Cancel installation?"),
+                _("The install may already have written to the selected disk. "
+                  "Cancel requests a cooperative stop."),
+                destructive=True,
+                confirm_label=_("Cancel Install"),
+                cancel_label=_("Keep Installing")):
             self.state.cancel_requested = True
             if hasattr(self, "status"):
                 self.status.set_text(_("Cancel requested. Waiting for the current step to finish..."))
@@ -1347,6 +1346,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             button = Gtk.Button()
             button.set_relief(Gtk.ReliefStyle.NONE)
             button.set_tooltip_text(_("Go to {step}").format(step=label))
+            button.get_accessible().set_name(label)
             button.get_style_context().add_class("sidebar-step")
             row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
             marker = Gtk.Label(xalign=0)
@@ -1427,7 +1427,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
     def _nav(self, can_next=True, next_label=None, destructive_next=False):
         sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        sep.get_style_context().add_class("installer-nav-separator")
+        sep.get_style_context().add_class("nav-separator")
         self.content_footer.pack_start(sep, False, False, 0)
 
         nav = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -1593,6 +1593,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 radio_group = radio
             radio.set_active(selected)
             radio.set_valign(Gtk.Align.START)
+            radio.get_accessible().set_name(title)
             texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
             t = Gtk.Label(xalign=0)
             t.set_markup("<b>{}</b>".format(GLib.markup_escape_text(title)))
@@ -1682,16 +1683,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
             lambda combo: self._set_user_config("default_target", combo.get_active_id() or "graphical.target"),
         )
 
+        lang_label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         lang_label = Gtk.Label(label=_("Boot menu language:"), xalign=0)
         lang_label.set_valign(Gtk.Align.CENTER)
-        startup_label = Gtk.Label(label=_("Default startup:"), xalign=0)
-        startup_label.set_valign(Gtk.Align.CENTER)
-        label_group.add_widget(lang_label)
-        label_group.add_widget(startup_label)
-
-        lang_field = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        lang_field.pack_start(self.language_combo, True, True, 0)
-        self.boot_lang_info = Gtk.Image.new_from_icon_name("dialog-information", Gtk.IconSize.BUTTON)
+        lang_label_box.pack_start(lang_label, True, True, 0)
+        self.boot_lang_info = Gtk.Image.new_from_icon_name(
+            resolve_icon("dialog-information-symbolic"), Gtk.IconSize.MENU)
+        self.boot_lang_info.get_style_context().add_class("field-help-icon")
         self.boot_lang_info.set_valign(Gtk.Align.CENTER)
         # Tooltip always available; wording covers both live and native fallback cases.
         self.boot_lang_info.set_tooltip_text(
@@ -1700,11 +1698,18 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 "For a full install this is also used if the installer cannot set up the standard GRUB bootloader."
             )
         )
-        lang_field.pack_start(self.boot_lang_info, False, False, 0)
+        lang_label_box.pack_end(self.boot_lang_info, False, False, 0)
+        startup_label = Gtk.Label(label=_("Default startup:"), xalign=0)
+        startup_label.set_valign(Gtk.Align.CENTER)
+        label_group.add_widget(lang_label_box)
+        label_group.add_widget(startup_label)
+
+        lang_field = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        lang_field.pack_start(self.language_combo, True, True, 0)
         field_group.add_widget(lang_field)
         field_group.add_widget(target_combo)
 
-        grid.attach(lang_label, 0, 0, 1, 1)
+        grid.attach(lang_label_box, 0, 0, 1, 1)
         grid.attach(lang_field, 1, 0, 1, 1)
         grid.attach(startup_label, 0, 1, 1, 1)
         grid.attach(target_combo, 1, 1, 1, 1)
@@ -1796,6 +1801,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 radio_group = radio
             radio.set_active(self.state.security_profile == profile)
             radio.set_valign(Gtk.Align.START)
+            radio.get_accessible().set_name(self._profile_label(profile))
             texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
             title = Gtk.Label(xalign=0)
             title.set_markup("<b>{}</b>".format(GLib.markup_escape_text(self._profile_label(profile))))
@@ -2710,7 +2716,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._module_toggle_updating = False
         selected = set(self.state.selected_modules)
         for index, name in enumerate(self.available_modules):
-            role, friendly, filename = describe_module_name(name)
+            role, friendly, filename, icons = describe_module_name(name)
             row = Gtk.ListBoxRow()
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
             box.set_margin_top(4)
@@ -2718,10 +2724,17 @@ class InstallerWindow(Gtk.ApplicationWindow):
             box.set_margin_start(8)
             box.set_margin_end(8)
             button = Gtk.CheckButton()
+            button.get_accessible().set_name(
+                _("{role}: {filename}").format(
+                    role=role, filename=filename))
             button.set_active(name in selected or index < mandatory_count)
             if index < mandatory_count:
                 button.set_sensitive(False)
             button.connect("toggled", self._on_module_toggled, index)
+            icon = Gtk.Image.new_from_icon_name(
+                resolve_icon(icons, fallback="package-x-generic"),
+                Gtk.IconSize.DND)
+            icon.set_valign(Gtk.Align.CENTER)
             texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
             title = Gtk.Label(xalign=0)
             if index < mandatory_count:
@@ -2746,6 +2759,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             texts.pack_start(title_row, False, False, 0)
             texts.pack_start(sub, False, False, 0)
             box.pack_start(button, False, False, 0)
+            box.pack_start(icon, False, False, 0)
             box.pack_start(texts, True, True, 0)
             row.add(box)
             listbox.add(row)
@@ -2975,7 +2989,19 @@ class InstallerWindow(Gtk.ApplicationWindow):
         adv_grid.set_margin_start(4)
         adv_grid.set_margin_end(4)
 
-        adv_grid.attach(Gtk.Label(label=_("Filesystem:"), xalign=0), 0, 0, 1, 1)
+        fs_label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        fs_label_box.pack_start(
+            Gtk.Label(label=_("Filesystem:"), xalign=0), True, True, 0)
+        info = Gtk.Image.new_from_icon_name(
+            resolve_icon("dialog-information-symbolic"), Gtk.IconSize.MENU)
+        info.get_style_context().add_class("field-help-icon")
+        info_box = Gtk.EventBox()
+        info_box.set_visible_window(False)
+        info_box.set_valign(Gtk.Align.CENTER)
+        info_box.add(info)
+        info_box.set_tooltip_markup(FILESYSTEM_HELP_MARKUP)
+        fs_label_box.pack_end(info_box, False, False, 0)
+        adv_grid.attach(fs_label_box, 0, 0, 1, 1)
         fs_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.fs_combo = Gtk.ComboBoxText()
         self._refresh_filesystem_choices()
@@ -2987,11 +3013,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         self.fs_combo.connect("changed", on_fs_changed)
         fs_box.pack_start(self.fs_combo, True, True, 0)
-        info = Gtk.Image.new_from_icon_name("dialog-information", Gtk.IconSize.SMALL_TOOLBAR)
-        info_box = Gtk.EventBox()
-        info_box.add(info)
-        info_box.set_tooltip_markup(FILESYSTEM_HELP_MARKUP)
-        fs_box.pack_start(info_box, False, False, 0)
         adv_grid.attach(fs_box, 1, 0, 1, 1)
 
         adv_grid.attach(Gtk.Label(label=_("Boot layout:"), xalign=0), 0, 1, 1, 1)
@@ -3732,13 +3753,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 self.erase_placement_radio.set_active(True)
 
     def _confirm_manual_discard(self, text):
-        dialog = Gtk.MessageDialog(transient_for=self, modal=True,
-                                   message_type=Gtk.MessageType.WARNING,
-                                   buttons=Gtk.ButtonsType.OK_CANCEL, text=text)
-        dialog.format_secondary_text(_("These changes have not been written, but include destructive disk actions."))
-        accepted = dialog.run() == Gtk.ResponseType.OK
-        dialog.destroy()
-        return accepted
+        return ask_confirmation(
+            self,
+            text,
+            _("These changes have not been written, but include destructive "
+              "disk actions."),
+            destructive=True,
+            confirm_label=_("Discard Changes"))
 
     def _refresh_manual_placement(self):
         if not hasattr(self, "manual_placement_radio"):
@@ -3811,13 +3832,19 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 rows.add(row)
         rows.connect("row-selected", lambda _list, row: setattr(self, "manual_selected_target", getattr(row, "target", None) if row else None))
         box.pack_start(rows, False, False, 0)
-        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        for title, callback in ((_("Create"), self._manual_create), (_("Edit/Use as"), self._manual_edit),
-                                (_("Resize"), self._manual_resize), (_("Delete"), self._manual_delete),
-                                (_("Undo last"), self._manual_undo), (_("Reset"), self._manual_reset)):
+        actions = Gtk.FlowBox()
+        actions.set_selection_mode(Gtk.SelectionMode.NONE)
+        actions.set_halign(Gtk.Align.START)
+        actions.set_row_spacing(6)
+        actions.set_column_spacing(6)
+        actions.set_min_children_per_line(1)
+        actions.set_max_children_per_line(3)
+        for title, callback in ((_("Create…"), self._manual_create), (_("Edit / Use as…"), self._manual_edit),
+                                (_("Resize…"), self._manual_resize), (_("Delete"), self._manual_delete),
+                                (_("Undo last"), self._manual_undo), (_("Reset staged changes"), self._manual_reset)):
             button = Gtk.Button(label=title)
             button.connect("clicked", callback)
-            actions.pack_start(button, False, False, 0)
+            actions.insert(button, -1)
         box.pack_start(actions, False, False, 0)
         status = Gtk.Label(xalign=0)
         status.set_line_wrap(True)
@@ -3852,7 +3879,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
         spin.set_value(size)
         dialog.get_content_area().pack_start(Gtk.Label(label=_("Exact aligned size (sectors):"), xalign=0), False, False, 8)
         dialog.get_content_area().pack_start(spin, False, False, 8)
-        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL); dialog.add_button(_("Stage create"), Gtk.ResponseType.OK); dialog.show_all()
+        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        stage_button = dialog.add_button(_("Stage create"), Gtk.ResponseType.OK)
+        stage_button.get_style_context().add_class("suggested-action")
+        dialog.set_default_response(Gtk.ResponseType.OK)
+        dialog.show_all()
         accepted = dialog.run() == Gtk.ResponseType.OK; size = int(spin.get_value()); dialog.destroy()
         if not accepted or size <= 0 or not self._manual_confirm(_("Stage creation of a new partition?")): return
         self.manual_controller.create(start, size)
@@ -3874,7 +3905,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
         maximum = (target.size_sectors - 1) // alignment * alignment
         spin = Gtk.SpinButton.new_with_range(alignment, maximum, alignment)
         spin.set_value(maximum)
-        dialog.get_content_area().pack_start(spin, False, False, 10); dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL); dialog.add_button(_("Stage resize"), Gtk.ResponseType.OK); dialog.show_all()
+        dialog.get_content_area().pack_start(spin, False, False, 10)
+        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        stage_button = dialog.add_button(_("Stage resize"), Gtk.ResponseType.OK)
+        stage_button.get_style_context().add_class("suggested-action")
+        dialog.set_default_response(Gtk.ResponseType.OK)
+        dialog.show_all()
         accepted = dialog.run() == Gtk.ResponseType.OK; size = int(spin.get_value()); dialog.destroy()
         if accepted and self._manual_confirm(_("Stage resize of the selected partition?")):
             self.manual_controller.resize(target, size); self._manual_after_change()
@@ -3890,7 +3926,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
         fmt = Gtk.CheckButton(label=_("Format")); fmt.set_active(False)
         grid.attach(Gtk.Label(label=_("Filesystem:"), xalign=0), 0, 0, 1, 1); grid.attach(fs, 1, 0, 1, 1)
         grid.attach(Gtk.Label(label=_("Mountpoint:"), xalign=0), 0, 1, 1, 1); grid.attach(mount, 1, 1, 1, 1); grid.attach(fmt, 1, 2, 1, 1)
-        dialog.get_content_area().add(grid); dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL); dialog.add_button(_("Stage"), Gtk.ResponseType.OK); dialog.show_all()
+        dialog.get_content_area().add(grid)
+        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        stage_button = dialog.add_button(_("Use partition"), Gtk.ResponseType.OK)
+        stage_button.get_style_context().add_class("suggested-action")
+        dialog.set_default_response(Gtk.ResponseType.OK)
+        dialog.show_all()
         accepted = dialog.run() == Gtk.ResponseType.OK; value = mount.get_child().get_text(); fstype = fs.get_active_text(); format_it = fmt.get_active(); dialog.destroy()
         role = "swap" if fstype == "swap" else "esp" if value == "/boot/efi" else "root" if value == "/" else "data"
         # A new partition has no filesystem to preserve, so it must be formatted.
@@ -4021,7 +4062,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             transient_for=self,
             modal=True,
             message_type=Gtk.MessageType.QUESTION,
-            buttons=Gtk.ButtonsType.OK_CANCEL,
+            buttons=Gtk.ButtonsType.NONE,
             text=_("Install required resize tools?"),
         )
         dialog.format_secondary_text(
@@ -4029,6 +4070,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 packages=", ".join(packages)
             )
         )
+        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        install_button = dialog.add_button(_("Install"), Gtk.ResponseType.OK)
+        install_button.get_style_context().add_class("suggested-action")
+        dialog.set_default_response(Gtk.ResponseType.CANCEL)
         accepted = dialog.run() == Gtk.ResponseType.OK
         dialog.destroy()
         if not accepted:
@@ -4172,16 +4217,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         GLib.idle_add(self._clamp_window_size)
 
     def _show_error(self, message):
-        dlg = Gtk.MessageDialog(
-            transient_for=self,
-            modal=True,
-            message_type=Gtk.MessageType.ERROR,
-            buttons=Gtk.ButtonsType.OK,
-            text=_("Installation Error"),
-        )
-        dlg.format_secondary_text(message)
-        dlg.run()
-        dlg.destroy()
+        show_error_dialog(self, _("Installation Error"), message)
 
     def _build_plan_or_error(self):
         if not self.state.target_device:
@@ -4251,9 +4287,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         detail = Gtk.Label(xalign=0)
         detail.set_line_wrap(True)
         if self.state.install_mode == "native":
-            detail.set_text(
-                _("Full install: this profile is applied directly to the target system after live-only cleanup and before user creation.")
-            )
+            detail.set_text(native_security_summary_text())
             box.pack_start(detail, False, False, 0)
             return box
 
@@ -4343,6 +4377,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             banner.pack_start(header, False, False, 0)
             confirm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
             self.wipe_confirm = Gtk.CheckButton()
+            self.wipe_confirm.get_accessible().set_name(
+                _("I understand that all data on this disk will be permanently erased."))
             confirm_label = Gtk.Label(
                 label=_("I understand that all data on this disk will be permanently erased."),
                 xalign=0,
@@ -4413,6 +4449,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             banner.pack_start(warn, False, False, 0)
             confirm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
             self.resize_confirm = Gtk.CheckButton()
+            self.resize_confirm.get_accessible().set_name(
+                _("I understand that the existing partition will be modified."))
             confirm_label = Gtk.Label(label=_("I understand that the existing partition will be modified."), xalign=0)
             confirm_label.set_line_wrap(True)
             confirm_box.pack_start(self.resize_confirm, False, False, 0)
@@ -4616,11 +4654,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.content_body.pack_start(self.phase_label, False, False, 0)
         self.content_body.pack_start(self.status, False, False, 0)
         self.content_body.pack_start(self.progress, False, False, 0)
-        self.log_buf = Gtk.TextBuffer()
-        self.log_view = Gtk.TextView(buffer=self.log_buf)
-        self.log_view.set_editable(False)
-        self.log_view.set_monospace(True)
-        self.log_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        self.log_view = LogView(maximum_characters=2 * 1024 * 1024)
         self._reset_install_log()
         for line in install_session_summary(self.state):
             self._append_log(line)
@@ -4629,18 +4663,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._append_log("Backend call: {}(state, progress_cb, log_cb)".format(backend))
         self._append_log("Equivalent command: " + backend_command_for_state(self.state))
         # Give the log a real minimum height; nested expand inside outer scroll is ignored.
-        sw = Gtk.ScrolledWindow()
-        if hasattr(sw, "set_min_content_height"):
-            sw.set_min_content_height(220)
-        sw.set_size_request(-1, 220)
-        sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        sw.set_hexpand(True)
-        sw.set_vexpand(True)
-        sw.add(self.log_view)
+        if hasattr(self.log_view, "set_min_content_height"):
+            self.log_view.set_min_content_height(220)
+        self.log_view.set_size_request(-1, 220)
         details_frame = Gtk.Frame()
         details_frame.set_hexpand(True)
         details_frame.set_vexpand(True)
-        details_frame.add(sw)
+        details_frame.add(self.log_view)
         self.details_expander = Gtk.Expander(label=_("Show Details"))
         self.details_expander.set_hexpand(True)
         self.details_expander.set_vexpand(True)
@@ -4649,7 +4678,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.content_body.pack_start(self.details_expander, True, True, 0)
 
         sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        sep.get_style_context().add_class("installer-nav-separator")
+        sep.get_style_context().add_class("nav-separator")
         self.content_footer.pack_start(sep, False, False, 0)
 
         self.cancel_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -4670,6 +4699,15 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
     def _on_cancel_install_clicked(self, _button):
         if not self.install_running:
+            return
+        if not ask_confirmation(
+                self,
+                _("Cancel installation?"),
+                _("The install may already have written to the selected disk. "
+                  "Cancel requests a cooperative stop."),
+                destructive=True,
+                confirm_label=_("Cancel Install"),
+                cancel_label=_("Keep Installing")):
             return
         self.state.cancel_requested = True
         self.cancel_button.set_sensitive(False)
@@ -4699,11 +4737,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             pass
 
         def _do():
-            end = self.log_buf.get_end_iter()
-            self.log_buf.insert(end, formatted + "\n")
-            if self.log_view is not None and self.log_view.get_buffer() is self.log_buf:
-                end = self.log_buf.get_end_iter()
-                self.log_view.scroll_to_iter(end, 0.0, False, 0.0, 0.0)
+            if self.log_view is not None:
+                self.log_view.feed(formatted + "\n")
             return False
 
         GLib.idle_add(_do)
@@ -4735,10 +4770,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
             except (LookupError, OSError):
                 pass
         except OSError:
-            timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-            self.install_log_path = os.path.join(tempfile.gettempdir(), "minios-installer-{}.log".format(timestamp))
-            descriptor = os.open(self.install_log_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o640)
-            os.close(descriptor)
+            descriptor, fallback_path = tempfile.mkstemp(
+                prefix="minios-installer-", suffix=".log", dir=tempfile.gettempdir()
+            )
+            try:
+                os.fchmod(descriptor, 0o640)
+            finally:
+                os.close(descriptor)
+            self.install_log_path = fallback_path
 
     def _run_install(self):
         try:
@@ -4841,7 +4880,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         )
         dlg.format_secondary_text(_("Save any open work before restarting."))
         dlg.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
-        dlg.add_button(_("Restart"), Gtk.ResponseType.OK)
+        restart_button = dlg.add_button(_("Restart"), Gtk.ResponseType.OK)
+        restart_button.get_style_context().add_class("suggested-action")
+        dlg.set_default_response(Gtk.ResponseType.CANCEL)
         response = dlg.run()
         dlg.destroy()
         if response != Gtk.ResponseType.OK:

@@ -3,7 +3,7 @@
 
 try:
     from dataclasses import dataclass, field
-except ImportError:  # Python 3.6 without stdlib dataclasses
+except ImportError:  # Python 3.6 until the backport is repository-published
     from dataclasses_compat import dataclass, field  # type: ignore
 
 from typing import List, Optional

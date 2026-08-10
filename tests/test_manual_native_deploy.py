@@ -112,7 +112,7 @@ def test_manual_preflight_covers_partition_resize_format_and_mount_tools():
     )
     with patch('native_deploy.shutil.which', return_value='/tool') as which:
         native_deploy._preflight_manual_native(plan)
-    required = {call.args[0] for call in which.call_args_list}
+    required = {mock_call[0][0] for mock_call in which.call_args_list}
     assert {'sfdisk', 'partprobe', 'blockdev', 'udevadm', 'e2fsck', 'resize2fs',
             'mkfs.ext4', 'mount', 'umount', 'blkid', 'lsblk'} <= required
 
@@ -132,8 +132,8 @@ def test_manual_preflight_stages_boot_packages_even_when_live_host_has_them():
         native_deploy._refresh_manual_preflight(state, plan)
 
     assert state.package_cache_path == '/cache'
-    assert 'grub-pc' in stage.call_args.args[0]
-    assert 'grub-common' in stage.call_args.args[0]
+    assert 'grub-pc' in stage.call_args[0][0]
+    assert 'grub-common' in stage.call_args[0][0]
 
 
 def test_manual_preflight_refuses_unproven_target_when_downloads_disabled():

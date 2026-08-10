@@ -1,136 +1,10 @@
-/* MiniOS Installer — theme-friendly overrides (GTK 3.22+) */
-
-headerbar,
-.titlebar {
-    min-height: 32px;
-}
-
-headerbar.minios-headerbar { padding-top: 0; padding-bottom: 0; }
-
-headerbar button.titlebutton,
-.titlebar button.titlebutton {
-    min-width: 30px;
-    min-height: 28px;
-    padding: 0;
-}
-
-.installer-sidebar {
-    background-color: shade(@theme_bg_color, 0.97);
-    border-right: 1px solid alpha(@borders, 0.7);
-    padding: 4px 6px 4px 4px;
-}
-
-.sidebar-step {
-    padding: 6px 8px;
-    border-radius: 4px;
-    border-left: 3px solid transparent;
-    margin: 1px 0;
-}
-
-button.sidebar-step {
-    background: transparent;
-    box-shadow: none;
-    border-top: none;
-    border-right: none;
-    border-bottom: none;
-}
-
-.sidebar-step-active {
-    background-color: alpha(@theme_selected_bg_color, 0.18);
-    border-left: 3px solid @theme_selected_bg_color;
-    font-weight: bold;
-}
-
-.sidebar-step-done {
-    opacity: 0.85;
-}
-
-.sidebar-step-todo {
-    opacity: 0.55;
-}
-
-.page-title {
-    font-weight: bold;
-}
-
-.page-subtitle,
-.dim-label {
-    opacity: 0.72;
-}
-
-.section-title {
-    font-weight: bold;
-    margin-top: 8px;
-    margin-bottom: 2px;
-}
-
-button.installer-button {
-    min-height: 32px;
-    min-width: 96px;
-    padding: 0 12px;
-    border-radius: 4px;
-    font-size: 13px;
-}
-
-button.suggested-action {
-    min-height: 32px;
-    padding: 0 12px;
-    border-radius: 4px;
-    background-image: linear-gradient(to bottom, #6bb5ff, #4a90d9);
-    color: #ffffff;
-    border: 1px solid #1c71d8;
-    box-shadow: none;
-    text-shadow: none;
-}
-
-button.suggested-action:hover {
-    background-image: linear-gradient(to bottom, #7fc3ff, #5ba0e9);
-    color: #ffffff;
-    border-color: #1a5fb4;
-}
-
-button.suggested-action:active {
-    background-image: none;
-    background-color: #1a5fb4;
-}
-
-button.suggested-action:disabled {
-    background-image: none;
-    background-color: alpha(#3584e4, 0.45);
-    color: alpha(#ffffff, 0.9);
-    border-color: transparent;
-    opacity: 1;
-}
-
-button.destructive-action {
-    min-height: 32px;
-    padding: 0 12px;
-    border-radius: 4px;
-    background-image: linear-gradient(to bottom, #ed5353, #c6262e);
-    color: #ffffff;
-    border: 1px solid #c01c28;
-    box-shadow: none;
-    text-shadow: none;
-}
-
-button.destructive-action:hover {
-    background-image: none;
-    background-color: #c01c28;
-}
-
-button.destructive-action:disabled {
-    opacity: 0.55;
-}
-
-.installer-nav-separator {
-    margin-top: 8px;
-    margin-bottom: 4px;
-    opacity: 0.5;
-}
-
-entry.error {
-    border: 2px solid #CC6666;
-}
+/* MiniOS Installer — app-specific styling only.
+ *
+ * The shared look-and-feel (header bar, sidebar surface, wizard steps, buttons,
+ * page titles, banners, entry validation, progress bar, …) comes from the
+ * minios-gui package: /usr/share/minios/minios.css, loaded first. Keep only
+ * rules that are unique to the installer here.
+ */
 
 listbox row {
     border-radius: 4px;
@@ -138,67 +12,27 @@ listbox row {
     padding: 2px;
 }
 
-listbox row:selected {
-    border-radius: 4px;
-}
-
-frame {
-    border-radius: 5px;
-    padding: 2px;
-}
-
-frame > label {
-    font-weight: bold;
-    margin: 2px 4px;
-}
-
 /*
  * Cards sit on the dialog (@theme_bg_color is usually gray).
  * Do NOT use @theme_base_color (entry white) — white-on-gray looks wrong.
+ * Radius is the canonical 6px; padding is kept tight for the dense wizard.
  */
 .content-card {
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid alpha(@borders, 0.65);
     background-color: transparent;
     padding: 3px;
 }
 
 .choice-card {
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 3px;
     margin: 2px 0;
-    /* Fixed border width so selection highlight does not reflow layout */
-    border: 2px solid alpha(@borders, 0.65);
-    background-color: transparent;
     min-height: 68px;
 }
 
-.choice-card:hover {
-    background-color: alpha(@theme_fg_color, 0.05);
-}
-
-.choice-card-selected {
-    /* Soft accent wash on the same gray surface — no white fill */
-    background-color: alpha(@theme_selected_bg_color, 0.12);
-    border: 2px solid @theme_selected_bg_color;
-}
-
-.warning-banner {
-    background-color: alpha(#e5a50a, 0.18);
-    border: 1px solid alpha(#e5a50a, 0.55);
-    border-radius: 5px;
-    padding: 8px 10px;
-}
-
-.error-banner {
-    background-color: alpha(#e01b24, 0.14);
-    border: 1px solid alpha(#e01b24, 0.5);
-    border-radius: 5px;
-    padding: 8px 10px;
-}
-
 .summary-card {
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 8px;
     margin-bottom: 6px;
 }
@@ -209,16 +43,6 @@ frame > label {
 
 .info-text {
     font-size: smaller;
-}
-
-progressbar trough {
-    min-height: 12px;
-    border-radius: 6px;
-}
-
-progressbar progress {
-    min-height: 12px;
-    border-radius: 6px;
 }
 
 scrolledwindow {

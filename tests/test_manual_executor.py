@@ -96,7 +96,7 @@ def test_resize_failure_stops_before_create_and_cancellation_is_deferred():
     with patch('partition_executor._apply_resize') as resize:
         execute_manual_plan(staged, lambda _line: None, lambda _device: layout(), dry_run=True,
                             cancel_cb=lambda: False)
-    assert resize.call_args.kwargs['cancel_cb'] is not None
+    assert resize.call_args[1]['cancel_cb'] is not None
 
 
 def test_revalidation_helper_requires_matching_free_extents():

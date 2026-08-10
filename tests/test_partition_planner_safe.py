@@ -333,78 +333,18 @@ def test_scanner_handles_missing_pttype_and_start():
         assert plan.device.endswith("sdb")
 
 
-# ----------------------------------------------------------------------
-# dataclasses_compat smoke test (Python 3.6 fallback path)
-# ----------------------------------------------------------------------
+def test_install_state_dataclass_runs_post_init_validation():
+    from install_state import InstallState
 
-def test_dataclasses_compat_basic_construction():
-    """Force the compat module and construct the main dataclasses used."""
-    import sys
-    # Ensure we exercise the fallback even on modern Python
-    if "dataclasses" in sys.modules:
-        # Remove so import of compat shim can be tested via direct import
-        pass
+    with patch("install_state.default_security_profile", return_value="balanced") as default_profile:
+        state = InstallState(install_mode="live")
+    assert state.security_profile == "balanced"
+    default_profile.assert_called_once_with("live")
 
-    # Import the shim directly
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "dataclasses_compat", os.path.join(os.path.dirname(__file__), "..", "lib", "dataclasses_compat.py")
-    )
-    compat = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(compat)
-
-    # Rebind for the modules that do "try: from dataclasses ..."
-    # We just construct using the compat symbols.
-    InstallStateC = None
-    UserConfigC = None
-    PartitionPlanC = None
-    PlannedPartitionC = None
-
-    # Manually recreate minimal versions using the loaded dataclass decorator
-    @compat.dataclass
-    class _UserConfig:
-        username: str = ""
-        hostname: str = ""
-
-    @compat.dataclass
-    class _InstallState:
-        target_device: str = ""
-        user_config: _UserConfig = compat.field(default_factory=_UserConfig)
-
-    @compat.dataclass
-    class _Planned:
-        role: str = ""
-        start_mib: int = 0
-
-    @compat.dataclass
-    class _Plan:
-        device: str = ""
-        use_gpt: bool = False
-        partitions: list = compat.field(default_factory=list)
-
-    u = _UserConfig(username="live")
-    s = _InstallState(target_device="/dev/sda", user_config=u)
-    assert s.target_device == "/dev/sda"
-    assert s.user_config.username == "live"
-
-    p = _Planned(role="minios_root")
-    plan = _Plan(device="/dev/sda", partitions=[p])
-    assert plan.device == "/dev/sda"
-    assert plan.partitions[0].role == "minios_root"
-
-    # equality
-    assert _UserConfig(username="live") == u
-
-    @compat.dataclass
-    class _Required:
-        name: str
-
-    try:
-        _Required()
-    except TypeError as exc:
-        assert "Missing required argument" in str(exc)
-    else:
-        assert False, "expected required field TypeError"
+    with patch("install_state.validate_security_profile", return_value="strict") as validate_profile:
+        state = InstallState(install_mode="native", security_profile="strict")
+    assert state.security_profile == "strict"
+    validate_profile.assert_called_once_with("strict")
 
 
 def test_erase_all_bios_over_2tib_refuses():

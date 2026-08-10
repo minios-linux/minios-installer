@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2026-07-26 16:13+0300\n"
-"PO-Revision-Date: 2026-07-26 13:13+0000\n"
+"POT-Creation-Date: 2026-08-10 01:41+0300\n"
+"PO-Revision-Date: 2026-08-09 22:41+0000\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
 "Language: id\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: lib/bootloader_utils.py:67 lib/copy_utils.py:77 lib/copy_utils.py:79
-#: lib/live_deploy.py:62 lib/native_deploy.py:104 lib/native_deploy.py:174
+#: lib/live_deploy.py:62 lib/native_deploy.py:113 lib/native_deploy.py:203
 #: lib/partition_executor.py:34
 msgid "Installation canceled by user."
 msgstr "Instalasi dibatalkan oleh pengguna."
@@ -27,7 +27,7 @@ msgstr "Instalasi dibatalkan oleh pengguna."
 msgid "Detected bootloader type: {type}"
 msgstr "Terdeteksi tipe bootloader: {type}"
 
-#: lib/bootloader_utils.py:99 lib/native_deploy.py:538
+#: lib/bootloader_utils.py:99 lib/native_deploy.py:570
 msgid "Installing GRUB bootloader..."
 msgstr "Menginstal bootloader GRUB..."
 
@@ -81,7 +81,7 @@ msgstr "Menggunakan SYSLINUX untuk memuat GRUB"
 msgid "Installing EXTLINUX bootloader..."
 msgstr "Menginstal bootloader EXTLINUX..."
 
-#: lib/bootloader_utils.py:184 lib/native_deploy.py:379
+#: lib/bootloader_utils.py:184 lib/native_deploy.py:411
 #, python-brace-format
 msgid "EXTLINUX installer not found: {path}"
 msgstr "Installer EXTLINUX tidak ditemukan: {path}"
@@ -487,7 +487,7 @@ msgstr "Persistensi terenkripsi membutuhkan initrd live yang mendukung kriptogra
 msgid "Manual partitioning plans are not executable yet."
 msgstr "Rencana partisi manual belum dapat dijalankan."
 
-#: lib/live_deploy.py:133 lib/native_deploy.py:1186 lib/native_deploy.py:1190
+#: lib/live_deploy.py:133 lib/native_deploy.py:1221 lib/native_deploy.py:1225
 msgid "No target device selected."
 msgstr "Tidak ada perangkat target yang dipilih."
 
@@ -495,69 +495,73 @@ msgstr "Tidak ada perangkat target yang dipilih."
 msgid "Cannot find MiniOS image."
 msgstr "Tidak dapat menemukan image MiniOS."
 
-#: lib/live_deploy.py:154 lib/native_deploy.py:714 lib/native_deploy.py:1247
+#: lib/live_deploy.py:154 lib/native_deploy.py:746 lib/native_deploy.py:1282
 msgid "Preparing target disk..."
 msgstr "Menyiapkan disk target..."
 
-#: lib/live_deploy.py:168 lib/native_deploy.py:720 lib/native_deploy.py:1251
+#: lib/live_deploy.py:168 lib/native_deploy.py:752 lib/native_deploy.py:1286
 msgid "Dry run complete."
 msgstr "Simulasi selesai."
 
-#: lib/live_deploy.py:204
+#: lib/live_deploy.py:205
 msgid "Copying MiniOS files..."
 msgstr "Menyalin file MiniOS..."
 
-#: lib/live_deploy.py:219
+#: lib/live_deploy.py:220
 msgid "Copying EFI files to ESP..."
 msgstr "Menyalin file EFI ke ESP..."
 
-#: lib/live_deploy.py:223
+#: lib/live_deploy.py:224
 msgid "Copying EFI files to root..."
 msgstr "Menyalin file EFI ke root..."
 
-#: lib/live_deploy.py:231
+#: lib/live_deploy.py:232
 msgid "Installing BIOS bootloader..."
 msgstr "Menginstal bootloader BIOS..."
 
-#: lib/live_deploy.py:242
+#: lib/live_deploy.py:243
 msgid "UEFI/GPT install: EFI files copied; no BIOS bootloader written."
 msgstr "Instalasi UEFI/GPT: File EFI sudah disalin; bootloader BIOS tidak ditulis."
 
-#: lib/live_deploy.py:246 lib/native_deploy.py:752 lib/native_deploy.py:1282
+#: lib/live_deploy.py:247 lib/native_deploy.py:784 lib/native_deploy.py:1317
 msgid "Unmounting disk..."
 msgstr "Unmounting disk..."
 
-#: lib/live_deploy.py:249 lib/live_deploy.py:263 lib/native_deploy.py:763
-#: lib/native_deploy.py:1285 lib/native_deploy.py:1293
+#: lib/live_deploy.py:250 lib/live_deploy.py:264 lib/native_deploy.py:795
+#: lib/native_deploy.py:1320 lib/native_deploy.py:1328
 msgid "Cleaned up target mounts."
 msgstr "Mount target telah dibersihkan."
 
-#: lib/live_deploy.py:252 lib/native_deploy.py:757 lib/native_deploy.py:1287
+#: lib/live_deploy.py:253 lib/native_deploy.py:789 lib/native_deploy.py:1322
 msgid "Installation complete!"
 msgstr "Instalasi selesai!"
 
-#: lib/live_deploy.py:265 lib/native_deploy.py:765 lib/native_deploy.py:1295
+#: lib/live_deploy.py:266 lib/native_deploy.py:797 lib/native_deploy.py:1330
 #, python-brace-format
 msgid "Warning: failed to unmount target: {error}"
 msgstr "Peringatan: gagal unmount target: {error}"
 
-#: lib/main_installer.py:91
+#: lib/main_installer.py:93
 msgid "IPv4 address is not valid."
 msgstr "Alamat IPv4 tidak valid."
 
-#: lib/main_installer.py:92
+#: lib/main_installer.py:94
 msgid "Network prefix must be between 0 and 32."
 msgstr "Prefiks jaringan harus antara 0 hingga 32."
 
-#: lib/main_installer.py:93
+#: lib/main_installer.py:95
 msgid "Gateway is not a valid IPv4 address."
 msgstr "Gateway bukan alamat IPv4 yang valid."
 
-#: lib/main_installer.py:94
+#: lib/main_installer.py:96
 msgid "DNS server is not a valid IP address."
 msgstr "Server DNS bukan alamat IP yang valid."
 
-#: lib/main_installer.py:209
+#: lib/main_installer.py:213
+msgid "Full install: the security profile is applied directly to the target system first, followed by user settings and then live-only cleanup."
+msgstr "Instalasi penuh: profil keamanan diterapkan langsung ke sistem target terlebih dahulu, diikuti dengan pengaturan pengguna, lalu pembersihan khusus live-only."
+
+#: lib/main_installer.py:219
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -613,7 +617,7 @@ msgstr ""
 "  + Kompatibel dengan Windows dan mendukung file besar.\n"
 "  - Membutuhkan alat tambahan di beberapa sistem."
 
-#: lib/main_installer.py:893
+#: lib/main_installer.py:892
 msgid "Core system"
 msgstr "Sistem inti"
 
@@ -621,128 +625,129 @@ msgstr "Sistem inti"
 msgid "Kernel and drivers"
 msgstr "Kernel dan driver"
 
-#: lib/main_installer.py:897
+#: lib/main_installer.py:898
 msgid "Hardware firmware"
 msgstr "Firmware perangkat keras"
 
-#: lib/main_installer.py:899
+#: lib/main_installer.py:901
 msgid "Graphical base"
 msgstr "Basis grafis"
 
-#: lib/main_installer.py:901
+#: lib/main_installer.py:904
 msgid "Desktop environment"
 msgstr "Lingkungan desktop"
 
-#: lib/main_installer.py:903
+#: lib/main_installer.py:907
 msgid "Toolbox utilities"
 msgstr "Utilitas Toolbox"
 
-#: lib/main_installer.py:905
+#: lib/main_installer.py:910
 msgid "Ultra applications"
 msgstr "Aplikasi Ultra"
 
-#: lib/main_installer.py:907
+#: lib/main_installer.py:913
 msgid "Application bundle"
 msgstr "Bundel Aplikasi"
 
-#: lib/main_installer.py:909
+#: lib/main_installer.py:916
 msgid "Web browser"
 msgstr "Peramban web"
 
-#: lib/main_installer.py:911 lib/main_installer.py:2729
+#: lib/main_installer.py:919 lib/main_installer.py:2742
 msgid "Custom module"
 msgstr "Modul Kustom"
 
-#: lib/main_installer.py:917
+#: lib/main_installer.py:926
 msgid "Size unavailable"
 msgstr "Ukuran tidak tersedia"
 
-#: lib/main_installer.py:965 lib/main_installer.py:4610
-#: lib/main_installer.py:4611
+#: lib/main_installer.py:974 lib/main_installer.py:4648
+#: lib/main_installer.py:4649
 msgid "Preparing"
 msgstr "Menyiapkan"
 
-#: lib/main_installer.py:967 lib/main_installer.py:986
+#: lib/main_installer.py:976 lib/main_installer.py:995
 msgid "Partitioning"
 msgstr "Partisi"
 
-#: lib/main_installer.py:969
+#: lib/main_installer.py:978
 msgid "Copying files"
 msgstr "Menyalin file"
 
-#: lib/main_installer.py:971
+#: lib/main_installer.py:980
 msgid "Bootloader"
 msgstr "Bootloader"
 
-#: lib/main_installer.py:972
+#: lib/main_installer.py:981
 msgid "Finishing"
 msgstr "Menyelesaikan"
 
-#: lib/main_installer.py:978
+#: lib/main_installer.py:987
 msgid "Welcome"
 msgstr "Selamat datang"
 
-#: lib/main_installer.py:979
+#: lib/main_installer.py:988
 msgid "Mode"
 msgstr "Mode"
 
-#: lib/main_installer.py:980
+#: lib/main_installer.py:989
 msgid "Security"
 msgstr "Keamanan"
 
-#: lib/main_installer.py:981 lib/main_installer.py:1884
+#: lib/main_installer.py:990 lib/main_installer.py:1890
 msgid "Location"
 msgstr "Lokasi"
 
-#: lib/main_installer.py:982 lib/main_installer.py:2121
+#: lib/main_installer.py:991 lib/main_installer.py:2127
 msgid "Network"
 msgstr "Jaringan"
 
-#: lib/main_installer.py:983 lib/main_installer.py:2266
+#: lib/main_installer.py:992 lib/main_installer.py:2272
 msgid "Keyboard"
 msgstr "Keyboard"
 
-#: lib/main_installer.py:984 lib/main_installer.py:2380
+#: lib/main_installer.py:993 lib/main_installer.py:2386
 msgid "Users"
 msgstr "Pengguna"
 
-#: lib/main_installer.py:985 lib/main_installer.py:2675
+#: lib/main_installer.py:994 lib/main_installer.py:2681
 msgid "Modules"
 msgstr "Modul"
 
-#: lib/main_installer.py:987
+#: lib/main_installer.py:996
 msgid "Summary"
 msgstr "Ringkasan"
 
-#: lib/main_installer.py:988 lib/main_installer.py:4600
+#: lib/main_installer.py:997 lib/main_installer.py:4074
+#: lib/main_installer.py:4638
 msgid "Install"
 msgstr "Instal"
 
-#: lib/main_installer.py:1273
+#: lib/main_installer.py:1281 lib/main_installer.py:1282
 msgid "Hold to show password"
 msgstr "Tahan untuk menampilkan kata sandi"
 
-#: lib/main_installer.py:1310
+#: lib/main_installer.py:1313 lib/main_installer.py:4705
 msgid "Cancel installation?"
 msgstr "Batalkan instalasi?"
 
-#: lib/main_installer.py:1313
+#: lib/main_installer.py:1314 lib/main_installer.py:4706
 msgid "The install may already have written to the selected disk. Cancel requests a cooperative stop."
 msgstr "Proses instalasi mungkin sudah menulis ke disk yang dipilih. Membatalkan akan meminta penghentian secara kooperatif."
 
-#: lib/main_installer.py:1315
-msgid "Keep Installing"
-msgstr "Lanjutkan Instalasi"
-
-#: lib/main_installer.py:1316
+#: lib/main_installer.py:1317 lib/main_installer.py:4709
 msgid "Cancel Install"
 msgstr "Batalkan Instalasi"
 
-#: lib/main_installer.py:1322 lib/main_installer.py:4676
+#: lib/main_installer.py:1318 lib/main_installer.py:4710
+msgid "Keep Installing"
+msgstr "Lanjutkan Instalasi"
+
+#: lib/main_installer.py:1321 lib/main_installer.py:4714
 msgid "Cancel requested. Waiting for the current step to finish..."
 msgstr "Permintaan pembatalan diterima. Menunggu langkah saat ini selesai..."
 
-#: lib/main_installer.py:1349
+#: lib/main_installer.py:1348
 #, python-brace-format
 msgid "Go to {step}"
 msgstr "Buka {step}"
@@ -815,902 +820,907 @@ msgstr "Instalasi penuh"
 msgid "Regular Linux install. You create a user account; root is locked by default and you use sudo."
 msgstr "Instalasi Linux reguler. Anda membuat akun pengguna; root terkunci secara default dan Anda menggunakan sudo."
 
-#: lib/main_installer.py:1637
+#: lib/main_installer.py:1638
 msgid "Boot Settings"
 msgstr "Pengaturan Boot"
 
-#: lib/main_installer.py:1650
+#: lib/main_installer.py:1651
 msgid "Multilingual menu"
 msgstr "Menu multibahasa"
 
-#: lib/main_installer.py:1673
+#: lib/main_installer.py:1674
 msgid "Graphical desktop"
 msgstr "Desktop grafis"
 
-#: lib/main_installer.py:1674
+#: lib/main_installer.py:1675
 msgid "Text console"
 msgstr "Konsol teks"
 
-#: lib/main_installer.py:1685
+#: lib/main_installer.py:1687
 msgid "Boot menu language:"
 msgstr "Bahasa menu boot:"
 
-#: lib/main_installer.py:1687
-msgid "Default startup:"
-msgstr "Startup default:"
-
-#: lib/main_installer.py:1699
+#: lib/main_installer.py:1697
 msgid "Language of the boot menu on the installed system. For a full install this is also used if the installer cannot set up the standard GRUB bootloader."
 msgstr "Bahasa pada menu boot di sistem yang terpasang. Untuk instalasi penuh, bahasa ini juga digunakan jika installer tidak dapat mengatur bootloader GRUB standar."
 
-#: lib/main_installer.py:1759
+#: lib/main_installer.py:1702
+msgid "Default startup:"
+msgstr "Startup default:"
+
+#: lib/main_installer.py:1764
 msgid "Convenient"
 msgstr "Praktis"
 
-#: lib/main_installer.py:1760
+#: lib/main_installer.py:1765
 msgid "Balanced"
 msgstr "Seimbang"
 
-#: lib/main_installer.py:1761
+#: lib/main_installer.py:1766
 msgid "Strict"
 msgstr "Ketat"
 
-#: lib/main_installer.py:1767
+#: lib/main_installer.py:1772
 msgid "Keeps MiniOS easy to use: passwordless sudo/polkit, relaxed desktop access, and visible default password hints."
 msgstr "Menjadikan MiniOS mudah digunakan: sudo/polkit tanpa sandi, akses desktop yang longgar, dan petunjuk sandi default yang terlihat."
 
-#: lib/main_installer.py:1768
+#: lib/main_installer.py:1773
 msgid "Recommended for regular installs: prevents live-config from setting up autologin and requires passwords for local administration while keeping practical remote-access policy."
 msgstr "Direkomendasikan untuk instalasi reguler: mencegah live-config mengatur autologin dan mewajibkan kata sandi untuk administrasi lokal, sambil tetap menjaga kebijakan akses jarak jauh yang praktis."
 
-#: lib/main_installer.py:1769
+#: lib/main_installer.py:1774
 msgid "Harder posture: prevents live-config from setting up autologin, disables SSH root login and SSH password authentication, hides password hints, hardens XRDP, and strips risky groups."
 msgstr "Postur lebih ketat: mencegah live-config mengatur autologin, menonaktifkan login root SSH dan autentikasi kata sandi SSH, menyembunyikan petunjuk kata sandi, memperkuat XRDP, dan menghapus grup yang berisiko."
 
-#: lib/main_installer.py:1775
+#: lib/main_installer.py:1780
 msgid "Security Profile"
 msgstr "Profil Keamanan"
 
-#: lib/main_installer.py:1776
+#: lib/main_installer.py:1781
 msgid "Choose the security posture to apply during installation."
 msgstr "Pilih tingkat keamanan yang akan diterapkan selama instalasi."
 
-#: lib/main_installer.py:1840
+#: lib/main_installer.py:1846
 msgid "Live installs write the individual settings to config.conf for the next boot. The autologin option prevents new setup; it does not remove autologin already configured in a persistent session. Full installs apply the selected posture directly to the target system."
 msgstr "Instalasi live akan menulis pengaturan individual ke config.conf untuk boot berikutnya. Opsi autologin hanya mencegah pengaturan baru; tidak menghapus autologin yang sudah dikonfigurasi pada sesi persisten. Instalasi penuh akan menerapkan postur yang dipilih langsung ke sistem target."
 
-#: lib/main_installer.py:1853
+#: lib/main_installer.py:1859
 msgid "Incoming remote access"
 msgstr "Akses jarak jauh masuk"
 
-#: lib/main_installer.py:1885
+#: lib/main_installer.py:1891
 msgid "Choose the system language and time zone for the installed system."
 msgstr "Pilih bahasa sistem dan zona waktu untuk sistem yang diinstal."
 
-#: lib/main_installer.py:1904
+#: lib/main_installer.py:1910
 msgid "Type a language or locale, e.g. Russian or ru_RU"
 msgstr "Ketik bahasa atau lokal, misalnya Russian atau ru_RU"
 
-#: lib/main_installer.py:1952
+#: lib/main_installer.py:1958
 msgid "System language:"
 msgstr "Bahasa sistem:"
 
-#: lib/main_installer.py:1954
+#: lib/main_installer.py:1960
 msgid "Timezone:"
 msgstr "Zona waktu:"
 
-#: lib/main_installer.py:1960
+#: lib/main_installer.py:1966
 msgid "Detect"
 msgstr "Deteksi"
 
-#: lib/main_installer.py:1963
+#: lib/main_installer.py:1969
 msgid "Fill language, timezone, and keyboard. Uses network geolocation when online; otherwise this live session."
 msgstr "Isi bahasa, zona waktu, dan keyboard. Menggunakan geolokasi jaringan saat online; jika tidak, menggunakan sesi live ini."
 
-#: lib/main_installer.py:1982
+#: lib/main_installer.py:1988
 msgid "Start typing a language name or code. Detect sets language, timezone, and keyboard (network first, then this live session)."
 msgstr "Mulai ketik nama atau kode bahasa. Deteksi akan mengatur bahasa, zona waktu, dan keyboard (jaringan terlebih dahulu, lalu sesi live ini)."
 
-#: lib/main_installer.py:2021
+#: lib/main_installer.py:2027
 msgid "Detecting…"
 msgstr "Mendeteksi…"
 
-#: lib/main_installer.py:2078
+#: lib/main_installer.py:2084
 msgid "Detected via network"
 msgstr "Terdeteksi melalui jaringan"
 
-#: lib/main_installer.py:2080
+#: lib/main_installer.py:2086
 #, python-brace-format
 msgid "Detected via network (country {code})"
 msgstr "Terdeteksi melalui jaringan (negara {code})"
 
-#: lib/main_installer.py:2082
+#: lib/main_installer.py:2088
 msgid "Detected from this live session (offline or no GeoIP result)"
 msgstr "Terdeteksi dari sesi live ini (offline atau tidak ada hasil GeoIP)"
 
-#: lib/main_installer.py:2084
+#: lib/main_installer.py:2090
 msgid "Detected using network and this live session"
 msgstr "Terdeteksi menggunakan jaringan dan sesi live ini"
 
-#: lib/main_installer.py:2086
+#: lib/main_installer.py:2092
 msgid "Could not detect language, timezone, or keyboard"
 msgstr "Tidak dapat mendeteksi bahasa, zona waktu, atau keyboard"
 
-#: lib/main_installer.py:2090
+#: lib/main_installer.py:2096
 msgid "Could not detect language, timezone, or keyboard. Check the network, or set the values manually."
 msgstr "Tidak dapat mendeteksi bahasa, zona waktu, atau keyboard. Periksa jaringan, atau atur nilai secara manual."
 
-#: lib/main_installer.py:2122
+#: lib/main_installer.py:2128
 msgid "Set the computer name and optionally configure a wired static IPv4 connection."
 msgstr "Atur nama komputer dan opsional konfigurasikan koneksi IPv4 statis kabel."
 
-#: lib/main_installer.py:2131 lib/main_installer.py:3214
-#: lib/main_installer.py:4486
+#: lib/main_installer.py:2137 lib/main_installer.py:3235
+#: lib/main_installer.py:4524
 msgid "System"
 msgstr "Sistem"
 
-#: lib/main_installer.py:2137
+#: lib/main_installer.py:2143
 msgid "For example: minios-laptop"
 msgstr "Contoh: minios-laptop"
 
-#: lib/main_installer.py:2139
+#: lib/main_installer.py:2145
 msgid "Computer name:"
 msgstr "Nama komputer:"
 
-#: lib/main_installer.py:2143
+#: lib/main_installer.py:2149
 msgid "Wired network"
 msgstr "Jaringan kabel"
 
-#: lib/main_installer.py:2158
+#: lib/main_installer.py:2164
 msgid "Interface:"
 msgstr "Antarmuka:"
 
-#: lib/main_installer.py:2168
+#: lib/main_installer.py:2174
 #, python-brace-format
 msgid "Detected wired connection: {interface}."
 msgstr "Koneksi kabel terdeteksi: {interface}."
 
-#: lib/main_installer.py:2171
+#: lib/main_installer.py:2177
 msgid "No wired network interface was detected. Wi-Fi profiles are kept unchanged."
 msgstr "Tidak ada antarmuka jaringan kabel yang terdeteksi. Profil Wi-Fi tetap tidak berubah."
 
-#: lib/main_installer.py:2175
+#: lib/main_installer.py:2181
 msgid "Automatic (DHCP)"
 msgstr "Otomatis (DHCP)"
 
-#: lib/main_installer.py:2177
+#: lib/main_installer.py:2183
 msgid "Static IPv4"
 msgstr "IPv4 Statis"
 
-#: lib/main_installer.py:2192
+#: lib/main_installer.py:2198
 msgid "IPv4 address:"
 msgstr "Alamat IPv4:"
 
-#: lib/main_installer.py:2193
+#: lib/main_installer.py:2199
 msgid "Prefix length:"
 msgstr "Panjang prefix:"
 
-#: lib/main_installer.py:2194
+#: lib/main_installer.py:2200
 msgid "Gateway:"
 msgstr "Gateway:"
 
-#: lib/main_installer.py:2195
+#: lib/main_installer.py:2201
 msgid "DNS servers:"
 msgstr "Server DNS:"
 
-#: lib/main_installer.py:2234
+#: lib/main_installer.py:2240
 msgid "Computer name is not valid."
 msgstr "Nama komputer tidak valid."
 
-#: lib/main_installer.py:2237
+#: lib/main_installer.py:2243
 msgid "Static IPv4 requires NetworkManager or ifupdown in the installed system."
 msgstr "IPv4 statis memerlukan NetworkManager atau ifupdown di sistem yang terpasang."
 
-#: lib/main_installer.py:2239
+#: lib/main_installer.py:2245
 msgid "Choose a wired network interface for the static connection."
 msgstr "Pilih antarmuka jaringan kabel untuk koneksi statis."
 
-#: lib/main_installer.py:2267
+#: lib/main_installer.py:2273
 msgid "Choose the keyboard layout for the installed system."
 msgstr "Pilih tata letak keyboard untuk sistem yang diinstal."
 
-#: lib/main_installer.py:2279
+#: lib/main_installer.py:2285
 msgid "e.g. us  or  us,ru"
 msgstr "mis. us  atau  us,ru"
 
-#: lib/main_installer.py:2292
+#: lib/main_installer.py:2298
 msgid "Switch layout:"
 msgstr "Ganti tata letak:"
 
-#: lib/main_installer.py:2295
+#: lib/main_installer.py:2301
 msgid "Not needed"
 msgstr "Tidak diperlukan"
 
-#: lib/main_installer.py:2296
+#: lib/main_installer.py:2302
 msgid "Alt + Shift"
 msgstr "Alt + Shift"
 
-#: lib/main_installer.py:2297
+#: lib/main_installer.py:2303
 msgid "Ctrl + Shift"
 msgstr "Ctrl + Shift"
 
-#: lib/main_installer.py:2298
+#: lib/main_installer.py:2304
 msgid "Win + Space"
 msgstr "Win + Space"
 
-#: lib/main_installer.py:2299
+#: lib/main_installer.py:2305
 msgid "Caps Lock"
 msgstr "Caps Lock"
 
-#: lib/main_installer.py:2309
+#: lib/main_installer.py:2315
 msgid "Keyboard layout:"
 msgstr "Tata letak keyboard:"
 
-#: lib/main_installer.py:2316
+#: lib/main_installer.py:2322
 msgid "These settings will be applied to the installed system. Use a comma to combine layouts (for example us,ru)."
 msgstr "Pengaturan ini akan diterapkan pada sistem yang diinstal. Gunakan koma untuk menggabungkan layout (misalnya us,ru)."
 
-#: lib/main_installer.py:2360
+#: lib/main_installer.py:2366
 msgid "Choose a shortcut to switch between the selected layouts."
 msgstr "Pilih pintasan untuk beralih antar layout yang dipilih."
 
-#: lib/main_installer.py:2370
+#: lib/main_installer.py:2376
 msgid "Only one layout is selected — a switch shortcut is not needed."
 msgstr "Hanya satu layout yang dipilih — pintasan untuk beralih tidak diperlukan."
 
-#: lib/main_installer.py:2377
+#: lib/main_installer.py:2383
 msgid "Create the main user account. Username and password are required."
 msgstr "Buat akun pengguna utama. Nama pengguna dan kata sandi wajib diisi."
 
-#: lib/main_installer.py:2379
+#: lib/main_installer.py:2385
 msgid "Create the main user account for the installed system."
 msgstr "Buat akun pengguna utama untuk sistem yang diinstal."
 
-#: lib/main_installer.py:2405
+#: lib/main_installer.py:2411
 msgid "Full name (optional)"
 msgstr "Nama lengkap (opsional)"
 
-#: lib/main_installer.py:2415
+#: lib/main_installer.py:2421
 msgid "Choose a username"
 msgstr "Pilih nama pengguna"
 
-#: lib/main_installer.py:2424
+#: lib/main_installer.py:2430
 msgid "User account"
 msgstr "Akun pengguna"
 
-#: lib/main_installer.py:2428
+#: lib/main_installer.py:2434
 msgid "Full name:"
 msgstr "Nama lengkap:"
 
-#: lib/main_installer.py:2431
+#: lib/main_installer.py:2437
 msgid "Username:"
 msgstr "Nama pengguna:"
 
-#: lib/main_installer.py:2436
+#: lib/main_installer.py:2442
 msgid "Password (required)"
 msgstr "Kata sandi (wajib)"
 
-#: lib/main_installer.py:2439
+#: lib/main_installer.py:2445
 msgid "Password is set"
 msgstr "Kata sandi telah diatur"
 
-#: lib/main_installer.py:2441
+#: lib/main_installer.py:2447
 msgid "Leave blank to keep current password"
 msgstr "Biarkan kosong untuk mempertahankan kata sandi saat ini"
 
-#: lib/main_installer.py:2450 lib/main_installer.py:2485
-#: lib/main_installer.py:2521
+#: lib/main_installer.py:2456 lib/main_installer.py:2491
+#: lib/main_installer.py:2527
 msgid "Password:"
 msgstr "Kata sandi:"
 
-#: lib/main_installer.py:2455
+#: lib/main_installer.py:2461
 msgid "Confirm password"
 msgstr "Konfirmasi kata sandi"
 
-#: lib/main_installer.py:2460 lib/main_installer.py:2497
-#: lib/main_installer.py:2530
+#: lib/main_installer.py:2466 lib/main_installer.py:2503
+#: lib/main_installer.py:2536
 msgid "Confirm password:"
 msgstr "Konfirmasi kata sandi:"
 
-#: lib/main_installer.py:2464
+#: lib/main_installer.py:2470
 msgid "Root account"
 msgstr "Akun root"
 
-#: lib/main_installer.py:2470
+#: lib/main_installer.py:2476
 msgid "Allow root login / set root password"
 msgstr "Izinkan login root / atur kata sandi root"
 
-#: lib/main_installer.py:2476
+#: lib/main_installer.py:2482
 msgid "Root account will be locked; use sudo with your user."
 msgstr "Akun root akan dikunci; gunakan sudo dengan akun Anda."
 
-#: lib/main_installer.py:2487
+#: lib/main_installer.py:2493
 msgid "Root password"
 msgstr "Kata sandi root"
 
-#: lib/main_installer.py:2499 lib/main_installer.py:2525
+#: lib/main_installer.py:2505 lib/main_installer.py:2531
 msgid "Confirm root password"
 msgstr "Konfirmasi kata sandi root"
 
-#: lib/main_installer.py:2514
+#: lib/main_installer.py:2520
 msgid "Root password is set"
 msgstr "Kata sandi root telah diatur"
 
-#: lib/main_installer.py:2516
+#: lib/main_installer.py:2522
 msgid "Leave blank to keep current root password"
 msgstr "Biarkan kosong untuk mempertahankan kata sandi root saat ini"
 
-#: lib/main_installer.py:2534
+#: lib/main_installer.py:2540
 msgid "Live systems often use root password “toor” by default."
 msgstr "Sistem live biasanya menggunakan password root “toor” secara default."
 
-#: lib/main_installer.py:2598
+#: lib/main_installer.py:2604
 msgid "Enter a username."
 msgstr "Masukkan nama pengguna."
 
-#: lib/main_installer.py:2602 lib/main_installer.py:2628
+#: lib/main_installer.py:2608 lib/main_installer.py:2634
 msgid "Username must be a lowercase Linux login name (not root)."
 msgstr "Nama pengguna harus berupa login Linux huruf kecil (bukan root)."
 
-#: lib/main_installer.py:2606
+#: lib/main_installer.py:2612
 msgid "Enter a password for the user account."
 msgstr "Masukkan kata sandi untuk akun pengguna."
 
-#: lib/main_installer.py:2608 lib/main_installer.py:2632
+#: lib/main_installer.py:2614 lib/main_installer.py:2638
 msgid "Passwords do not match."
 msgstr "Kata sandi tidak cocok."
 
-#: lib/main_installer.py:2613
+#: lib/main_installer.py:2619
 msgid "Enter a root password or disable root login."
 msgstr "Masukkan kata sandi root atau nonaktifkan login root."
 
-#: lib/main_installer.py:2619 lib/main_installer.py:2637
+#: lib/main_installer.py:2625 lib/main_installer.py:2643
 msgid "Root passwords do not match."
 msgstr "Kata sandi root tidak cocok."
 
-#: lib/main_installer.py:2676
+#: lib/main_installer.py:2682
 msgid "Choose modules to install. Selecting one also includes all lower layers."
 msgstr "Pilih modul yang akan diinstal. Memilih satu modul juga akan menyertakan semua lapisan di bawahnya."
 
-#: lib/main_installer.py:2679
+#: lib/main_installer.py:2685
 msgid "No MiniOS modules were found in the live media."
 msgstr "Tidak ditemukan modul MiniOS di media live."
 
-#: lib/main_installer.py:2694
+#: lib/main_installer.py:2700
 #, python-brace-format
 msgid "{required} required layers and {optional} optional layers are available."
 msgstr "{required} lapisan wajib dan {optional} lapisan opsional tersedia."
 
 #: lib/main_installer.py:2728
+#, python-brace-format
+msgid "{role}: {filename}"
+msgstr "{role}: {filename}"
+
+#: lib/main_installer.py:2741
 msgid "Required"
 msgstr "Wajib"
 
-#: lib/main_installer.py:2730
+#: lib/main_installer.py:2743
 msgid "Custom"
 msgstr "Kustom"
 
-#: lib/main_installer.py:2732
+#: lib/main_installer.py:2745
 msgid "Optional"
 msgstr "Opsional"
 
-#: lib/main_installer.py:2773
+#: lib/main_installer.py:2787
 msgid "Calculating installation space…"
 msgstr "Menghitung ruang instalasi…"
 
-#: lib/main_installer.py:2777
+#: lib/main_installer.py:2791
 #, python-brace-format
 msgid "{selected} of {total} layers selected. Estimated native system data: {size}. Required root space with reserve: {required}."
 msgstr "{selected} dari {total} layer dipilih. Perkiraan data sistem native: {size}. Ruang root yang dibutuhkan dengan cadangan: {required}."
 
-#: lib/main_installer.py:2781
+#: lib/main_installer.py:2795
 #, python-brace-format
 msgid "{selected} of {total} layers selected. Estimated live module images on target: {size}. Required root space with reserve: {required}."
 msgstr "{selected} dari {total} layer dipilih. Perkiraan image modul live pada target: {size}. Ruang root yang dibutuhkan dengan cadangan: {required}."
 
-#: lib/main_installer.py:2819
+#: lib/main_installer.py:2833
 msgid "Target Disk"
 msgstr "Disk Tujuan"
 
-#: lib/main_installer.py:2820
+#: lib/main_installer.py:2834
 msgid "Select the disk MiniOS will be installed to and choose how the target filesystem should be created."
 msgstr "Pilih disk tempat MiniOS akan diinstal dan tentukan bagaimana sistem file tujuan akan dibuat."
 
-#: lib/main_installer.py:2830
+#: lib/main_installer.py:2844
 msgid "Partition layout"
 msgstr "Tata letak partisi"
 
-#: lib/main_installer.py:2876
+#: lib/main_installer.py:2890
 msgid "Disk Setup"
 msgstr "Pengaturan Disk"
 
-#: lib/main_installer.py:2884
+#: lib/main_installer.py:2898
 msgid "Installation type:"
 msgstr "Tipe instalasi:"
 
-#: lib/main_installer.py:2885
+#: lib/main_installer.py:2899
 msgid "Erase disk and install MiniOS"
 msgstr "Hapus disk dan instal MiniOS"
 
-#: lib/main_installer.py:2886
+#: lib/main_installer.py:2900
 msgid "Install in existing free space"
 msgstr "Instal di ruang kosong yang tersedia"
 
-#: lib/main_installer.py:2887
+#: lib/main_installer.py:2901
 msgid "Install alongside another system"
 msgstr "Instal berdampingan dengan sistem lain"
 
-#: lib/main_installer.py:2888
+#: lib/main_installer.py:2902
 msgid "Manual partitioning"
 msgstr "Partisi manual"
 
-#: lib/main_installer.py:2895
+#: lib/main_installer.py:2909
 msgid "Deletes all partitions and data on the selected disk. This cannot be undone."
 msgstr "Menghapus semua partisi dan data di disk yang dipilih. Tindakan ini tidak dapat dibatalkan."
 
-#: lib/main_installer.py:2901 lib/main_installer.py:3725
+#: lib/main_installer.py:2915 lib/main_installer.py:3746
 msgid "Keeps existing partitions and uses free space only. Safer if the disk has other systems."
 msgstr "Mempertahankan partisi yang ada dan hanya menggunakan ruang kosong. Lebih aman jika disk memiliki sistem lain."
 
-#: lib/main_installer.py:2908
+#: lib/main_installer.py:2922
 msgid "Shrinks the last supported partition and installs MiniOS in the space created."
 msgstr "Memperkecil partisi terakhir yang didukung dan menginstal MiniOS di ruang yang dibuat."
 
-#: lib/main_installer.py:2918
+#: lib/main_installer.py:2932
 msgid "Discard staged manual partition changes?"
 msgstr "Buang perubahan partisi manual yang sudah diatur?"
 
-#: lib/main_installer.py:2952
+#: lib/main_installer.py:2966
 msgid "Space for MiniOS:"
 msgstr "Ruang untuk MiniOS:"
 
-#: lib/main_installer.py:2960 lib/main_installer.py:3093
+#: lib/main_installer.py:2974 lib/main_installer.py:3114
 msgid "MiB"
 msgstr "MiB"
 
-#: lib/main_installer.py:2963
+#: lib/main_installer.py:2977
 msgid "Install required resize tools"
 msgstr "Instal alat resize yang diperlukan"
 
-#: lib/main_installer.py:2969
+#: lib/main_installer.py:2983
 msgid "Advanced…"
 msgstr "Lanjutan…"
 
-#: lib/main_installer.py:2978 lib/main_installer.py:3891
+#: lib/main_installer.py:2994 lib/main_installer.py:3927
 msgid "Filesystem:"
 msgstr "Sistem file:"
 
-#: lib/main_installer.py:2997
+#: lib/main_installer.py:3018
 msgid "Boot layout:"
 msgstr "Tata letak boot:"
 
-#: lib/main_installer.py:3000
+#: lib/main_installer.py:3021
 msgid "Automatic (recommended)"
 msgstr "Otomatis (disarankan)"
 
-#: lib/main_installer.py:3001
+#: lib/main_installer.py:3022
 msgid "BIOS / MBR"
 msgstr "BIOS / MBR"
 
-#: lib/main_installer.py:3002
+#: lib/main_installer.py:3023
 msgid "UEFI / MBR"
 msgstr "UEFI / MBR"
 
-#: lib/main_installer.py:3003
+#: lib/main_installer.py:3024
 msgid "UEFI / GPT"
 msgstr "UEFI / GPT"
 
-#: lib/main_installer.py:3017
+#: lib/main_installer.py:3038
 msgid "Swap:"
 msgstr "Swap:"
 
-#: lib/main_installer.py:3053
+#: lib/main_installer.py:3074
 msgid "MiB (native install only)"
 msgstr "MiB (hanya untuk instalasi native)"
 
-#: lib/main_installer.py:3058
+#: lib/main_installer.py:3079
 msgid "Session storage:"
 msgstr "Penyimpanan sesi:"
 
-#: lib/main_installer.py:3137
+#: lib/main_installer.py:3158
 msgid "Discard changes on restart"
 msgstr "Abaikan perubahan saat restart"
 
-#: lib/main_installer.py:3140 lib/main_installer.py:4449
+#: lib/main_installer.py:3161 lib/main_installer.py:4487
 msgid "Native persistent changes"
 msgstr "Perubahan persisten native"
 
-#: lib/main_installer.py:3142
+#: lib/main_installer.py:3163
 msgid "Expandable persistent changes (DynFileFS)"
 msgstr "Perubahan persisten yang dapat diperluas (DynFileFS)"
 
-#: lib/main_installer.py:3143
+#: lib/main_installer.py:3164
 msgid "Fixed-size persistent changes (Raw image)"
 msgstr "Perubahan persisten dengan ukuran tetap (Raw image)"
 
-#: lib/main_installer.py:3146
+#: lib/main_installer.py:3167
 msgid "Encrypted persistent changes (LUKS)"
 msgstr "Perubahan persisten terenkripsi (LUKS)"
 
-#: lib/main_installer.py:3176
+#: lib/main_installer.py:3197
 msgid "Changes are kept in memory and discarded on restart."
 msgstr "Perubahan disimpan di memori dan akan dihapus saat restart."
 
-#: lib/main_installer.py:3177
+#: lib/main_installer.py:3198
 msgid "The initrd stores changes directly on a POSIX-compatible target filesystem."
 msgstr "Initrd menyimpan perubahan langsung pada filesystem target yang kompatibel dengan POSIX."
 
-#: lib/main_installer.py:3178
+#: lib/main_installer.py:3199
 msgid "The initrd creates expandable DynFileFS storage with the selected maximum size."
 msgstr "Initrd membuat penyimpanan DynFileFS yang dapat diperluas dengan ukuran maksimum yang dipilih."
 
-#: lib/main_installer.py:3179
+#: lib/main_installer.py:3200
 msgid "The initrd creates a fixed-size ext4 image for persistent changes."
 msgstr "Initrd membuat image ext4 berukuran tetap untuk perubahan persisten."
 
-#: lib/main_installer.py:3180
+#: lib/main_installer.py:3201
 msgid "The initrd creates changes.luks and asks for its password on first boot; the installer never stores it."
 msgstr "Initrd akan membuat changes.luks dan meminta kata sandinya pada boot pertama; installer tidak pernah menyimpannya."
 
-#: lib/main_installer.py:3213
+#: lib/main_installer.py:3234
 msgid "ESP"
 msgstr "ESP"
 
-#: lib/main_installer.py:3215
+#: lib/main_installer.py:3236
 msgid "Swap"
 msgstr "Swap"
 
-#: lib/main_installer.py:3216
+#: lib/main_installer.py:3237
 msgid "MiniOS"
 msgstr "MiniOS"
 
-#: lib/main_installer.py:3217
+#: lib/main_installer.py:3238
 msgid "Free space"
 msgstr "Ruang kosong"
 
-#: lib/main_installer.py:3218
+#: lib/main_installer.py:3239
 msgid "Existing"
 msgstr "Eksisting"
 
-#: lib/main_installer.py:3357
+#: lib/main_installer.py:3378
 msgid "Drag the boundary to choose MiniOS space."
 msgstr "Geser batas untuk memilih ruang MiniOS."
 
-#: lib/main_installer.py:3360
+#: lib/main_installer.py:3381
 msgid "Drag the boundary to choose swap space."
 msgstr "Seret batas untuk memilih ruang swap."
 
-#: lib/main_installer.py:3518
+#: lib/main_installer.py:3539
 #, python-brace-format
 msgid "Drag the boundary or use Space for MiniOS: {size} MiB."
 msgstr "Geser batas atau gunakan Ruang untuk MiniOS: {size} MiB."
 
-#: lib/main_installer.py:3542
+#: lib/main_installer.py:3563
 #, python-brace-format
 msgid "Drag the System/Swap boundary or use Swap: {size} MiB. The erase layout is editable."
 msgstr "Seret batas Sistem/Swap atau gunakan Swap: {size} MiB. Tata letak penghapusan dapat diedit."
 
-#: lib/main_installer.py:3565
+#: lib/main_installer.py:3586
 msgid "Select a disk to preview the partition layout."
 msgstr "Pilih disk untuk melihat tata letak partisi."
 
-#: lib/main_installer.py:3574
+#: lib/main_installer.py:3595
 msgid "Manual partitioning has not been initialized."
 msgstr "Partisi manual belum diinisialisasi."
 
-#: lib/main_installer.py:3587
+#: lib/main_installer.py:3608
 msgid "Manual view: existing layout with staged mount assignments."
 msgstr "Tampilan manual: tata letak yang sudah ada dengan penugasan mount yang sudah diatur."
 
-#: lib/main_installer.py:3702 lib/main_installer.py:3948
+#: lib/main_installer.py:3723 lib/main_installer.py:3989
 msgid "Select a disk first."
 msgstr "Pilih disk terlebih dahulu."
 
-#: lib/main_installer.py:3707
+#: lib/main_installer.py:3728
 msgid "This disk has no partition table. Erase the disk to initialize it."
 msgstr "Disk ini tidak memiliki tabel partisi. Hapus disk untuk menginisialisasinya."
 
-#: lib/main_installer.py:3729 lib/main_installer.py:3762
-#: lib/main_installer.py:4003
+#: lib/main_installer.py:3750 lib/main_installer.py:3783
+#: lib/main_installer.py:4044
 #, python-brace-format
 msgid "Not available: {reason}"
 msgstr "Tidak tersedia: {reason}"
 
-#: lib/main_installer.py:3738
+#: lib/main_installer.py:3759
 msgid "These changes have not been written, but include destructive disk actions."
 msgstr "Perubahan ini belum diterapkan, namun mencakup tindakan disk yang bersifat merusak."
 
-#: lib/main_installer.py:3747
+#: lib/main_installer.py:3762
+msgid "Discard Changes"
+msgstr "Batalkan Perubahan"
+
+#: lib/main_installer.py:3768
 msgid "Manual partitioning is available only for full (native) installations."
 msgstr "Partisi manual hanya tersedia untuk instalasi penuh (native)."
 
-#: lib/main_installer.py:3755
+#: lib/main_installer.py:3776
 msgid "Stage exact changes below. No disk commands run until Install."
 msgstr "Atur perubahan persis di bawah ini. Tidak ada perintah disk yang dijalankan sebelum Instalasi."
 
-#: lib/main_installer.py:3759
+#: lib/main_installer.py:3780
 msgid "Select an eligible GPT or primary-MBR disk first."
 msgstr "Pilih disk GPT atau primary-MBR yang memenuhi syarat terlebih dahulu."
 
-#: lib/main_installer.py:3804
+#: lib/main_installer.py:3825
 #, python-brace-format
 msgid "Free space: {size} sectors"
 msgstr "Ruang kosong: {size} sektor"
 
-#: lib/main_installer.py:3810
+#: lib/main_installer.py:3831
 #, python-brace-format
 msgid "New partition: {size} sectors"
 msgstr "Partisi baru: {size} sektor"
 
-#: lib/main_installer.py:3815
-msgid "Create"
-msgstr "Buat"
+#: lib/main_installer.py:3842
+msgid "Create…"
+msgstr "Buat…"
 
-#: lib/main_installer.py:3815
-msgid "Edit/Use as"
-msgstr "Edit/Gunakan sebagai"
+#: lib/main_installer.py:3842
+msgid "Edit / Use as…"
+msgstr "Edit / Gunakan sebagai…"
 
-#: lib/main_installer.py:3816
-msgid "Resize"
-msgstr "Ubah ukuran"
+#: lib/main_installer.py:3843
+msgid "Resize…"
+msgstr "Ubah Ukuran…"
 
-#: lib/main_installer.py:3816
+#: lib/main_installer.py:3843
 msgid "Delete"
 msgstr "Hapus"
 
-#: lib/main_installer.py:3817
+#: lib/main_installer.py:3844
 msgid "Undo last"
 msgstr "Batalkan terakhir"
 
-#: lib/main_installer.py:3817
-msgid "Reset"
-msgstr "Reset"
+#: lib/main_installer.py:3844
+msgid "Reset staged changes"
+msgstr "Reset perubahan yang sudah ditandai"
 
-#: lib/main_installer.py:3827
+#: lib/main_installer.py:3854
 msgid "Valid staged plan.  "
 msgstr "Rencana yang sudah diatur valid.  "
 
-#: lib/main_installer.py:3843
+#: lib/main_installer.py:3870
 msgid "Select a free-space row first."
 msgstr "Pilih baris ruang kosong terlebih dahulu."
 
-#: lib/main_installer.py:3845
+#: lib/main_installer.py:3872
 msgid "Select unallocated free space, not a staged partition."
 msgstr "Pilih ruang kosong yang belum dialokasikan, bukan partisi yang sudah diatur."
 
-#: lib/main_installer.py:3850
+#: lib/main_installer.py:3877
 msgid "Create partition"
 msgstr "Buat partisi"
 
-#: lib/main_installer.py:3853
+#: lib/main_installer.py:3880
 msgid "Exact aligned size (sectors):"
 msgstr "Ukuran sejajar persis (sektor):"
 
-#: lib/main_installer.py:3855 lib/main_installer.py:3877
-#: lib/main_installer.py:3893 lib/main_installer.py:4660
-#: lib/main_installer.py:4843
+#: lib/main_installer.py:3882 lib/main_installer.py:3909
+#: lib/main_installer.py:3930 lib/main_installer.py:4073
+#: lib/main_installer.py:4689 lib/main_installer.py:4882
 msgid "Cancel"
 msgstr "Batal"
 
-#: lib/main_installer.py:3855
+#: lib/main_installer.py:3883
 msgid "Stage create"
 msgstr "Atur pembuatan"
 
-#: lib/main_installer.py:3857
+#: lib/main_installer.py:3888
 msgid "Stage creation of a new partition?"
 msgstr "Atur pembuatan partisi baru?"
 
-#: lib/main_installer.py:3864 lib/main_installer.py:3871
-#: lib/main_installer.py:3885
+#: lib/main_installer.py:3895 lib/main_installer.py:3902
+#: lib/main_installer.py:3921
 msgid "Select an existing partition first."
 msgstr "Pilih partisi yang sudah ada terlebih dahulu."
 
-#: lib/main_installer.py:3865
+#: lib/main_installer.py:3896
 msgid "Stage deletion of the selected partition?"
 msgstr "Atur penghapusan partisi yang dipilih?"
 
-#: lib/main_installer.py:3872
+#: lib/main_installer.py:3903
 msgid "Resize partition"
 msgstr "Ubah ukuran partisi"
 
-#: lib/main_installer.py:3877
+#: lib/main_installer.py:3910
 msgid "Stage resize"
 msgstr "Atur perubahan ukuran"
 
-#: lib/main_installer.py:3879
+#: lib/main_installer.py:3915
 msgid "Stage resize of the selected partition?"
 msgstr "Atur perubahan ukuran partisi yang dipilih?"
 
-#: lib/main_installer.py:3886
+#: lib/main_installer.py:3922
 msgid "Use partition as"
 msgstr "Gunakan partisi sebagai"
 
-#: lib/main_installer.py:3890
+#: lib/main_installer.py:3926
 msgid "Format"
 msgstr "Format"
 
-#: lib/main_installer.py:3892
+#: lib/main_installer.py:3928
 msgid "Mountpoint:"
 msgstr "Mountpoint:"
 
-#: lib/main_installer.py:3893
-msgid "Stage"
-msgstr "Atur"
+#: lib/main_installer.py:3931
+msgid "Use partition"
+msgstr "Gunakan partisi"
 
-#: lib/main_installer.py:3898
+#: lib/main_installer.py:3939
 msgid "Stage formatting of the selected partition?"
 msgstr "Atur pemformatan partisi yang dipilih?"
 
-#: lib/main_installer.py:3905
+#: lib/main_installer.py:3946
 msgid "Reset all staged manual partition changes?"
 msgstr "Reset semua perubahan partisi manual yang sudah diatur?"
 
-#: lib/main_installer.py:3961
+#: lib/main_installer.py:4002
 #, python-brace-format
 msgid "Not enough space for selected modules (need at least {need} MiB)"
 msgstr "Ruang tidak cukup untuk modul yang dipilih (minimal membutuhkan {need} MiB)"
 
-#: lib/main_installer.py:3973
+#: lib/main_installer.py:4014
 #, python-brace-format
 msgid "Required resize tools are missing: {packages}"
 msgstr "Alat resize yang diperlukan tidak ditemukan: {packages}"
 
-#: lib/main_installer.py:3986
+#: lib/main_installer.py:4027
 #, python-brace-format
 msgid "Will shrink {path} ({filesystem}) without moving its start."
 msgstr "Akan memperkecil {path} ({filesystem}) tanpa memindahkan awalnya."
 
-#: lib/main_installer.py:4025
+#: lib/main_installer.py:4066
 msgid "Install required resize tools?"
 msgstr "Instal alat resize yang diperlukan?"
 
-#: lib/main_installer.py:4028
+#: lib/main_installer.py:4069
 #, python-brace-format
 msgid "The following packages will be downloaded and installed in the live session: {packages}"
 msgstr "Paket berikut akan diunduh dan diinstal pada sesi live: {packages}"
 
-#: lib/main_installer.py:4041
+#: lib/main_installer.py:4086
 #, python-brace-format
 msgid "Could not install resize tools: {error}"
 msgstr "Gagal menginstal alat resize: {error}"
 
-#: lib/main_installer.py:4078
+#: lib/main_installer.py:4123
 #, python-brace-format
 msgid "Mounted partitions will be unmounted: {points}"
 msgstr "Partisi yang ter-mount akan dilepas: {points}"
 
-#: lib/main_installer.py:4115
+#: lib/main_installer.py:4160
 msgid "This disk has mounted partitions. Erase-all will unmount and wipe them."
 msgstr "Disk ini memiliki partisi yang sedang ter-mount. Hapus semua akan melepas dan menghapusnya."
 
-#: lib/main_installer.py:4139
+#: lib/main_installer.py:4184
 msgid "Discard staged manual partition changes and switch disks?"
 msgstr "Buang perubahan partisi manual yang sudah diatur dan ganti disk?"
 
-#: lib/main_installer.py:4180
+#: lib/main_installer.py:4220
 msgid "Installation Error"
 msgstr "Kesalahan Instalasi"
 
-#: lib/main_installer.py:4188
+#: lib/main_installer.py:4224
 msgid "No target disk selected."
 msgstr "Tidak ada disk target yang dipilih."
 
-#: lib/main_installer.py:4197 lib/native_deploy.py:696
+#: lib/main_installer.py:4233 lib/native_deploy.py:728
 msgid "No validated manual partitioning plan selected."
 msgstr "Tidak ada rencana partisi manual yang tervalidasi dipilih."
 
-#: lib/main_installer.py:4199
+#: lib/main_installer.py:4235
 msgid "Manual partition layout changed; return to Partitioning and review it again."
 msgstr "Tata letak partisi manual telah berubah; kembali ke Partisi dan tinjau kembali."
 
-#: lib/main_installer.py:4246
+#: lib/main_installer.py:4282
 #, python-brace-format
 msgid "Incoming remote access: {services}"
 msgstr "Akses jarak jauh masuk: {services}"
 
-#: lib/main_installer.py:4248
+#: lib/main_installer.py:4284
 msgid "Incoming remote access: disabled"
 msgstr "Akses jarak jauh masuk: dinonaktifkan"
 
-#: lib/main_installer.py:4255
-msgid "Full install: this profile is applied directly to the target system after live-only cleanup and before user creation."
-msgstr "Instalasi penuh: profil ini diterapkan langsung ke sistem target setelah pembersihan khusus live dan sebelum pembuatan pengguna."
-
-#: lib/main_installer.py:4265
+#: lib/main_installer.py:4299
 msgid "Live install: this image advertises full support for the selected profile."
 msgstr "Instalasi live: image ini mendukung penuh profil yang dipilih."
 
-#: lib/main_installer.py:4268
+#: lib/main_installer.py:4302
 msgid "Live install: this image has no capabilities registry, so enforcement cannot be proven. The installer will still write forward-compatible profile keys."
 msgstr "Instalasi live: image ini tidak memiliki registry kapabilitas, sehingga penegakan tidak dapat dipastikan. Installer tetap akan menulis kunci profil yang kompatibel ke depan."
 
-#: lib/main_installer.py:4272
+#: lib/main_installer.py:4306
 msgid "Live install: this image is missing some advertised profile capabilities. The installer will still write the profile keys, but enforcement may be partial."
 msgstr "Instalasi live: image ini kehilangan beberapa kapabilitas profil yang diiklankan. Installer tetap akan menulis kunci profil, namun penegakan mungkin hanya sebagian."
 
-#: lib/main_installer.py:4280
+#: lib/main_installer.py:4314
 #, python-brace-format
 msgid "Missing: {items}"
 msgstr "Tidak ditemukan: {items}"
 
-#: lib/main_installer.py:4286
+#: lib/main_installer.py:4320
 msgid "Review Changes"
 msgstr "Tinjau Perubahan"
 
-#: lib/main_installer.py:4287
+#: lib/main_installer.py:4321
 msgid "Nothing has been written yet. Confirm the exact disk actions below before continuing."
 msgstr "Belum ada yang ditulis. Konfirmasi tindakan disk di bawah ini sebelum melanjutkan."
 
-#: lib/main_installer.py:4319
+#: lib/main_installer.py:4353
 msgid "Go back to Partitioning and choose a different disk or installation method."
 msgstr "Kembali ke Partisi dan pilih disk atau metode instalasi yang berbeda."
 
-#: lib/main_installer.py:4339
+#: lib/main_installer.py:4373
 msgid "WARNING: This action is irreversible!"
 msgstr "PERINGATAN: Tindakan ini tidak dapat dibatalkan!"
 
-#: lib/main_installer.py:4347
+#: lib/main_installer.py:4381 lib/main_installer.py:4383
 msgid "I understand that all data on this disk will be permanently erased."
 msgstr "Saya mengerti bahwa semua data di disk ini akan dihapus secara permanen."
 
-#: lib/main_installer.py:4384
+#: lib/main_installer.py:4420
 msgid "UEFI/GPT layout (no BIOS bootloader)"
 msgstr "Tata letak UEFI/GPT (tanpa bootloader BIOS)"
 
-#: lib/main_installer.py:4386
+#: lib/main_installer.py:4422
 msgid "UEFI/MBR layout (no BIOS bootloader)"
 msgstr "Tata letak UEFI/MBR (tanpa bootloader BIOS)"
 
-#: lib/main_installer.py:4388
+#: lib/main_installer.py:4424
 msgid "BIOS/MBR layout with bootloader"
 msgstr "Tata letak BIOS/MBR dengan bootloader"
 
-#: lib/main_installer.py:4393
+#: lib/main_installer.py:4429
 msgid "Target disk:"
 msgstr "Disk target:"
 
-#: lib/main_installer.py:4398
+#: lib/main_installer.py:4434
 msgid "Target"
 msgstr "Target"
 
-#: lib/main_installer.py:4407
+#: lib/main_installer.py:4443
 msgid "Existing partition will be resized"
 msgstr "Partisi yang ada akan di-resize"
 
-#: lib/main_installer.py:4409
+#: lib/main_installer.py:4445
 msgid "Back up important files and connect reliable power. Interruption during filesystem resize can cause data loss."
 msgstr "Cadangkan file penting dan sambungkan ke sumber daya listrik yang andal. Gangguan saat proses resize filesystem dapat menyebabkan kehilangan data."
 
-#: lib/main_installer.py:4416
+#: lib/main_installer.py:4453 lib/main_installer.py:4454
 msgid "I understand that the existing partition will be modified."
 msgstr "Saya mengerti bahwa partisi yang ada akan dimodifikasi."
 
-#: lib/main_installer.py:4438
+#: lib/main_installer.py:4476
 msgid "Partition plan"
 msgstr "Rencana partisi"
 
-#: lib/main_installer.py:4442
+#: lib/main_installer.py:4480
 msgid "Live system"
 msgstr "Sistem live"
 
-#: lib/main_installer.py:4442
+#: lib/main_installer.py:4480
 msgid "Full (native) installation"
 msgstr "Instalasi penuh (native)"
 
-#: lib/main_installer.py:4444
+#: lib/main_installer.py:4482
 msgid "Installation mode"
 msgstr "Mode instalasi"
 
-#: lib/main_installer.py:4450
+#: lib/main_installer.py:4488
 #, python-brace-format
 msgid "Expandable persistent changes (DynFileFS): {size} MiB"
 msgstr "Perubahan persisten yang dapat diperluas (DynFileFS): {size} MiB"
 
-#: lib/main_installer.py:4451
+#: lib/main_installer.py:4489
 #, python-brace-format
 msgid "Fixed-size persistent changes (Raw image): {size} MiB"
 msgstr "Perubahan persisten dengan ukuran tetap (Raw image): {size} MiB"
 
-#: lib/main_installer.py:4452
+#: lib/main_installer.py:4490
 #, python-brace-format
 msgid ""
 "Encrypted persistent changes (LUKS): {size} MiB\n"
@@ -1719,186 +1729,186 @@ msgstr ""
 "Perubahan persisten terenkripsi (LUKS): {size} MiB\n"
 "changes.luks akan dibuat dan dibuka oleh initrd saat boot pertama."
 
-#: lib/main_installer.py:4456
+#: lib/main_installer.py:4494
 msgid "Session storage"
 msgstr "Penyimpanan sesi"
 
-#: lib/main_installer.py:4458
+#: lib/main_installer.py:4496
 msgid "Security profile"
 msgstr "profil keamanan"
 
-#: lib/main_installer.py:4466
+#: lib/main_installer.py:4504
 msgid "Root account will be locked."
 msgstr "Akun root akan dikunci."
 
-#: lib/main_installer.py:4468
+#: lib/main_installer.py:4506
 #, python-brace-format
 msgid "Network: static IPv4 on {interface} ({address}/{prefix})"
 msgstr "Jaringan: IPv4 statis pada {interface} ({address}/{prefix})"
 
-#: lib/main_installer.py:4474
+#: lib/main_installer.py:4512
 msgid "Network: automatic (DHCP)"
 msgstr "Jaringan: otomatis (DHCP)"
 
-#: lib/main_installer.py:4476
+#: lib/main_installer.py:4514
 #, python-brace-format
 msgid "user {user}, host {host}, locale {locale}, timezone {timezone}, keyboard {keyboard}"
 msgstr "pengguna {user}, host {host}, lokal {locale}, zona waktu {timezone}, keyboard {keyboard}"
 
-#: lib/main_installer.py:4477 lib/main_installer.py:4478
-#: lib/main_installer.py:4479 lib/main_installer.py:4480
-#: lib/main_installer.py:4481
+#: lib/main_installer.py:4515 lib/main_installer.py:4516
+#: lib/main_installer.py:4517 lib/main_installer.py:4518
+#: lib/main_installer.py:4519
 msgid "unchanged"
 msgstr "tidak berubah"
 
-#: lib/main_installer.py:4492
+#: lib/main_installer.py:4530
 #, python-brace-format
 msgid "{selected} of {total}"
 msgstr "{selected} dari {total}"
 
-#: lib/main_installer.py:4494
+#: lib/main_installer.py:4532
 msgid "Selected modules"
 msgstr "Modul yang dipilih"
 
-#: lib/main_installer.py:4510
+#: lib/main_installer.py:4548
 #, python-brace-format
 msgid "Some packages needed for a standard native bootloader are missing: {packages}"
 msgstr "Beberapa paket yang diperlukan untuk bootloader native standar tidak ditemukan: {packages}"
 
-#: lib/main_installer.py:4516
+#: lib/main_installer.py:4554
 msgid "Download missing packages now (recommended)"
 msgstr "Unduh paket yang hilang sekarang (disarankan)"
 
-#: lib/main_installer.py:4522
+#: lib/main_installer.py:4560
 msgid "Recommended for most users. The installer will download the missing boot packages now, so the installed system starts like a normal Linux system and future kernel updates are handled normally. This requires internet access."
 msgstr "Direkomendasikan untuk sebagian besar pengguna. Installer akan mengunduh paket boot yang hilang sekarang, sehingga sistem yang terpasang dapat berjalan seperti sistem Linux normal dan pembaruan kernel di masa depan dapat dilakukan secara normal. Ini memerlukan akses internet."
 
-#: lib/main_installer.py:4526
+#: lib/main_installer.py:4564
 msgid "Use only if you must install without internet. The installer will use a basic fallback setup where possible. The installed system may have limited bootloader and kernel update support. If you are not sure, keep this checked."
 msgstr "Gunakan hanya jika Anda harus menginstal tanpa internet. Installer akan menggunakan pengaturan fallback dasar jika memungkinkan. Sistem yang terpasang mungkin memiliki dukungan bootloader dan pembaruan kernel yang terbatas. Jika Anda tidak yakin, biarkan opsi ini tetap dicentang."
 
-#: lib/main_installer.py:4534
+#: lib/main_installer.py:4572
 msgid "apt-get is not available"
 msgstr "apt-get tidak tersedia"
 
-#: lib/main_installer.py:4536
+#: lib/main_installer.py:4574
 msgid "internet connection is not available"
 msgstr "koneksi internet tidak tersedia"
 
-#: lib/main_installer.py:4539
+#: lib/main_installer.py:4577
 #, python-brace-format
 msgid "not enough free space in APT cache ({free} MiB available, {need} MiB required)"
 msgstr "ruang kosong di cache APT tidak cukup ({free} MiB tersedia, {need} MiB dibutuhkan)"
 
-#: lib/main_installer.py:4544
+#: lib/main_installer.py:4582
 msgid "Cannot download yet: "
 msgstr "Belum dapat mengunduh: "
 
-#: lib/main_installer.py:4558
+#: lib/main_installer.py:4596
 msgid "This installation cannot use the offline fallback bootloader."
 msgstr "Instalasi ini tidak dapat menggunakan bootloader offline fallback."
 
-#: lib/main_installer.py:4559
+#: lib/main_installer.py:4597
 msgid "Enable package download and connect to the internet before modifying the disk."
 msgstr "Aktifkan unduhan paket dan sambungkan ke internet sebelum memodifikasi disk."
 
-#: lib/main_installer.py:4569
+#: lib/main_installer.py:4607
 msgid "Cannot continue while package download is selected."
 msgstr "Tidak dapat melanjutkan saat unduhan paket dipilih."
 
-#: lib/main_installer.py:4571
+#: lib/main_installer.py:4609
 msgid "Fix the download requirements above, or uncheck package download to continue without it."
 msgstr "Perbaiki kebutuhan unduhan di atas, atau hapus centang unduhan paket untuk melanjutkan tanpa itu."
 
-#: lib/main_installer.py:4577
+#: lib/main_installer.py:4615
 msgid "Required packages"
 msgstr "Paket yang diperlukan"
 
-#: lib/main_installer.py:4583
+#: lib/main_installer.py:4621
 msgid "I understand the listed manual actions can permanently destroy data."
 msgstr "Saya mengerti tindakan manual yang terdaftar dapat menghancurkan data secara permanen."
 
-#: lib/main_installer.py:4590
+#: lib/main_installer.py:4628
 msgid "Erase disk and install"
 msgstr "Hapus disk dan instal"
 
-#: lib/main_installer.py:4594
+#: lib/main_installer.py:4632
 msgid "Resize and install"
 msgstr "Resize dan instal"
 
-#: lib/main_installer.py:4598
+#: lib/main_installer.py:4636
 msgid "Apply manual plan"
 msgstr "Terapkan rencana manual"
 
-#: lib/main_installer.py:4609
+#: lib/main_installer.py:4647
 msgid "Installing"
 msgstr "Menginstal"
 
-#: lib/main_installer.py:4609
+#: lib/main_installer.py:4647
 msgid "Keep this window open until installation finishes."
 msgstr "Biarkan jendela ini tetap terbuka sampai instalasi selesai."
 
-#: lib/main_installer.py:4612
+#: lib/main_installer.py:4650
 msgid "Preparing..."
 msgstr "Menyiapkan..."
 
-#: lib/main_installer.py:4644
+#: lib/main_installer.py:4673
 msgid "Show Details"
 msgstr "Tampilkan Detail"
 
-#: lib/main_installer.py:4677
+#: lib/main_installer.py:4715
 msgid "Cancel requested by user."
 msgstr "Permintaan pembatalan oleh pengguna."
 
-#: lib/main_installer.py:4753
+#: lib/main_installer.py:4792
 msgid "Installation was canceled. You can go back and try again."
 msgstr "Instalasi dibatalkan. Anda dapat kembali dan mencoba lagi."
 
-#: lib/main_installer.py:4762
+#: lib/main_installer.py:4801
 msgid "Installation failed. Check the log above for details."
 msgstr "Instalasi gagal. Periksa log di atas untuk detailnya."
 
-#: lib/main_installer.py:4769
+#: lib/main_installer.py:4808
 msgid "Installation complete. You can keep using this live session, or restart now to boot from the installed system."
 msgstr "Instalasi selesai. Anda dapat terus menggunakan sesi live ini, atau mulai ulang sekarang untuk boot dari sistem yang telah diinstal."
 
-#: lib/main_installer.py:4786
+#: lib/main_installer.py:4825
 msgid "Complete"
 msgstr "Selesai"
 
-#: lib/main_installer.py:4786
+#: lib/main_installer.py:4825
 msgid "Failed"
 msgstr "Gagal"
 
-#: lib/main_installer.py:4804
+#: lib/main_installer.py:4843
 msgid "Close"
 msgstr "Tutup"
 
-#: lib/main_installer.py:4809
+#: lib/main_installer.py:4848
 msgid "Restart Now"
 msgstr "Mulai Ulang Sekarang"
 
-#: lib/main_installer.py:4814
+#: lib/main_installer.py:4853
 msgid "Back to Summary"
 msgstr "Kembali ke Ringkasan"
 
-#: lib/main_installer.py:4840
+#: lib/main_installer.py:4879
 msgid "Restart now?"
 msgstr "Mulai ulang sekarang?"
 
-#: lib/main_installer.py:4842
+#: lib/main_installer.py:4881
 msgid "Save any open work before restarting."
 msgstr "Simpan pekerjaan yang sedang dibuka sebelum memulai ulang."
 
-#: lib/main_installer.py:4844
+#: lib/main_installer.py:4883
 msgid "Restart"
 msgstr "Mulai Ulang"
 
-#: lib/main_installer.py:4866
+#: lib/main_installer.py:4907
 msgid "Root Privileges Required"
 msgstr "Hak Akses Root Diperlukan"
 
-#: lib/main_installer.py:4868
+#: lib/main_installer.py:4909
 msgid "This installer must be run as root."
 msgstr "Installer ini harus dijalankan sebagai root."
 
@@ -1933,259 +1943,259 @@ msgstr "Menolak untuk menghapus target yang masih ter-mount: {path}"
 msgid "Target device still has mounted filesystems: {mounts}"
 msgstr "Perangkat target masih memiliki filesystem yang ter-mount: {mounts}"
 
-#: lib/native_deploy.py:138
+#: lib/native_deploy.py:167
 msgid "Preparing file copy..."
 msgstr "Menyiapkan penyalinan file..."
 
-#: lib/native_deploy.py:171
+#: lib/native_deploy.py:200
 msgid "Failed to start native file copy."
 msgstr "Gagal memulai penyalinan file native."
 
-#: lib/native_deploy.py:191
+#: lib/native_deploy.py:220
 #, python-brace-format
 msgid "Copying system files... {percent}% ({copied} MiB, {rate:.1f} MiB/s)"
 msgstr "Menyalin file sistem... {percent}% ({copied} MiB, {rate:.1f} MiB/detik)"
 
-#: lib/native_deploy.py:209
+#: lib/native_deploy.py:238
 #, python-brace-format
 msgid "System files copied. 100% ({copied} MiB in {seconds:.1f}s)."
 msgstr "File sistem berhasil disalin. 100% ({copied} MiB dalam {seconds:.1f} detik)."
 
-#: lib/native_deploy.py:233
+#: lib/native_deploy.py:262
 msgid "Patching sysvinit quiet logger for native boot..."
 msgstr "Melakukan patch sysvinit quiet logger untuk native boot..."
 
-#: lib/native_deploy.py:270
+#: lib/native_deploy.py:299
 msgid "Writing /etc/fstab..."
 msgstr "Menulis /etc/fstab..."
 
-#: lib/native_deploy.py:324
+#: lib/native_deploy.py:356
 msgid "No kernel modules found in installed system; native boot cannot be configured."
 msgstr "Tidak ditemukan modul kernel di sistem yang diinstal; native boot tidak dapat dikonfigurasi."
 
-#: lib/native_deploy.py:338
+#: lib/native_deploy.py:370
 msgid "No live kernel image found for native install."
 msgstr "Tidak ditemukan image kernel live untuk instalasi native."
 
-#: lib/native_deploy.py:339
+#: lib/native_deploy.py:371
 #, python-brace-format
 msgid "Copying kernel {kernel}..."
 msgstr "Menyalin kernel {kernel}..."
 
-#: lib/native_deploy.py:354
+#: lib/native_deploy.py:386
 msgid "No supported initramfs generator is available in the installed system."
 msgstr "Tidak ada generator initramfs yang didukung di sistem yang terinstal."
 
-#: lib/native_deploy.py:366
+#: lib/native_deploy.py:398
 msgid "SYSLINUX boot files not found on live media."
 msgstr "File boot SYSLINUX tidak ditemukan pada media live."
 
-#: lib/native_deploy.py:371
+#: lib/native_deploy.py:403
 msgid "Would install EXTLINUX native bootloader."
 msgstr "Akan menginstal bootloader native EXTLINUX."
 
-#: lib/native_deploy.py:396
+#: lib/native_deploy.py:428
 #, python-brace-format
 msgid "SYSLINUX MBR image not found: {path}"
 msgstr "Image SYSLINUX MBR tidak ditemukan: {path}"
 
-#: lib/native_deploy.py:433
+#: lib/native_deploy.py:465
 #, python-brace-format
 msgid "Service action skipped for legacy target without service tools: {action} {name}"
 msgstr "Aksi layanan dilewati untuk target legacy tanpa alat layanan: {action} {name}"
 
-#: lib/native_deploy.py:509
+#: lib/native_deploy.py:541
 msgid "Locale generation failed for the requested locale configuration."
 msgstr "Pembuatan locale gagal untuk konfigurasi locale yang diminta."
 
-#: lib/native_deploy.py:516
+#: lib/native_deploy.py:548
 msgid "Warning: update-locale failed; /etc/default/locale was written directly."
 msgstr "Peringatan: update-locale gagal; /etc/default/locale ditulis secara langsung."
 
-#: lib/native_deploy.py:541
+#: lib/native_deploy.py:573
 msgid "Native UEFI GRUB installation is currently implemented only for x86_64."
 msgstr "Instalasi GRUB UEFI native saat ini hanya tersedia untuk x86_64."
 
-#: lib/native_deploy.py:562
+#: lib/native_deploy.py:594
 msgid "GRUB configuration generator not found in installed system."
 msgstr "Generator konfigurasi GRUB tidak ditemukan di sistem yang diinstal."
 
-#: lib/native_deploy.py:566
+#: lib/native_deploy.py:598
 msgid "os-prober failed; refusing to create an incomplete multiboot configuration."
 msgstr "os-prober gagal; menolak membuat konfigurasi multiboot yang tidak lengkap."
 
-#: lib/native_deploy.py:568
+#: lib/native_deploy.py:600
 msgid "Detected other installed systems:"
 msgstr "Sistem lain terdeteksi:"
 
-#: lib/native_deploy.py:574
+#: lib/native_deploy.py:606
 msgid "GRUB configuration was not created."
 msgstr "Konfigurasi GRUB tidak dibuat."
 
-#: lib/native_deploy.py:580
+#: lib/native_deploy.py:612
 msgid "Installing native bootloader..."
 msgstr "Menginstal bootloader native..."
 
-#: lib/native_deploy.py:590
+#: lib/native_deploy.py:622
 msgid "Native UEFI install requires GRUB EFI packages. Enable package download or install grub-efi-amd64 and efibootmgr."
 msgstr "Instalasi UEFI native memerlukan paket GRUB EFI. Aktifkan unduhan paket atau instal grub-efi-amd64 dan efibootmgr."
 
-#: lib/native_deploy.py:594
+#: lib/native_deploy.py:626
 msgid "Native installation requires GRUB packages in the installed target. Enable package download before modifying the disk."
 msgstr "Instalasi native memerlukan paket GRUB di target yang diinstal. Aktifkan pengunduhan paket sebelum memodifikasi disk."
 
-#: lib/native_deploy.py:597
+#: lib/native_deploy.py:629
 msgid "GRUB is not available; using offline EXTLINUX fallback."
 msgstr "GRUB tidak tersedia; menggunakan fallback EXTLINUX offline."
 
-#: lib/native_deploy.py:622
+#: lib/native_deploy.py:654
 #, python-brace-format
 msgid "Manual native deployment requires unavailable tools before disk changes: {tools}"
 msgstr "Deploy native manual memerlukan tools yang tidak tersedia sebelum perubahan disk: {tools}"
 
-#: lib/native_deploy.py:628
+#: lib/native_deploy.py:660
 #, python-brace-format
 msgid "APT cache prepared: {count} packages, {size:.1f} MiB. Required target packages: {required}"
 msgstr "Cache APT disiapkan: {count} paket, {size:.1f} MiB. Paket target yang dibutuhkan: {required}"
 
-#: lib/native_deploy.py:653
+#: lib/native_deploy.py:685
 msgid "This manual installation cannot prove its target boot packages without package download before the disk can be modified."
 msgstr "Instalasi manual ini tidak dapat memastikan paket boot target tanpa pengunduhan paket sebelum disk dapat dimodifikasi."
 
-#: lib/native_deploy.py:657
+#: lib/native_deploy.py:689
 msgid "Required manual-install boot packages cannot be downloaded before disk modification."
 msgstr "Paket boot manual-install yang dibutuhkan tidak dapat diunduh sebelum modifikasi disk."
 
-#: lib/native_deploy.py:664
+#: lib/native_deploy.py:696
 #, python-brace-format
 msgid "Required manual-install boot packages could not be staged before disk modification: {error}"
 msgstr "Paket boot manual-install yang dibutuhkan tidak dapat disiapkan sebelum modifikasi disk: {error}"
 
-#: lib/native_deploy.py:732 lib/native_deploy.py:1258
+#: lib/native_deploy.py:764 lib/native_deploy.py:1293
 msgid "Configuring installed system..."
 msgstr "Mengonfigurasi sistem yang terpasang..."
 
-#: lib/native_deploy.py:873
+#: lib/native_deploy.py:905
 #, python-brace-format
 msgid "Removing live-only artifact: {path}"
 msgstr "Menghapus artefak khusus live: {path}"
 
-#: lib/native_deploy.py:899
+#: lib/native_deploy.py:934
 #, python-brace-format
 msgid "Removing live-only packages: {packages}"
 msgstr "Menghapus paket khusus live: {packages}"
 
-#: lib/native_deploy.py:917
+#: lib/native_deploy.py:952
 msgid "Warning: apt-get not found in target; falling back to dpkg cleanup."
 msgstr "Peringatan: apt-get tidak ditemukan di target; menggunakan dpkg cleanup sebagai cadangan."
 
-#: lib/native_deploy.py:919
+#: lib/native_deploy.py:954
 msgid "Warning: apt purge failed; trying forced dpkg remove for live-only packages."
 msgstr "Peringatan: apt purge gagal; mencoba paksa dpkg remove untuk paket hanya-live."
 
-#: lib/native_deploy.py:922
+#: lib/native_deploy.py:957
 msgid "Warning: live-only package removal failed; continuing with artifact cleanup."
 msgstr "Peringatan: penghapusan paket hanya-live gagal; melanjutkan dengan pembersihan artefak."
 
-#: lib/native_deploy.py:924
+#: lib/native_deploy.py:959
 msgid "No live-only packages need removal."
 msgstr "Tidak ada paket khusus live yang perlu dihapus."
 
-#: lib/native_deploy.py:933
+#: lib/native_deploy.py:968
 msgid "Generating SSH host keys..."
 msgstr "Membuat kunci host SSH..."
 
-#: lib/native_deploy.py:944
+#: lib/native_deploy.py:979
 msgid "Generating default SSL snakeoil certificate..."
 msgstr "Membuat sertifikat SSL snakeoil default..."
 
-#: lib/native_deploy.py:951
+#: lib/native_deploy.py:986
 msgid "No additional native packages are required."
 msgstr "Tidak ada paket native tambahan yang diperlukan."
 
-#: lib/native_deploy.py:955
+#: lib/native_deploy.py:990
 #, python-brace-format
 msgid "Skipping online package installation; offline boot fallback will be used. Missing packages: {packages}"
 msgstr "Melewati instalasi paket online; fallback boot offline akan digunakan. Paket yang hilang: {packages}"
 
-#: lib/native_deploy.py:972
+#: lib/native_deploy.py:1007
 #, python-brace-format
 msgid "Installing packages for standard native system: {packages}"
 msgstr "Menginstal paket untuk sistem native standar: {packages}"
 
-#: lib/native_deploy.py:991
+#: lib/native_deploy.py:1026
 msgid "Repairing copied package state from the staged APT cache..."
 msgstr "Memperbaiki status paket yang disalin dari cache APT yang telah disiapkan..."
 
-#: lib/native_deploy.py:1010
+#: lib/native_deploy.py:1045
 msgid "Keeping preserved kernel package metadata inactive for offline fallback."
 msgstr "Menyimpan metadata paket kernel yang dipertahankan dalam keadaan tidak aktif untuk fallback offline."
 
-#: lib/native_deploy.py:1058
+#: lib/native_deploy.py:1093
 #, python-brace-format
 msgid "Using existing user account: {user}"
 msgstr "Menggunakan akun pengguna yang sudah ada: {user}"
 
-#: lib/native_deploy.py:1061
+#: lib/native_deploy.py:1096
 #, python-brace-format
 msgid "Creating user account: {user}"
 msgstr "Membuat akun pengguna: {user}"
 
-#: lib/native_deploy.py:1092
+#: lib/native_deploy.py:1127
 #, python-brace-format
 msgid "Warning: user-setup reported failure after creating {user}; continuing with that account."
 msgstr "Peringatan: user-setup melaporkan kegagalan setelah membuat {user}; melanjutkan dengan akun tersebut."
 
-#: lib/native_deploy.py:1094
+#: lib/native_deploy.py:1129
 msgid "Warning: user-setup failed; falling back to useradd."
 msgstr "Peringatan: user-setup gagal; menggunakan useradd sebagai cadangan."
 
-#: lib/native_deploy.py:1107
+#: lib/native_deploy.py:1142
 msgid "Setting hostname..."
 msgstr "Mengatur hostname..."
 
-#: lib/native_deploy.py:1111
+#: lib/native_deploy.py:1146
 msgid "Setting locale..."
 msgstr "Mengatur locale..."
 
-#: lib/native_deploy.py:1114
+#: lib/native_deploy.py:1149
 msgid "Setting timezone..."
 msgstr "Mengatur zona waktu..."
 
-#: lib/native_deploy.py:1127
+#: lib/native_deploy.py:1162
 msgid "Setting keyboard layout..."
 msgstr "Mengatur tata letak keyboard..."
 
-#: lib/native_deploy.py:1137
+#: lib/native_deploy.py:1172
 msgid "Configuring static IPv4 network..."
 msgstr "Mengonfigurasi jaringan IPv4 statis..."
 
-#: lib/native_deploy.py:1157
+#: lib/native_deploy.py:1192
 msgid "Root password configured."
 msgstr "Kata sandi root telah dikonfigurasi."
 
-#: lib/native_deploy.py:1160
+#: lib/native_deploy.py:1195
 msgid "Locking root account (no root password set)..."
 msgstr "Mengunci akun root (kata sandi root belum diatur)..."
 
-#: lib/native_deploy.py:1215
+#: lib/native_deploy.py:1250
 msgid "Required boot packages cannot be downloaded. Check the internet connection, APT availability, and free cache space before continuing."
 msgstr "Paket boot yang diperlukan tidak dapat diunduh. Periksa koneksi internet, ketersediaan APT, dan ruang cache yang tersedia sebelum melanjutkan."
 
-#: lib/native_deploy.py:1217
+#: lib/native_deploy.py:1252
 msgid "Downloading required boot packages before modifying the disk..."
 msgstr "Mengunduh paket boot yang diperlukan sebelum memodifikasi disk..."
 
-#: lib/native_deploy.py:1223
+#: lib/native_deploy.py:1258
 #, python-brace-format
 msgid "Required boot packages could not be downloaded before disk modification: {error}"
 msgstr "Paket boot yang diperlukan tidak dapat diunduh sebelum modifikasi disk: {error}"
 
-#: lib/native_deploy.py:1229
+#: lib/native_deploy.py:1264
 msgid "This installation requires GRUB and os-prober before the disk can be modified. Enable package download and connect to the internet, or choose a single BIOS/MBR erase-all installation."
 msgstr "Instalasi ini memerlukan GRUB dan os-prober sebelum disk dapat dimodifikasi. Aktifkan unduhan paket dan sambungkan ke internet, atau pilih instalasi hapus semua BIOS/MBR tunggal."
 
-#: lib/native_deploy.py:1269
+#: lib/native_deploy.py:1304
 #, python-brace-format
 msgid "Applying live module user groups to native user: {groups}"
 msgstr "Menerapkan grup pengguna modul live ke pengguna native: {groups}"
@@ -2463,3 +2473,6 @@ msgstr "Memasang sistem ini secara permanen pada diska Anda"
 #: share/applications/minios-installer.desktop:124
 msgid "install;"
 msgstr "install;"
+
+#~ msgid "Full install: this profile is applied directly to the target system after live-only cleanup and before user creation."
+#~ msgstr "Instalasi penuh: profil ini diterapkan langsung ke sistem target setelah pembersihan khusus live dan sebelum pembuatan pengguna."

@@ -29,7 +29,7 @@ class TestLiveDeploySafety:
             assert source_supports_luks_persistence(str(tmp_path)) is True
 
         assert run.call_count == 2
-        assert {call.args[0][1] for call in run.call_args_list} == {
+        assert {mock_call[0][0][1] for mock_call in run.call_args_list} == {
             str(boot / 'initrfs-a.img'), str(boot / 'initrd-b.img'),
         }
 
@@ -135,7 +135,7 @@ class TestLiveDeploySafety:
         writer_kwargs = writer.call_args[1] if writer.call_args else {}
         assert "LIVE_SECURITY_PROFILE" not in writer_kwargs["extra_entries"]
         assert writer_kwargs["extra_entries"]["LIVE_SUDO_MODE"] == "passwordless"
-        # call_args.kwargs is 3.8+; use [1] for 3.6/3.7 compatibility.
+        # Tuple access works with the Mock implementation shipped on Bionic.
         call_kwargs = exec_plan.call_args[1] if exec_plan.call_args else {}
         assert call_kwargs.get("cancel_cb") is not None
 
