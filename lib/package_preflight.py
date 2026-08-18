@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import shutil
 import socket
 import subprocess
 import tempfile
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Set, Tuple
 
 
 MIN_DOWNLOAD_SPACE_MIB = 512
@@ -133,7 +134,7 @@ def has_initramfs_generator(root: str = "/") -> bool:
 def native_package_requirements(use_efi: bool, filesystem: str, root: str = "/", alongside: bool = False) -> List[str]:
     packages: List[str] = []
     if use_efi:
-        packages.extend(["grub-efi-amd64", "grub-common", "efibootmgr"])
+        packages.extend(["grub-common", "efibootmgr"])
     else:
         packages.extend(["grub-pc", "grub-common"])
 
@@ -168,7 +169,7 @@ def manual_native_package_requirements(use_efi: bool, filesystem: str, alongside
     The target does not exist yet, so host package state cannot establish that
     its copied bundle will contain a bootable GRUB and initramfs toolchain.
     """
-    packages = ["grub-efi-amd64", "grub-common", "efibootmgr"] if use_efi else ["grub-pc", "grub-common"]
+    packages = ["grub-common", "efibootmgr"] if use_efi else ["grub-pc", "grub-common"]
     packages.append("initramfs-tools")
     if filesystem == "btrfs":
         packages.append("btrfs-progs")
@@ -184,6 +185,30 @@ def manual_native_package_requirements(use_efi: bool, filesystem: str, alongside
 def native_requires_standard_bootloader(use_efi: bool, placement: str) -> bool:
     """EFI and preserve-layout installs cannot use the single-system EXTLINUX fallback."""
     return use_efi or placement != "erase_all"
+
+
+def native_kernel_architecture_preflight(
+    userspace_architecture: str,
+    kernel_architecture: str,
+    use_efi: bool,
+    verified_combinations: Iterable[Tuple[str, str]] = (),
+) -> Set[str]:
+    """Return foreign architectures approved for this native installation.
+
+    Mixed-architecture live boot capability is not native-install evidence. A
+    combination must be explicitly supplied only after its registration and
+    boot flow has been verified; no combination is enabled by default.
+    """
+    if userspace_architecture == kernel_architecture:
+        return set()
+    combination = (userspace_architecture, kernel_architecture)
+    if combination not in set(verified_combinations):
+        raise RuntimeError(
+            "Mixed-architecture native installation {} with kernel {} is not verified".format(
+                userspace_architecture, kernel_architecture
+            )
+        )
+    return {kernel_architecture}
 
 
 def prepare_package_cache(packages: Iterable[str]) -> str:

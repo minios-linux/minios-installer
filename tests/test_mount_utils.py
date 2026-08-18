@@ -4,10 +4,11 @@
 Tests for mount_utils module.
 """
 
+import io
 import sys
 import os
 import pytest
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch
 
 # Add lib directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
@@ -32,6 +33,7 @@ class TestMountPartition:
              patch('os.path.isdir', return_value=False), \
              patch('os.makedirs') as mock_makedirs, \
              patch('mount_utils.run_command', return_value='ext4'), \
+             patch('subprocess.run'), \
              patch('subprocess.call', return_value=0) as mock_call:
             
             mount_partition('/dev/sda1', '/mnt/test')
@@ -51,6 +53,7 @@ class TestMountPartition:
              patch('os.path.isdir', return_value=False), \
              patch('os.makedirs'), \
              patch('mount_utils.run_command', return_value='ext4'), \
+             patch('subprocess.run'), \
              patch('subprocess.call', return_value=1):
             
             with pytest.raises(RuntimeError, match="Failed to mount"):
@@ -66,6 +69,7 @@ class TestMountPartition:
              patch('shutil.rmtree') as mock_rmtree, \
              patch('os.makedirs'), \
              patch('mount_utils.run_command', return_value='ext4'), \
+             patch('subprocess.run'), \
              patch('subprocess.call', return_value=0):
             
             mount_partition('/dev/sda1', '/mnt/test')
@@ -143,7 +147,7 @@ class TestGetMountedPartitions:
 /dev/sdb1 /mnt/backup ext4 rw,relatime 0 0
 tmpfs /tmp tmpfs rw,nosuid,nodev 0 0'''
         
-        with patch('builtins.open', mock_open(read_data=proc_mounts)):
+        with patch('builtins.open', side_effect=lambda *_args, **_kwargs: io.StringIO(proc_mounts)):
             mounted = get_mounted_partitions('/dev/sda')
             
             assert len(mounted) == 2
@@ -156,7 +160,7 @@ tmpfs /tmp tmpfs rw,nosuid,nodev 0 0'''
         
         proc_mounts = '''tmpfs /tmp tmpfs rw,nosuid,nodev 0 0'''
         
-        with patch('builtins.open', mock_open(read_data=proc_mounts)):
+        with patch('builtins.open', side_effect=lambda *_args, **_kwargs: io.StringIO(proc_mounts)):
             mounted = get_mounted_partitions('/dev/sda')
             assert len(mounted) == 0
 
@@ -193,14 +197,14 @@ class TestForceUnmountDevice:
         
         proc_mounts = '''/dev/sda1 /mnt/data ext4 rw 0 0'''
         
-        with patch('builtins.open', mock_open(read_data=proc_mounts)), \
+        with patch('builtins.open', side_effect=lambda *_args, **_kwargs: io.StringIO(proc_mounts)), \
              patch('subprocess.run', side_effect=subprocess.SubprocessError("error")):
 
             with pytest.raises(RuntimeError):
                 force_unmount_device('/dev/sda')
 
 
-class TestGetMountedPartitions:
+class TestMountedPartitionMatching:
     def test_matches_own_partitions_not_sibling_disk(self):
         from mount_utils import get_mounted_partitions, _is_device_or_partition_of
 
@@ -216,7 +220,7 @@ class TestGetMountedPartitions:
             "/dev/nvme0n10p1 /mnt/b ext4 rw 0 0\n"
             "/dev/sda1 /mnt/c ext4 rw 0 0\n"
         )
-        with patch("builtins.open", mock_open(read_data=mounts)):
+        with patch("builtins.open", side_effect=lambda *_args, **_kwargs: io.StringIO(mounts)):
             assert get_mounted_partitions("/dev/nvme0n1") == [("/dev/nvme0n1p1", "/mnt/a")]
             assert get_mounted_partitions("/dev/sda") == [("/dev/sda1", "/mnt/c")]
 
@@ -231,6 +235,6 @@ class TestGetMountedPartitions:
                 "/dev/sda1": "/dev/sda1",
             }.get(path, path)
 
-        with patch("builtins.open", mock_open(read_data=mounts)), \
+        with patch("builtins.open", side_effect=lambda *_args, **_kwargs: io.StringIO(mounts)), \
              patch("os.path.realpath", side_effect=fake_realpath):
             assert get_mounted_partitions("/dev/disk/by-id/ata-test") == [("/dev/sda1", "/mnt/c")]

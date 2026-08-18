@@ -144,9 +144,9 @@ def run_live_install(
     layout = scan_disk(state.target_device)
     # Always rebuild from current placement/filesystem; summary plan is preview-only.
     plan = build_plan(layout, state.placement, state.filesystem, install_mode=state.install_mode, swap_size_mib=0, boot_layout=state.boot_layout, alongside_size_mib=state.alongside_size_mib, required_root_mib=state.required_root_mib)
-    if plan.use_efi:
-        # The removable fallback is the only boot path for portable live UEFI media.
-        # Prove it exists before any destructive action and size a reused ESP for it.
+    if any(part.role == "esp" for part in plan.partitions):
+        # Live media keep an EFI payload even when the installer itself booted via BIOS.
+        # Prove it fits the fixed/new or reused ESP before any destructive action.
         efi_bytes = efi_payload_bytes(src)
         plan = build_plan(layout, state.placement, state.filesystem, install_mode=state.install_mode, swap_size_mib=0, boot_layout=state.boot_layout, alongside_size_mib=state.alongside_size_mib, required_root_mib=state.required_root_mib, efi_payload_bytes=efi_bytes)
     state.partition_plan = plan

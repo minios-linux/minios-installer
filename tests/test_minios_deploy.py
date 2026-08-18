@@ -1,11 +1,41 @@
 #!/usr/bin/env python3
 
+import hashlib
+import json
 import os
 import sys
 from unittest.mock import MagicMock, patch
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
+
+
+def write_efi_manifest(source):
+    files = []
+    for name in ('bootx64.efi', 'grubx64.efi', 'bootia32.efi', 'grubia32.efi'):
+        path = source / 'EFI/boot' / name
+        files.append({
+            'path': '/EFI/boot/' + name,
+            'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+        })
+    manifest = {
+        'format': 1,
+        'layout': 'dual-architecture-esp',
+        'architectures': {
+            'x64': {
+                'vendor': 'debian', 'suite': 'trixie', 'grub_version': '2.12',
+                'shim_path': '/EFI/boot/bootx64.efi', 'grub_path': '/EFI/boot/grubx64.efi',
+            },
+            'ia32': {
+                'vendor': 'debian', 'suite': 'bookworm', 'grub_version': '2.06',
+                'shim_path': '/EFI/boot/bootia32.efi', 'grub_path': '/EFI/boot/grubia32.efi',
+            },
+        },
+        'files': files,
+    }
+    manifest_path = source / 'minios/boot/efi-manifest.json'
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
 
 
 class TestMiniOSDeploy:
@@ -367,10 +397,29 @@ class TestMiniOSDeploy:
             )
 
         assert not extlinux.called
-        assert chroot.call_args_list[0][0][1] == ['grub-install', '--target=i386-pc', '--recheck', '/dev/sda']
-        assert chroot.call_args_list[1][0][1] == ['update-grub']
-        assert chroot.call_args_list[2][0][1] == ['grub-script-check', '/boot/grub/grub.cfg']
+        assert chroot.call_args_list[0][0][1] == ['update-grub']
+        assert chroot.call_args_list[1][0][1] == ['grub-script-check', '/boot/grub/grub.cfg']
+        assert chroot.call_args_list[2][0][1] == ['grub-install', '--target=i386-pc', '--recheck', '/dev/sda']
         assert (target / 'etc/default/grub.d/minios-native.cfg').read_text() == 'GRUB_CMDLINE_LINUX="rw"\n'
+
+    def test_native_grub_creates_configuration_directory(self, tmp_path):
+        import native_deploy
+
+        target = tmp_path / 'target'
+        (target / 'usr/sbin').mkdir(parents=True)
+        (target / 'usr/sbin/update-grub').write_text('x', encoding='utf-8')
+
+        def run_chroot(_target, command, *_args, **_kwargs):
+            if command == ['update-grub']:
+                assert (target / 'boot/grub').is_dir()
+                (target / 'boot/grub/grub.cfg').write_text(
+                    'menuentry test {}\n', encoding='utf-8')
+
+        with patch('native_deploy._chroot', side_effect=run_chroot):
+            native_deploy._install_grub_native(
+                str(target), '/dev/sda', False,
+                lambda *_: None, lambda _msg: None, False,
+            )
 
     def test_native_bootloader_falls_back_to_extlinux_on_mbr_without_grub(self, tmp_path):
         import native_deploy
@@ -403,10 +452,409 @@ class TestMiniOSDeploy:
              patch('native_deploy._kernel_version', return_value='test'), \
              patch('native_deploy._copy_native_kernel', return_value='/boot/vmlinuz-test'), \
              patch('native_deploy._generate_native_initramfs', return_value='/boot/initrd.img-test'):
-            with pytest.raises(RuntimeError, match='GRUB EFI packages'):
+            with pytest.raises(RuntimeError, match='verified EFI chain'):
                 native_deploy._install_native_bootloader(
                     str(target), '/dev/sda', '/dev/sda1', True, '/mnt/esp', lambda *_: None, lambda _msg: None
                 )
+
+    def test_native_uefi_publication_preserves_foreign_tree(self, tmp_path):
+        import native_deploy
+
+        source = tmp_path / 'source'
+        (source / 'EFI/boot').mkdir(parents=True)
+        (source / 'EFI/boot/bootx64.efi').write_bytes(b'minios-loader')
+        (source / 'EFI/boot/bootia32.efi').write_bytes(b'minios-loader-ia32')
+        (source / 'EFI/boot/grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'EFI/boot/grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        for architecture in ('i386-efi', 'x86_64-efi'):
+            modules = source / 'minios/boot/grub' / architecture
+            modules.mkdir(parents=True)
+            (modules / 'ext2.mod').write_bytes(b'ext2')
+            (modules / 'grub.cfg').write_text(
+                'search --file --set=root /.disk/info\n'
+                'source /minios/boot/grub/grub.cfg\n', encoding='utf-8')
+        target = tmp_path / 'target'
+        (target / 'boot/efi/EFI/Microsoft/Boot').mkdir(parents=True)
+        (target / 'boot/efi/EFI/Microsoft/Boot/bootmgfw.efi').write_bytes(b'windows-loader')
+        (target / 'boot/efi/EFI/Boot').mkdir(parents=True)
+        windows_fallback = target / 'boot/efi/EFI/Boot/bootx64.efi'
+        windows_fallback.write_bytes(b'windows-fallback')
+        (target / 'boot/efi/EFI/OEM').mkdir(parents=True)
+        (target / 'boot/efi/EFI/OEM/preserve.txt').write_text('keep', encoding='utf-8')
+        (target / 'boot/efi/EFI/OtherLinux').mkdir(parents=True)
+        (target / 'boot/efi/EFI/OtherLinux/grub.cfg').write_text(
+            'other-config', encoding='utf-8')
+        (target / 'usr/sbin').mkdir(parents=True)
+        (target / 'usr/sbin/update-grub').write_text('x', encoding='utf-8')
+        (target / 'boot/grub').mkdir(parents=True)
+        (target / 'boot/grub/grub.cfg').write_text('menuentry test {}\n', encoding='utf-8')
+
+        with patch('native_deploy.get_live_source_mount', return_value=str(source)), \
+             patch('native_deploy._chroot'), \
+             patch('native_deploy._install_native_efi_boot_entry') as boot_entry:
+            native_deploy._install_grub_native(
+                str(target), '/dev/sda', True, lambda *_: None, lambda _msg: None, False,
+                esp_device='/dev/sda1', reuse_esp=True,
+            )
+
+        assert (target / 'boot/efi/EFI/Microsoft/Boot/bootmgfw.efi').read_bytes() == b'windows-loader'
+        assert (target / 'boot/efi/EFI/OEM/preserve.txt').read_text(encoding='utf-8') == 'keep'
+        assert windows_fallback.read_bytes() == b'windows-fallback'
+        assert (target / 'boot/efi/EFI/OtherLinux/grub.cfg').read_text(encoding='utf-8') == 'other-config'
+        assert (target / 'boot/efi/EFI/minios/bootx64.efi').read_bytes() == b'minios-loader'
+        assert not (target / 'boot/efi/EFI/minios/x86_64-efi').exists()
+        assert not (target / 'boot/efi/EFI/debian/x86_64-efi').exists()
+        assert 'configfile $prefix/grub.cfg' in (
+            target / 'boot/efi/EFI/minios/grub.cfg').read_text(encoding='utf-8')
+        assert 'insmod ext2' in (
+            target / 'boot/efi/EFI/minios/grub.cfg').read_text(encoding='utf-8')
+        assert 'configfile $prefix/grub.cfg' in (
+            target / 'boot/efi/EFI/debian/grub.cfg').read_text(encoding='utf-8')
+        boot_entry.assert_called_once()
+
+    def test_native_uefi_empty_existing_esp_is_still_reused_and_registered(self, tmp_path):
+        import native_deploy
+
+        source = tmp_path / 'source'
+        boot = source / 'EFI/boot'
+        boot.mkdir(parents=True)
+        (boot / 'bootx64.efi').write_bytes(b'x64-shim')
+        (boot / 'bootia32.efi').write_bytes(b'ia32-shim')
+        (boot / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (boot / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        target = tmp_path / 'target'
+        (target / 'boot/efi').mkdir(parents=True)
+        (target / 'usr/sbin').mkdir(parents=True)
+        (target / 'usr/sbin/update-grub').write_text('x', encoding='utf-8')
+        (target / 'boot/grub').mkdir(parents=True)
+        (target / 'boot/grub/grub.cfg').write_text('menuentry test {}\n', encoding='utf-8')
+
+        with patch('native_deploy.get_live_source_mount', return_value=str(source)), \
+             patch('native_deploy._chroot'), \
+             patch('native_deploy._install_native_efi_boot_entry') as boot_entry:
+            native_deploy._install_grub_native(
+                str(target), '/dev/sda', True, lambda *_: None, lambda _msg: None, False,
+                esp_device='/dev/sda1', reuse_esp=True,
+            )
+
+        boot_entry.assert_called_once()
+        assert (target / 'boot/efi/EFI/minios/bootx64.efi').read_bytes() == b'x64-shim'
+        assert not (target / 'boot/efi/EFI/boot/bootx64.efi').exists()
+
+    def test_native_uefi_empty_reused_esp_rolls_back_created_efi_directory(self, tmp_path):
+        import native_deploy
+        import pytest
+
+        source = tmp_path / 'source/EFI/boot'
+        source.mkdir(parents=True)
+        (source / 'bootx64.efi').write_bytes(b'x64-shim')
+        (source / 'bootia32.efi').write_bytes(b'ia32-shim')
+        (source / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        target = tmp_path / 'target/boot/efi/EFI'
+        target.parent.mkdir(parents=True)
+
+        def fail_registration():
+            raise RuntimeError('registration failed')
+
+        with pytest.raises(RuntimeError, match='registration failed'):
+            native_deploy._publish_native_efi(
+                str(source.parent), str(target), 'configfile $prefix/grub.cfg\n',
+                fail_registration, reuse_esp=True,
+            )
+
+        assert not target.exists()
+
+    def test_native_uefi_publication_restores_original_on_replace_failure(self, tmp_path):
+        import native_deploy
+        import pytest
+
+        source = tmp_path / 'source/EFI/boot'
+        source.mkdir(parents=True)
+        (source / 'bootx64.efi').write_bytes(b'minios-loader')
+        (source / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        target = tmp_path / 'target/EFI'
+        (target / 'Microsoft/Boot').mkdir(parents=True)
+        original = target / 'Microsoft/Boot/bootmgfw.efi'
+        original.write_bytes(b'windows-loader')
+        (target / 'minios').mkdir()
+        original_minios = target / 'minios/grub.cfg'
+        original_minios.write_text('old-minios', encoding='utf-8')
+        real_replace = os.replace
+        calls = []
+
+        def fail_publication(source_path, target_path):
+            calls.append((source_path, target_path))
+            if len(calls) == 2:
+                raise OSError('injected EFI publication failure')
+            return real_replace(source_path, target_path)
+
+        with patch('native_deploy.os.replace', side_effect=fail_publication):
+            with pytest.raises(OSError, match='injected EFI publication failure'):
+                native_deploy._publish_native_efi(
+                    str(source.parent), str(target), 'configfile $prefix/grub.cfg\n', lambda: None,
+                    reuse_esp=True,
+                )
+
+        assert original.read_bytes() == b'windows-loader'
+        assert original_minios.read_text(encoding='utf-8') == 'old-minios'
+        assert len(calls) == 3
+
+    def test_native_uefi_publication_keeps_backup_when_restore_fails(self, tmp_path):
+        import native_deploy
+        import pytest
+
+        source = tmp_path / 'source/EFI/boot'
+        source.mkdir(parents=True)
+        (source / 'bootx64.efi').write_bytes(b'minios-loader')
+        (source / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        target = tmp_path / 'target/EFI'
+        (target / 'minios').mkdir(parents=True)
+        (target / 'minios/grub.cfg').write_text('old-minios', encoding='utf-8')
+        staged = tmp_path / 'staged'
+        staged.mkdir()
+        real_replace = os.replace
+        calls = []
+
+        def fail_publication_and_restore(source_path, target_path):
+            calls.append((source_path, target_path))
+            if len(calls) in (2, 3):
+                raise OSError('injected replace failure')
+            return real_replace(source_path, target_path)
+
+        with patch('native_deploy.tempfile.mkdtemp', return_value=str(staged)), \
+             patch('native_deploy.os.replace', side_effect=fail_publication_and_restore):
+            with pytest.raises(RuntimeError, match='original EFI tree remains'):
+                native_deploy._publish_native_efi(
+                    str(source.parent), str(target), 'configfile $prefix/grub.cfg\n', lambda: None,
+                    reuse_esp=True,
+                )
+
+        assert (staged / 'EFI.original/minios/grub.cfg').read_text(encoding='utf-8') == 'old-minios'
+
+    def test_native_uefi_publication_rejects_foreign_vendor_config(self, tmp_path):
+        import native_deploy
+        import pytest
+
+        source = tmp_path / 'source/EFI/boot'
+        source.mkdir(parents=True)
+        (source / 'bootx64.efi').write_bytes(b'minios-loader')
+        (source / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        target = tmp_path / 'target/EFI'
+        (target / 'debian').mkdir(parents=True)
+        foreign = target / 'debian/grub.cfg'
+        foreign.write_text('foreign-config', encoding='utf-8')
+
+        with pytest.raises(RuntimeError, match='conflicting debian'):
+            native_deploy._publish_native_efi(
+                str(source.parent), str(target), 'configfile $prefix/grub.cfg\n', lambda: None,
+                reuse_esp=True,
+            )
+
+        assert foreign.read_text(encoding='utf-8') == 'foreign-config'
+        assert not (target / 'minios').exists()
+
+    def test_native_uefi_publication_rejects_source_symlink(self, tmp_path):
+        import native_deploy
+        import pytest
+
+        source = tmp_path / 'source/EFI/boot'
+        source.mkdir(parents=True)
+        outside = tmp_path / 'outside'
+        outside.write_text('outside', encoding='utf-8')
+        os.symlink(str(outside), str(source / 'bootx64.efi'))
+        (source / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        target = tmp_path / 'target/EFI'
+
+        with pytest.raises(RuntimeError, match='unsafe file'):
+            native_deploy._publish_native_efi(
+                str(source.parent), str(target), 'configfile $prefix/grub.cfg\n'
+            )
+
+        assert outside.read_text(encoding='utf-8') == 'outside'
+
+    def test_native_uefi_boot_entry_uses_target_partition_and_minios_loader(self):
+        import native_deploy
+
+        before = MagicMock(returncode=0, stdout='Boot0001* Windows Boot Manager\n')
+        created = MagicMock(returncode=0, stdout='')
+        after = MagicMock(
+            returncode=0,
+            stdout=(
+                'BootOrder: 0002,0001\n'
+                'Boot0001* Windows Boot Manager\n'
+                'Boot0002* MiniOS HD(1,GPT,esp-partuuid,0x800,0x1000)/File(\\EFI\\minios\\bootx64.efi)\n'
+            ),
+        )
+        with patch('native_deploy._chroot_capture', side_effect=[before, created, after]) as capture, \
+             patch('native_deploy._efi_loader_name', return_value='bootx64.efi'), \
+             patch('native_deploy.subprocess.check_output', return_value='esp-partuuid\n'), \
+             patch('native_deploy.subprocess.run', return_value=MagicMock(
+                  returncode=0, stdout='sda 1\n')):
+            native_deploy._install_native_efi_boot_entry(
+                '/target', '/dev/sda', '/dev/sda1', lambda _message: None
+            )
+
+        assert capture.call_args_list[1][0][1] == [
+            'efibootmgr', '--create', '--disk', '/dev/sda', '--part', '1',
+            '--label', 'MiniOS', '--loader', '\\EFI\\minios\\bootx64.efi',
+        ]
+
+    def test_native_uefi_boot_entry_rejects_unrelated_new_entry_without_deleting_it(self):
+        import native_deploy
+        import pytest
+
+        before = MagicMock(returncode=0, stdout='BootOrder: 0001\nBoot0001* Windows Boot Manager\n')
+        created = MagicMock(returncode=0, stdout='Boot0007* OtherOS\n')
+        after = MagicMock(
+            returncode=0,
+            stdout=(
+                'BootOrder: 0007,0001\n'
+                'Boot0001* Windows Boot Manager\n'
+                'Boot0007* OtherOS HD(1,GPT,other-partuuid,0x800,0x1000)/File(\\EFI\\other\\wrong.efi)\n'
+            ),
+        )
+        with patch('native_deploy._chroot_capture', side_effect=[before, created, after]), \
+             patch('native_deploy._efi_loader_name', return_value='bootx64.efi'), \
+             patch('native_deploy.subprocess.check_output', return_value='esp-partuuid\n'), \
+             patch('native_deploy.subprocess.run', return_value=MagicMock(returncode=0, stdout='sda 1\n')), \
+             patch('native_deploy._chroot') as cleanup:
+            with pytest.raises(RuntimeError, match='could not be verified'):
+                native_deploy._install_native_efi_boot_entry(
+                    '/target', '/dev/sda', '/dev/sda1', lambda _message: None
+                )
+        assert not cleanup.called
+
+    def test_reused_uefi_preflight_requires_writable_firmware_variables(self):
+        import native_deploy
+        import pytest
+
+        plan = MagicMock(use_efi=True, reuse_esp=True)
+        with patch('native_deploy.os.path.isdir', return_value=False):
+            with pytest.raises(RuntimeError, match='writable UEFI firmware variables'):
+                native_deploy._preflight_reused_efi_variables(plan)
+
+    def test_reused_uefi_preflight_rejects_unmounted_efivars_directory(self):
+        import native_deploy
+        import pytest
+
+        plan = MagicMock(use_efi=True, reuse_esp=True)
+        with patch('native_deploy.os.path.isdir', return_value=True), \
+             patch('native_deploy.os.path.ismount', return_value=False), \
+             patch('native_deploy.os.access', return_value=True):
+            with pytest.raises(RuntimeError, match='writable UEFI firmware variables'):
+                native_deploy._preflight_reused_efi_variables(plan)
+
+    def test_reused_uefi_payload_preflight_rejects_vendor_conflict(self, tmp_path):
+        import native_deploy
+        import pytest
+        import subprocess
+
+        source = tmp_path / 'source/EFI/boot'
+        source.mkdir(parents=True)
+        (source / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        mounted = tmp_path / 'mounted'
+        (mounted / 'EFI/debian').mkdir(parents=True)
+        (mounted / 'EFI/debian/grub.cfg').write_text(
+            'foreign-config', encoding='utf-8')
+        plan = MagicMock(use_efi=True, reuse_esp=True, esp_path='/dev/sda1')
+
+        with patch('native_deploy.get_live_source_mount', return_value=str(source.parent.parent)), \
+             patch('native_deploy.tempfile.mkdtemp', return_value=str(mounted)), \
+             patch('native_deploy.subprocess.run', return_value=subprocess.CompletedProcess([], 0)), \
+             patch('native_deploy.shutil.rmtree'):
+            with pytest.raises(RuntimeError, match='conflicting debian'):
+                native_deploy._preflight_reused_efi_payload(plan)
+
+    def test_reused_uefi_payload_preflight_rejects_transaction_space_shortage(self, tmp_path):
+        import native_deploy
+        import pytest
+        import subprocess
+
+        source = tmp_path / 'source/EFI/boot'
+        source.mkdir(parents=True)
+        (source / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (source / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        mounted = tmp_path / 'mounted'
+        (mounted / 'EFI').mkdir(parents=True)
+        filesystem = MagicMock(f_bavail=0, f_frsize=4096)
+        with patch('native_deploy.get_live_source_mount', return_value=str(source.parent.parent)), \
+             patch('native_deploy.tempfile.mkdtemp', return_value=str(mounted)), \
+             patch('native_deploy.subprocess.run', return_value=subprocess.CompletedProcess([], 0)), \
+             patch('native_deploy.os.statvfs', return_value=filesystem), \
+             patch('native_deploy.shutil.rmtree'):
+            with pytest.raises(RuntimeError, match='enough free space'):
+                native_deploy._preflight_reused_efi_payload_path('/dev/sda1')
+
+    def test_efi_payload_contract_accepts_trixie_x64_and_bookworm_ia32(self, tmp_path):
+        import native_deploy
+
+        source = tmp_path / 'source'
+        boot = source / 'EFI/boot'
+        boot.mkdir(parents=True)
+        for name in ('bootx64.efi', 'grubx64.efi', 'bootia32.efi', 'grubia32.efi'):
+            (boot / name).write_bytes(name.encode('ascii'))
+        write_efi_manifest(source)
+
+        with patch('native_deploy.get_live_source_mount', return_value=str(source)):
+            native_deploy._preflight_efi_payload_contract(True)
+
+    def test_efi_payload_contract_rejects_non_bookworm_ia32(self, tmp_path):
+        import native_deploy
+
+        source = tmp_path / 'source'
+        boot = source / 'EFI/boot'
+        boot.mkdir(parents=True)
+        for name in ('bootx64.efi', 'grubx64.efi', 'bootia32.efi', 'grubia32.efi'):
+            (boot / name).write_bytes(name.encode('ascii'))
+        write_efi_manifest(source)
+        manifest_path = source / 'minios/boot/efi-manifest.json'
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        manifest['architectures']['ia32']['suite'] = 'trixie'
+        manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+
+        with patch('native_deploy.get_live_source_mount', return_value=str(source)):
+            try:
+                native_deploy._preflight_efi_payload_contract(True)
+                assert False, 'expected IA32 contract rejection'
+            except RuntimeError as exc:
+                assert 'Bookworm GRUB 2.06' in str(exc)
+
+    def test_native_grub_installs_persistent_206_compatibility_policy(self, tmp_path):
+        import native_deploy
+
+        target = tmp_path / 'target'
+        script = target / 'etc/grub.d/30_uefi-firmware'
+        script.parent.mkdir(parents=True)
+        script.write_text('fwsetup --is-supported\n', encoding='utf-8')
+        calls = []
+
+        with patch('native_deploy._chroot', side_effect=lambda _target, args, _log, **_kwargs: calls.append(args)):
+            native_deploy._install_grub_206_compatibility(str(target), lambda _message: None)
+
+        assert calls == [[
+            'dpkg-divert', '--quiet', '--local', '--rename', '--add', '--divert',
+            '/usr/lib/minios-grub-compat/30_uefi-firmware.distrib',
+            '/etc/grub.d/30_uefi-firmware',
+        ]]
+        assert script.read_text(encoding='utf-8').endswith('exit 0\n')
+        assert os.stat(str(script)).st_mode & 0o111
+
+    def test_native_grub_rejects_212_firmware_probe(self, tmp_path):
+        import native_deploy
+
+        config = tmp_path / 'grub.cfg'
+        config.write_text('fwsetup --is-supported\n', encoding='utf-8')
+        try:
+            native_deploy._validate_grub_206_compatibility(str(config))
+            assert False, 'expected GRUB 2.12-only command rejection'
+        except RuntimeError as exc:
+            assert 'GRUB 2.12' in str(exc)
 
     def test_native_package_install_preseeds_grub_pc(self, tmp_path):
         import native_deploy
@@ -416,6 +864,7 @@ class TestMiniOSDeploy:
         calls = []
 
         with patch('native_deploy.native_missing_packages', return_value=['grub-pc', 'grub-common']), \
+             patch('native_deploy.package_installed_or_provided', return_value=True), \
              patch('native_deploy._chroot', side_effect=lambda *args, **kwargs: calls.append((args, kwargs))):
             native_deploy._install_native_packages(str(tmp_path), False, 'ext4', state, lambda _msg: None)
 
@@ -428,6 +877,29 @@ class TestMiniOSDeploy:
         assert calls[3][0][1][-7:] == [
             'apt-get', '--no-download', 'install', '-y', '--no-install-recommends',
             'grub-pc', 'grub-common',
+        ]
+
+    def test_offline_boot_fallback_still_installs_mandatory_initramfs_tool(self, tmp_path):
+        import native_deploy
+        from install_state import InstallState
+
+        cache = tmp_path / 'cache'
+        (cache / 'archives').mkdir(parents=True)
+        state = InstallState(package_cache_path=str(cache))
+        calls = []
+        logs = []
+
+        with patch('native_deploy.native_missing_packages', return_value=[
+                'grub-pc', 'grub-common', 'initramfs-tools']), \
+             patch('native_deploy.package_installed_or_provided', return_value=False), \
+             patch('native_deploy._chroot', side_effect=lambda *args, **kwargs: calls.append((args, kwargs))):
+            native_deploy._install_native_packages(
+                str(tmp_path), False, 'ext4', state, logs.append)
+
+        assert any('grub-pc, grub-common' in line for line in logs)
+        assert calls[-1][0][1][-6:] == [
+            'apt-get', '--no-download', 'install', '-y', '--no-install-recommends',
+            'initramfs-tools',
         ]
 
     def test_native_copy_reserves_100_percent_for_completed_tar(self, tmp_path):
@@ -478,33 +950,47 @@ class TestMiniOSDeploy:
         assert '<redacted>' in logs[0]
         assert run.call_args[0][0][-2] == password_hash
 
-    def test_chroot_mounts_and_unmounts_dev_pts(self, tmp_path):
+    def test_chroot_mounts_and_unmounts_dev_pts_and_efivars(self, tmp_path):
         import native_deploy
 
         commands = []
-        with patch('native_deploy._run', side_effect=lambda command, *_args, **_kwargs: commands.append(command)):
+        with patch('native_deploy._run', side_effect=lambda command, *_args, **_kwargs: commands.append(command)), \
+             patch('native_deploy.os.path.ismount', return_value=True):
             native_deploy._mount_chroot_api(str(tmp_path), None, False, lambda _message: None)
 
         assert ['mount', '--bind', '/dev/pts', str(tmp_path / 'dev' / 'pts')] in commands
+        assert [
+            'mount', '--bind', '/sys/firmware/efi/efivars',
+            str(tmp_path / 'sys' / 'firmware' / 'efi' / 'efivars'),
+        ] in commands
 
         with patch('native_deploy.subprocess.run') as run:
             native_deploy._unmount_chroot_api(str(tmp_path), None, lambda _message: None)
 
         unmounts = [mock_call[0][0] for mock_call in run.call_args_list]
-        assert unmounts[0] == ['umount', str(tmp_path / 'dev' / 'pts')]
+        assert unmounts[0] == [
+            'umount', str(tmp_path / 'sys' / 'firmware' / 'efi' / 'efivars')]
+        assert ['umount', str(tmp_path / 'dev' / 'pts')] in unmounts
 
-    def test_offline_native_keeps_kernel_metadata_inactive(self, tmp_path):
+    def test_chroot_mount_failure_unwinds_prior_mounts(self, tmp_path):
         import native_deploy
-        from install_state import InstallState
+        import pytest
 
-        metadata = tmp_path / 'usr' / 'share' / 'minios' / 'kernel-dpkg'
-        metadata.mkdir(parents=True)
-        (metadata / 'manifest.json').write_text('{"packages": []}')
-        logs = []
+        calls = []
 
-        state = InstallState(download_missing_packages=False)
-        with patch('native_deploy.restore_kernel_dpkg_metadata') as restore:
-            assert native_deploy._maybe_restore_kernel_metadata(str(tmp_path), state, logs.append) == 0
+        def mount(command, *_args, **_kwargs):
+            calls.append(command)
+            if command[3].endswith('/sys'):
+                raise RuntimeError('injected mount failure')
 
-        assert not restore.called
-        assert any('inactive for offline fallback' in message for message in logs)
+        with patch('native_deploy._run', side_effect=mount), \
+             patch('native_deploy.subprocess.run') as run:
+            with pytest.raises(RuntimeError, match='injected mount failure'):
+                native_deploy._mount_chroot_api(
+                    str(tmp_path), None, False, lambda _message: None)
+
+        unmounts = [mock_call[0][0] for mock_call in run.call_args_list]
+        assert unmounts == [
+            ['umount', str(tmp_path / 'proc')],
+            ['umount', str(tmp_path / 'dev')],
+        ]

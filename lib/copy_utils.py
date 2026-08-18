@@ -409,11 +409,11 @@ def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path
 
         # Define the menu entries to translate
         menu_entries = {
-            "Resume previous session": "resume",
+            "Start MiniOS": "resume",
             "Start a new session": "newsession",
-            "Choose session during startup": "choosesession",
-            "Fresh start": "freshstart",
-            "Copy to RAM": "copyram",
+            "Choose a saved session": "choosesession",
+            "Start without saving": "freshstart",
+            "Run from RAM": "copyram",
             "Loading kernel and ramdisk...": "loading",
             "MiniOS": "OS"
         }

@@ -36,6 +36,16 @@ BOOT_LAYOUT_AUTO = "auto"
 BOOT_LAYOUT_BIOS_MBR = "bios_mbr"
 BOOT_LAYOUT_UEFI_MBR = "uefi_mbr"
 BOOT_LAYOUT_UEFI_GPT = "uefi_gpt"
+ESP_PAYLOAD_MARGIN_BYTES = 1024 * 1024
+
+
+def validate_new_esp_payload_capacity(efi_payload_bytes: int) -> None:
+    payload = max(0, int(efi_payload_bytes or 0))
+    if not payload:
+        return
+    required = (payload * 125 + 99) // 100 + ESP_PAYLOAD_MARGIN_BYTES
+    if required > ESP_SIZE_MIB * 1024 * 1024:
+        raise ValueError(_("The EFI payload does not fit the fixed 100 MiB EFI system partition."))
 
 
 def _part_name(device: str, index: int) -> str:
@@ -130,7 +140,7 @@ def _needs_esp(filesystem: str, install_mode: str, use_efi: bool) -> bool:
     return install_mode != "native" or use_efi
 
 
-def plan_erase_all(layout: DiskLayout, filesystem: str = "ext4", install_mode: str = "live", swap_size_mib: int = 0, boot_layout: str = BOOT_LAYOUT_AUTO, required_root_mib: int = 0) -> PartitionPlan:
+def plan_erase_all(layout: DiskLayout, filesystem: str = "ext4", install_mode: str = "live", swap_size_mib: int = 0, boot_layout: str = BOOT_LAYOUT_AUTO, required_root_mib: int = 0, efi_payload_bytes: int = 0) -> PartitionPlan:
     use_gpt = _use_gpt_for_erase(layout, boot_layout=boot_layout)
     use_efi = _use_efi_for_layout(boot_layout)
     if use_gpt and not use_efi:
@@ -147,7 +157,10 @@ def plan_erase_all(layout: DiskLayout, filesystem: str = "ext4", install_mode: s
     # Product rule: FAT32 root is a single partition (no ESP). On UEFI, EFI files
     # are still copied onto the FAT32 root; on BIOS, SYSLINUX/MBR is installed.
     create_esp = _needs_esp(filesystem, install_mode, use_efi)
-    plan = PartitionPlan(layout.device, use_gpt, wipe_disk=True, use_efi=use_efi)
+    if create_esp:
+        validate_new_esp_payload_capacity(efi_payload_bytes)
+    plan = PartitionPlan(layout.device, use_gpt, wipe_disk=True, use_efi=use_efi,
+                         esp_min_mib=ESP_SIZE_MIB if create_esp else 0)
     _append_partitions(plan, ALIGNMENT_MIB, layout.size_mib - END_GUARD_MIB, filesystem, create_esp, 1, swap_size_mib=swap_size_mib if install_mode == "native" else 0, esp_first=install_mode == "native" and use_efi, required_root_mib=required_root_mib)
     return plan
 
@@ -180,6 +193,9 @@ def _next_partition_index(layout: DiskLayout) -> int:
 def _free_partition_indices(layout: DiskLayout, count: int) -> list:
     used = set()
     for part in layout.partitions:
+        if part.partition_number:
+            used.add(part.partition_number)
+            continue
         for value in (part.name, part.path):
             if not value:
                 continue
@@ -213,12 +229,14 @@ def _snapshot_preserve_plan(plan: PartitionPlan, layout: DiskLayout, extent: Fre
 def plan_free_space(layout: DiskLayout, filesystem: str = "ext4", install_mode: str = "live", swap_size_mib: int = 0, boot_layout: str = BOOT_LAYOUT_AUTO, required_root_mib: int = 0, efi_payload_bytes: int = 0) -> PartitionPlan:
     use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout)
     use_efi = _use_efi_for_layout(boot_layout)
-    esp_min_mib = max(ESP_SIZE_MIB, (max(0, efi_payload_bytes) * 125 + 99) // 100 // (1024 * 1024) + 1)
-    esp = next((p for p in layout.partitions if p.role == "esp" and _valid_esp(layout, p) and p.size_mib >= esp_min_mib), None) if use_efi else None
+    esp_min_mib = ESP_SIZE_MIB
+    esp = next((p for p in layout.partitions if p.role == "esp" and _valid_esp(layout, p)), None) if use_efi else None
     plan = PartitionPlan(layout.device, use_gpt, wipe_disk=False, reuse_esp=bool(esp), esp_path=esp.path if esp else "", use_efi=use_efi, esp_min_mib=esp_min_mib, esp_partuuid=esp.partuuid if esp else "")
     if esp:
         plan.partitions.append(PlannedPartition("reuse", "esp", esp.start_mib, esp.end_mib, esp.fstype, path=esp.path, mountpoint="/boot/efi"))
     create_esp = _needs_esp(filesystem, install_mode, use_efi) and not esp
+    if create_esp:
+        validate_new_esp_payload_capacity(efi_payload_bytes)
     required_total_mib = max(1, int(required_root_mib or 0))
     if create_esp:
         required_total_mib += esp_min_mib
@@ -244,7 +262,7 @@ def plan_free_space(layout: DiskLayout, filesystem: str = "ext4", install_mode: 
 
 def build_plan(layout: DiskLayout, placement: str, filesystem: str = "ext4", install_mode: str = "live", swap_size_mib: int = 0, boot_layout: str = BOOT_LAYOUT_AUTO, alongside_size_mib: int = 0, required_root_mib: int = 0, efi_payload_bytes: int = 0) -> PartitionPlan:
     if placement == PLACEMENT_ERASE_ALL:
-        return plan_erase_all(layout, filesystem, install_mode=install_mode, swap_size_mib=swap_size_mib, boot_layout=boot_layout, required_root_mib=required_root_mib)
+        return plan_erase_all(layout, filesystem, install_mode=install_mode, swap_size_mib=swap_size_mib, boot_layout=boot_layout, required_root_mib=required_root_mib, efi_payload_bytes=efi_payload_bytes)
     if placement == PLACEMENT_FREE_SPACE:
         from format_utils import validate_filesystem_for_plan
         use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout)
@@ -258,6 +276,8 @@ def build_plan(layout: DiskLayout, placement: str, filesystem: str = "ext4", ins
         validate_filesystem_for_plan(filesystem, use_gpt, install_mode=install_mode)
         esp = next((p for p in layout.partitions if p.role == "esp" and use_efi and _valid_esp(layout, p)), None)
         create_esp = _needs_esp(filesystem, install_mode, use_efi) and not esp
+        if create_esp:
+            validate_new_esp_payload_capacity(efi_payload_bytes)
         minimum_required = max(1, int(required_root_mib or 0)) + (ESP_SIZE_MIB if create_esp else 0)
         if install_mode == "native":
             minimum_required += max(0, int(swap_size_mib or 0))

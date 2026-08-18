@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from unittest.mock import patch
+from contextlib import ExitStack
+from unittest.mock import MagicMock, patch
 
 import sys
 import os
@@ -422,27 +423,33 @@ def test_native_user_creation_happens_before_live_package_cleanup():
     plan = PartitionPlan(device="/dev/sda", use_gpt=False, wipe_disk=True)
     events = []
 
-    with patch("native_deploy.resolve_install_device", return_value="/dev/sda"), \
-         patch("native_deploy.scan_disk"), \
-          patch("native_deploy.build_plan", return_value=plan), \
-          patch("native_deploy.preflight_selected_bundles", return_value=1024), \
-         patch("native_deploy.execute_plan", return_value=("/dev/sda1", None, "/target", None)), \
-         patch("native_deploy.BundleOverlay") as overlay, \
-         patch("native_deploy._copy_native_root"), \
-         patch("native_deploy._prepare_runtime_dirs"), \
-         patch("native_deploy._patch_sysv_quiet_wrapper"), \
-         patch("native_deploy._maybe_restore_kernel_metadata"), \
-         patch("native_deploy._mount_chroot_api"), \
-         patch("native_deploy._unmount_chroot_api"), \
-         patch("native_deploy._install_native_packages"), \
-         patch("native_deploy._collect_live_allowuser_groups", return_value=[]), \
-         patch("native_deploy._cleanup_native_live_packages", side_effect=lambda *_a, **_kw: events.append("cleanup")), \
-         patch("native_deploy.apply_security_profile", side_effect=lambda *_a, **_kw: events.append("profile")), \
-         patch("native_deploy._write_fstab"), \
-         patch("native_deploy._apply_native_settings", side_effect=lambda *_a, **_kw: events.append("settings")), \
-         patch("native_deploy._install_native_bootloader"), \
-         patch("native_deploy.unmount_partitions"):
+    with ExitStack() as stack:
+        stack.enter_context(patch("native_deploy.resolve_install_device", return_value="/dev/sda"))
+        stack.enter_context(patch("native_deploy.scan_disk"))
+        stack.enter_context(patch("native_deploy.build_plan", return_value=plan))
+        stack.enter_context(patch("native_deploy.preflight_selected_bundles", return_value=1024))
+        stack.enter_context(patch("native_deploy.preflight_package_download", return_value={
+            "missing": [], "apt_available": True, "internet": True,
+            "free_space_mib": 1024, "min_space_mib": 1,
+        }))
+        stack.enter_context(patch("native_deploy.prepare_package_cache", return_value="/cache"))
+        stack.enter_context(patch("native_deploy.execute_plan", return_value=("/dev/sda1", None, "/target", None)))
+        overlay = stack.enter_context(patch("native_deploy.BundleOverlay"))
+        for target in (
+            "_copy_native_root", "_prepare_runtime_dirs", "_patch_sysv_quiet_wrapper",
+            "_preflight_selected_kernel", "_mount_chroot_api", "_unmount_chroot_api",
+            "_install_native_packages", "_write_fstab", "_install_native_bootloader",
+            "unmount_partitions",
+        ):
+            stack.enter_context(patch("native_deploy." + target))
+        stack.enter_context(patch("native_deploy._collect_live_allowuser_groups", return_value=[]))
+        stack.enter_context(patch("native_deploy._cleanup_native_live_packages", side_effect=lambda *_a, **_kw: events.append("cleanup")))
+        stack.enter_context(patch("native_deploy.apply_security_profile", side_effect=lambda *_a, **_kw: events.append("profile")))
+        stack.enter_context(patch("native_deploy._apply_native_settings", side_effect=lambda *_a, **_kw: events.append("settings")))
+        register = stack.enter_context(patch("native_deploy._maybe_restore_kernel_metadata"))
         overlay.return_value.__enter__.return_value = "/source"
+        registration = MagicMock(kernel_version="test")
+        register.return_value = (registration, "/boot/vmlinuz-test", "/boot/initrd.img-test")
         native_deploy.run_native_install(state, lambda *_: None, lambda *_: None)
 
     assert events == ["profile", "settings", "cleanup"]
@@ -459,6 +466,7 @@ def test_native_multiboot_offline_is_blocked_before_disk_changes():
     with patch("native_deploy.resolve_install_device", return_value="/dev/sda"), \
          patch("native_deploy.scan_disk"), \
          patch("native_deploy.build_plan", return_value=plan), \
+         patch("native_deploy._preflight_selected_kernel"), \
          patch("native_deploy.native_missing_packages", return_value=["grub-pc", "os-prober"]), \
          patch("native_deploy.execute_plan") as execute:
         with pytest.raises(RuntimeError, match="requires GRUB and os-prober"):
@@ -483,6 +491,7 @@ def test_native_download_failure_is_blocked_before_disk_changes():
     with patch("native_deploy.resolve_install_device", return_value="/dev/sda"), \
          patch("native_deploy.scan_disk"), \
          patch("native_deploy.build_plan", return_value=plan), \
+         patch("native_deploy._preflight_selected_kernel"), \
          patch("native_deploy.native_missing_packages", return_value=["grub-pc"]), \
          patch("native_deploy.preflight_package_download", return_value={"missing": ["grub-pc"]}), \
          patch("native_deploy.execute_plan") as execute:
@@ -509,6 +518,7 @@ def test_native_stages_complete_target_package_closure_before_disk_changes():
     with patch("native_deploy.resolve_install_device", return_value="/dev/sda"), \
          patch("native_deploy.scan_disk"), \
          patch("native_deploy.build_plan", return_value=plan), \
+         patch("native_deploy._preflight_selected_kernel"), \
          patch("native_deploy.manual_native_package_requirements", return_value=required), \
          patch("native_deploy.native_missing_packages", return_value=["grub-pc"]), \
          patch("native_deploy.preflight_package_download", return_value={"missing": []}), \
@@ -520,3 +530,163 @@ def test_native_stages_complete_target_package_closure_before_disk_changes():
 
     stage.assert_called_once_with(required)
     execute.assert_not_called()
+
+
+def test_format1_preflight_failure_is_before_disk_executor():
+    import native_deploy
+    import pytest
+    from partition_models import PartitionPlan
+
+    state = InstallState(install_mode="native", target_device="/dev/sda")
+    plan = PartitionPlan(device="/dev/sda", use_gpt=False, wipe_disk=True, use_efi=False)
+    with patch("native_deploy.resolve_install_device", return_value="/dev/sda"), \
+         patch("native_deploy.scan_disk"), \
+         patch("native_deploy.build_plan", return_value=plan), \
+         patch("native_deploy._preflight_selected_kernel", side_effect=RuntimeError("bad format-1")), \
+         patch("native_deploy.execute_plan") as execute:
+        with pytest.raises(RuntimeError, match="bad format-1"):
+            native_deploy.run_native_install(state, lambda *_: None, lambda *_: None)
+
+    execute.assert_not_called()
+
+
+def test_format1_preflight_defers_target_dependency_validation(tmp_path):
+    import native_deploy
+
+    registration = MagicMock()
+    registration.native_architecture = "amd64"
+    registration.manifest = {
+        "kernel": {"package_architecture": "amd64"},
+        "update_policy": "frozen",
+    }
+    registration.kernel_version = "test"
+    source_root = str(tmp_path / "source")
+    os.makedirs(source_root)
+
+    with patch("native_deploy.BundleOverlay") as overlay, \
+         patch("native_deploy.prepare_kernel_registration", return_value=registration) as prepare, \
+         patch("native_deploy.get_live_source_mount", return_value=str(tmp_path / "live")), \
+         patch("native_deploy.native_kernel_architecture_preflight"):
+        overlay.return_value.__enter__.return_value = source_root
+        native_deploy._preflight_selected_kernel(InstallState(), False, lambda *_: None)
+
+    assert prepare.call_args[1]["verify_dependencies"] is False
+    registration.close.assert_called_once_with()
+
+
+def test_native_kernel_copy_only_publishes_bootable_kernel(tmp_path):
+    import native_deploy
+
+    version = "6.1-test"
+    live = tmp_path / "live"
+    boot = live / "minios/boot"
+    boot.mkdir(parents=True)
+    (boot / ("vmlinuz-" + version)).write_text("vmlinuz-", encoding="utf-8")
+    target = tmp_path / "target"
+
+    with patch("native_deploy.get_live_source_mount", return_value=str(live)):
+        assert native_deploy._copy_native_kernel(
+            str(target), version, False, lambda *_: None
+        ) == "/boot/vmlinuz-{}".format(version)
+
+    assert (target / "boot" / ("vmlinuz-" + version)).read_text(encoding="utf-8") == "vmlinuz-"
+    assert not (target / "boot" / ("config-" + version)).exists()
+    assert not (target / "boot" / ("System.map-" + version)).exists()
+
+
+def test_kernel_integration_failure_rolls_back_before_boot_publication():
+    import native_deploy
+    import pytest
+
+    registration = MagicMock(kernel_version="test", applied=True)
+    registration.packages = []
+    with patch("native_deploy.prepare_kernel_registration", return_value=registration), \
+         patch("native_deploy.get_live_source_mount", return_value="/live"), \
+         patch("native_deploy._copy_native_kernel", return_value="/boot/vmlinuz-test"), \
+         patch("native_deploy._target_has_executable", return_value=False):
+        with pytest.raises(RuntimeError, match="depmod"):
+            native_deploy._maybe_restore_kernel_metadata("/target", lambda *_: None)
+
+    registration.rollback.assert_called_once()
+    registration.close.assert_called_once()
+
+
+def test_registered_foreign_package_marks_use_canonical_instance():
+    import native_deploy
+
+    registration = MagicMock()
+    registration.packages = [{
+        "name": "linux-image-test",
+        "dpkg_instance": "linux-image-test:amd64",
+        "version": "1",
+        "registration": "synthetic-installed",
+        "role": "image",
+        "apt_mark": "manual",
+        "hold": False,
+        "payload_entries": [],
+    }]
+
+    def capture(_target, command, _log_cb):
+        result = MagicMock(returncode=0, stdout="")
+        if command[0] == "dpkg-query" and command[1] == "-W":
+            result.stdout = "1\tii \n"
+        elif command == ["apt-mark", "showmanual"]:
+            result.stdout = "linux-image-test:amd64\n"
+        return result
+
+    with patch("native_deploy._chroot_capture", side_effect=capture):
+        native_deploy._verify_registered_kernel("/target", registration, lambda *_: None)
+
+
+def test_nonempty_dpkg_audit_output_fails_registration_verification():
+    import native_deploy
+    import pytest
+
+    registration = MagicMock(packages=[])
+    result = MagicMock(returncode=0, stdout="package is only half configured\n")
+    with patch("native_deploy._chroot_capture", return_value=result):
+        with pytest.raises(RuntimeError, match="inconsistent dpkg database"):
+            native_deploy._verify_registered_kernel("/target", registration, lambda *_: None)
+
+
+def test_registered_payload_ownership_reads_one_trusted_dpkg_list(tmp_path):
+    import native_deploy
+
+    target = tmp_path / "target"
+    info = target / "var/lib/dpkg/info"
+    info.mkdir(parents=True)
+    (info / "linux-image-test.list").write_text(
+        "/.\n/boot/vmlinuz-test\n/usr/lib/modules/test/core.ko\n",
+        encoding="utf-8",
+    )
+    registration = MagicMock(packages=[{
+        "name": "linux-image-test",
+        "dpkg_instance": "linux-image-test",
+        "version": "1",
+        "registration": "synthetic-installed",
+        "role": "image",
+        "apt_mark": "manual",
+        "hold": True,
+        "payload_entries": [
+            {"path": "/boot/vmlinuz-test"},
+            {"path": "/usr/lib/modules/test/core.ko"},
+        ],
+    }])
+    commands = []
+
+    def capture(_target, command, _log_cb):
+        commands.append(command)
+        result = MagicMock(returncode=0, stdout="")
+        if command[:2] == ["dpkg-query", "-W"]:
+            result.stdout = "1\thi \n"
+        elif command == ["apt-mark", "showmanual"]:
+            result.stdout = "linux-image-test\n"
+        elif command == ["apt-mark", "showhold"]:
+            result.stdout = "linux-image-test\n"
+        return result
+
+    with patch("native_deploy._chroot_capture", side_effect=capture):
+        native_deploy._verify_registered_kernel(
+            str(target), registration, lambda *_: None)
+
+    assert not any(command[:2] == ["dpkg-query", "-S"] for command in commands)

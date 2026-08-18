@@ -55,6 +55,43 @@ def test_efi_payload_accepts_case_insensitive_fat_layout(tmp_path):
     assert efi_payload_bytes(str(source)) == 3
 
 
+class TestGrubConfigProcessing:
+    """Tests for localized GRUB menu generation."""
+
+    def test_localized_grub_translates_all_current_menu_entries(self, tmp_path):
+        from copy_utils import _generate_localized_grub_config
+
+        grub_dir = tmp_path / "grub"
+        (grub_dir / "po").mkdir(parents=True)
+        entries = {
+            "Start MiniOS": "Запустить MiniOS",
+            "Start a new session": "Начать новую сессию",
+            "Choose a saved session": "Выбрать сохранённую сессию",
+            "Start without saving": "Запустить без сохранения",
+            "Run from RAM": "Запустить из ОЗУ",
+        }
+        (grub_dir / "grub.template.cfg").write_text(
+            "\n".join(f'menuentry "{text}" {{}}' for text in entries) + "\n",
+            encoding="utf-8",
+        )
+        (grub_dir / "po" / "ru_RU.po").write_text(
+            "\n\n".join(
+                f'msgid "{source}"\nmsgstr "{translated}"'
+                for source, translated in entries.items()
+            ) + "\n",
+            encoding="utf-8",
+        )
+        output = grub_dir / "grub.cfg"
+
+        assert _generate_localized_grub_config(
+            str(grub_dir), "ru_RU", str(output), lambda *_: None
+        )
+        result = output.read_text(encoding="utf-8")
+        for source, translated in entries.items():
+            assert f'menuentry "{translated}"' in result
+            assert f'menuentry "{source}"' not in result
+
+
 class TestSyslinuxConfigProcessing:
     """Tests for SYSLINUX config language processing."""
 

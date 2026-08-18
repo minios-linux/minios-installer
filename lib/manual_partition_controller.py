@@ -2,8 +2,8 @@
 """GUI-independent staged state for the manual partitioning page."""
 from __future__ import absolute_import
 
-from manual_partitioning import (ManualAction, ManualPlanError, ManualPlanner,
-                                 MountAssignment, SectorExtent)
+from manual_partitioning import (ExistingPartitionRef, ManualAction, ManualPlanError,
+                                 ManualPlanner, MountAssignment, SectorExtent)
 
 
 class ManualPartitionController(object):
@@ -25,8 +25,11 @@ class ManualPartitionController(object):
 
     @property
     def destructive(self):
-        return any(action.kind in ("create", "delete", "shrink", "format")
-                   for action in self.actions)
+        return any(
+            action.kind in ("delete", "shrink") or
+            (action.kind == "format" and isinstance(action.target, ExistingPartitionRef))
+            for action in self.actions
+        )
 
     def _save(self):
         self._undo = (list(self.actions), list(self.assignments))

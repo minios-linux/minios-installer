@@ -271,12 +271,27 @@ def test_bios_free_space_never_reuses_existing_esp():
     assert not plan.reuse_esp
 
 
-def test_uefi_reuses_only_valid_sized_esp():
+def test_uefi_reuses_valid_existing_esp_independent_of_new_esp_budget():
     from partition_models import FreeExtent
     layout = DiskLayout("/dev/sda", 1000, partition_table="gpt", free_extents=[FreeExtent(200, 999)], partitions=[
         PartitionInfo("sda1", "/dev/sda1", 150, 1, 151, "vfat", role="esp", parttype="c12a7328-f81f-11d2-ba4b-00a0c93ec93b", partuuid="x")])
     plan = plan_free_space(layout, "ext4", boot_layout="uefi_gpt", efi_payload_bytes=120 * 1024 * 1024)
-    assert not plan.reuse_esp
+    assert plan.reuse_esp
+    assert plan.esp_min_mib == 100
+
+
+def test_new_esp_is_fixed_100_mib_and_rejects_oversized_payload():
+    from partition_models import FreeExtent
+    layout = DiskLayout("/dev/sda", 1000, partition_table="gpt", free_extents=[FreeExtent(1, 999)])
+    plan = plan_free_space(layout, "ext4", boot_layout="uefi_gpt", efi_payload_bytes=60 * 1024 * 1024)
+    esp = next(part for part in plan.partitions if part.role == "esp")
+    assert esp.size_mib == 100
+    try:
+        plan_free_space(layout, "ext4", boot_layout="uefi_gpt", efi_payload_bytes=90 * 1024 * 1024)
+    except ValueError as exc:
+        assert "100 MiB" in str(exc)
+    else:
+        assert False, "oversized EFI payload must be refused instead of growing the ESP"
 
 
 # ----------------------------------------------------------------------

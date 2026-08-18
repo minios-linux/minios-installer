@@ -163,6 +163,8 @@ def scan_disk(device: str) -> DiskLayout:
         part_size_mib = max(1, _ceil_mib(size_bytes))
         flags = [flag for flag in (child.get("partflags") or "").replace(",", " ").split() if flag]
         fstype = child.get("fstype") or ""
+        if fstype.lower() == "ntfs3":
+            fstype = "ntfs"
         label = child.get("label") or ""
         mountpoint = child.get("mountpoint") or ""
         role = _role_for(fstype, label, mountpoint, flags, child.get("parttype") or "")

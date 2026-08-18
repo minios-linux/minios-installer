@@ -11,7 +11,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 
 from partition_executor import execute_plan
 from partition_models import PartitionPlan, PlannedPartition
-from partition_executor import _verify_existing_partition
+from partition_executor import (
+    _revalidate_modified_layout,
+    _revalidate_planned_free_extent,
+    _revalidate_reused_esp,
+    _verify_existing_partition,
+)
 
 
 def test_executor_dry_run_uses_planned_offsets_for_non_wipe_plan():
@@ -76,6 +81,63 @@ def test_preserve_revalidation_rejects_changed_free_extent():
     with patch("partition_scanner.scan_disk", return_value=DiskLayout("/dev/sdb", 500, partition_table="gpt", free_extents=[FreeExtent(101, 200)])):
         with pytest.raises(RuntimeError, match="free extent"):
             _revalidate_preserve_plan(plan)
+
+
+def test_existing_ntfs_partition_accepts_ntfs3_probe_name():
+    plan = PartitionPlan(device="/dev/sda", use_gpt=True, wipe_disk=False)
+    with patch("partition_executor.os.path.exists", return_value=True), \
+            patch("partition_executor.os.path.realpath", side_effect=lambda path: path), \
+            patch("partition_executor.subprocess.check_output", side_effect=["sda\n", "ntfs3\n"]):
+        _verify_existing_partition(plan, "/dev/sda3", "ntfs")
+
+
+def test_post_resize_revalidation_accepts_merged_free_extent():
+    from partition_models import DiskLayout, FreeExtent
+    plan = PartitionPlan(
+        device="/dev/sda", use_gpt=True, wipe_disk=False,
+        expected_free_extent=(100, 200),
+    )
+    layout = DiskLayout(
+        "/dev/sda", 500, partition_table="gpt",
+        free_extents=[FreeExtent(100, 250)],
+    )
+    with patch("partition_scanner.scan_disk", return_value=layout):
+        _revalidate_planned_free_extent(plan)
+
+
+def test_post_resize_revalidation_preserves_trailing_recovery_partition():
+    from partition_models import DiskLayout, PartitionInfo, ResizeOperation
+    expected = [
+        (3, 2048, 40000, "basic-data", "windows"),
+        (4, 44096, 2000, "recovery", "winre"),
+    ]
+    plan = PartitionPlan(
+        device="/dev/sda", use_gpt=True, wipe_disk=False,
+        expected_partitions=expected,
+        resize=ResizeOperation("/dev/sda3", 3, "ntfs", 2048, 40000, 30000, 512),
+    )
+    layout = DiskLayout(
+        "/dev/sda", 100, partition_table="gpt", logical_sector_size=512,
+        partitions=[
+            PartitionInfo(
+                "sda3", "/dev/sda3", 15, start_sector=2048,
+                size_sectors=30000, partition_number=3,
+                parttype="basic-data", partuuid="windows",
+            ),
+            PartitionInfo(
+                "sda4", "/dev/sda4", 1, start_sector=44096,
+                size_sectors=2000, partition_number=4,
+                parttype="recovery", partuuid="winre",
+            ),
+        ],
+    )
+    with patch("partition_scanner.scan_disk", return_value=layout):
+        _revalidate_modified_layout(plan)
+
+    layout.partitions[1].size_sectors = 1999
+    with patch("partition_scanner.scan_disk", return_value=layout):
+        with pytest.raises(RuntimeError, match="preserved partition"):
+            _revalidate_modified_layout(plan)
 
 
 def test_executor_by_id_partition_path_uses_part_suffix_index_for_boot_flag():
@@ -148,3 +210,50 @@ def test_existing_esp_must_remain_fat_filesystem():
             patch("partition_executor.subprocess.check_output", side_effect=["sda\n", "ext4\n"]):
         with pytest.raises(RuntimeError, match="expected filesystem"):
             _verify_existing_partition(plan, "/dev/sda1", "fat32")
+
+
+def test_reused_esp_accepts_used_100_mib_filesystem_with_enough_transaction_space(tmp_path):
+    mount_dir = tmp_path / "esp"
+    (mount_dir / "EFI/Microsoft").mkdir(parents=True)
+    (mount_dir / "EFI/Microsoft/bootmgfw.efi").write_bytes(b"w" * 1024)
+    source = tmp_path / "source"
+    (source / "EFI/boot").mkdir(parents=True)
+    (source / "EFI/boot/bootx64.efi").write_bytes(b"m" * 1024)
+    plan = PartitionPlan(
+        "/dev/sda", True, False, reuse_esp=True, esp_path="/dev/sda1",
+        use_efi=True, esp_min_mib=100, esp_partuuid="esp-id",
+    )
+    filesystem = type("Filesystem", (), {"f_bavail": 70, "f_frsize": 1024 * 1024})()
+
+    with patch("partition_executor._verify_existing_partition"), \
+         patch("partition_executor.subprocess.check_output", return_value="esp-id\n"), \
+         patch("partition_executor.subprocess.run", return_value=type("Result", (), {"returncode": 0})()), \
+         patch("partition_executor.tempfile.mkdtemp", return_value=str(mount_dir)), \
+         patch("partition_executor.get_live_source_mount", return_value=str(source)), \
+         patch("partition_executor.os.statvfs", return_value=filesystem), \
+         patch("partition_executor.shutil.rmtree"):
+        _revalidate_reused_esp(plan)
+
+
+def test_reused_esp_rejects_actual_transaction_space_shortage(tmp_path):
+    mount_dir = tmp_path / "esp"
+    (mount_dir / "EFI/Microsoft").mkdir(parents=True)
+    (mount_dir / "EFI/Microsoft/bootmgfw.efi").write_bytes(b"w" * 1024)
+    source = tmp_path / "source"
+    (source / "EFI/boot").mkdir(parents=True)
+    (source / "EFI/boot/bootx64.efi").write_bytes(b"m" * 1024)
+    plan = PartitionPlan(
+        "/dev/sda", True, False, reuse_esp=True, esp_path="/dev/sda1",
+        use_efi=True, esp_min_mib=100, esp_partuuid="esp-id",
+    )
+    filesystem = type("Filesystem", (), {"f_bavail": 0, "f_frsize": 4096})()
+
+    with patch("partition_executor._verify_existing_partition"), \
+         patch("partition_executor.subprocess.check_output", return_value="esp-id\n"), \
+         patch("partition_executor.subprocess.run", return_value=type("Result", (), {"returncode": 0})()), \
+         patch("partition_executor.tempfile.mkdtemp", return_value=str(mount_dir)), \
+         patch("partition_executor.get_live_source_mount", return_value=str(source)), \
+         patch("partition_executor.os.statvfs", return_value=filesystem), \
+         patch("partition_executor.shutil.rmtree"):
+        with pytest.raises(RuntimeError, match="transactional EFI publication"):
+            _revalidate_reused_esp(plan)

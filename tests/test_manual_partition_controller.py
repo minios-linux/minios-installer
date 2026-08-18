@@ -33,11 +33,12 @@ def test_create_delete_resize_undo_and_reset_are_staged():
     root, home = state.snapshot.partitions
     state.use_as(root, 'root', '/', 'ext4')
     state.create(34816, 4096)
-    assert state.destructive
+    assert not state.destructive
     assert any(action.kind == 'create' for action in state.actions)
     state.undo()
     assert not any(action.kind == 'create' for action in state.actions)
     state.resize(home, 8192)
+    assert state.destructive
     assert any(action.kind == 'shrink' for action in state.actions)
     state.delete(home)
     assert any(action.kind == 'delete' for action in state.actions)
@@ -51,6 +52,7 @@ def test_existing_format_requires_explicit_choice_and_invalid_mount_blocks_plan(
     root, home = state.snapshot.partitions
     state.use_as(root, 'root', '/', 'ext4')
     state.use_as(home, 'data', '/home', 'ext4', True)
+    assert state.destructive
     assert any(action.kind == 'format' for action in state.actions)
     state.undo()
     state.use_as(home, 'data', 'relative', 'ext4')

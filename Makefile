@@ -18,10 +18,6 @@ build: mo
 
 mo: $(MO_FILES)
 
-update-po:
-	@echo "Updating translation files..."
-	./update-po.sh
-
 %.mo: %.po
 	@echo "Generating mo file for $<"
 	msgfmt -o $@ $<
@@ -101,7 +97,6 @@ help:
 	@echo "  install     - Install to DESTDIR (default: /)"
 	@echo "  uninstall   - Remove installed files from DESTDIR"
 	@echo "  reinstall   - Uninstall and install again"
-	@echo "  update-po   - Update translation template and files"
 	@echo "  help        - Show this help message"
 	@echo ""
 	@echo "Variables:"
@@ -112,4 +107,4 @@ help:
 	@echo "  make uninstall                    # Remove from system"
 	@echo "  sudo make reinstall               # Reinstall as root"
 
-.PHONY: build mo update-po clean install uninstall reinstall help
+.PHONY: build mo clean install uninstall reinstall help

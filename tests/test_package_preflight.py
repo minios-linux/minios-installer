@@ -2,6 +2,8 @@
 
 from unittest.mock import patch
 
+import pytest
+
 
 def test_preflight_ok_when_no_missing_packages():
     from package_preflight import preflight_ok
@@ -43,11 +45,12 @@ def test_native_requirements_use_bios_grub_for_mbr():
     assert "grub-efi-amd64" not in packages
 
 
-def test_native_requirements_use_efi_grub_for_gpt():
+def test_native_requirements_use_verified_media_efi_chain_for_gpt():
     from package_preflight import native_package_requirements
 
     packages = native_package_requirements(True, "ext4")
-    assert "grub-efi-amd64" in packages
+    assert "grub-common" in packages
+    assert "grub-efi-amd64" not in packages
     assert "efibootmgr" in packages
     assert "dosfstools" in packages
     assert "grub-pc" not in packages
@@ -67,6 +70,26 @@ def test_native_standard_bootloader_requirement():
     assert native_requires_standard_bootloader(True, "erase_all")
     assert native_requires_standard_bootloader(False, "free_space")
     assert native_requires_standard_bootloader(False, "alongside_os")
+
+
+def test_mixed_architecture_requires_explicit_native_evidence():
+    from package_preflight import native_kernel_architecture_preflight
+
+    assert native_kernel_architecture_preflight("amd64", "amd64", False) == set()
+    with pytest.raises(RuntimeError, match="not verified"):
+        native_kernel_architecture_preflight("i386", "amd64", False)
+    assert native_kernel_architecture_preflight(
+        "i386", "amd64", False, verified_combinations={("i386", "amd64")}
+    ) == {"amd64"}
+    assert native_kernel_architecture_preflight(
+        "i386", "amd64", True, verified_combinations={("i386", "amd64")}
+    ) == {"amd64"}
+
+
+def test_production_native_mixed_architecture_allowlist_is_empty():
+    from native_deploy import VERIFIED_NATIVE_MIXED_ARCHITECTURES
+
+    assert VERIFIED_NATIVE_MIXED_ARCHITECTURES == ()
 
 
 def test_native_requirements_add_btrfs_tools():

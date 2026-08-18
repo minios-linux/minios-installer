@@ -1,3 +1,40 @@
+minios-installer (3.0.3) unstable; urgency=high
+
+  * Register compact format-1 kernel package state for native installations.
+  * Validate kernel payload hashes, dependencies, architecture, repository
+    metadata, and pinning before publishing native bootloader state.
+  * Use the native target's existing APT sources for tracked kernel packages;
+    do not publish Installer-owned source entries or target keyrings.
+  * Keep unverified mixed-architecture native layouts disabled, validate kernel
+    symlinks, and verify ownership from one trusted dpkg list per package.
+  * Install the verified dual-architecture EFI chain from the live medium.
+  * Fail before manual UEFI disk changes when a reused ESP cannot use firmware
+    variables, conflicts with the required GRUB vendor layout, or lacks the
+    transactional free space required for safe EFI publication.
+  * Preserve explicit reused-ESP identity through native EFI publication,
+    including empty existing ESPs, and register MiniOS in firmware as required.
+  * Verify newly created MiniOS firmware entries by label, loader, ESP identity,
+    active state, and BootOrder; never delete unrelated newly observed entries.
+  * Reject contradictory manual partition actions before disk mutation: delete
+    is terminal for an existing partition and shrink may be staged only once.
+  * Keep automatically created live and native ESPs fixed at 100 MiB and reject
+    EFI payloads that would not fit before disk mutation.
+  * Confirm NTFS alongside resizes non-interactively after the safety checks,
+    without enabling ntfsresize force mode.
+  * Make destructive-operation warnings match the actual risk: alongside resize
+    explicitly acknowledges possible data loss and boot repair, manual warnings
+    apply only when existing partitions are changed, and canceling does not
+    imply that completed disk writes can be rolled back.
+  * Keep single-language GRUB menus synchronized with the current boot-entry
+    labels so localized installs do not mix translated and English entries.
+  * Require the published dataclasses backport on Python 3.6 and remove the
+    incomplete in-tree fallback.
+  * Remove the obsolete in-tree PO update helper; translations are maintained
+    through Lokit while normal PO-to-MO package builds remain unchanged.
+  * Keep the README title version-neutral so release numbers cannot go stale.
+
+ -- crims0n <crims0n@minios.dev>  Tue, 18 Aug 2026 03:06:00 +0300
+
 minios-installer (3.0.2) unstable; urgency=medium
 
   * Use the shared MiniOS GUI toolkit for common styling, icons, dialogs, log

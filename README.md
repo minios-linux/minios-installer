@@ -1,4 +1,4 @@
-# MiniOS Installer 3.0.2
+# MiniOS Installer
 
 GTK3 wizard and command-line backend for installing MiniOS from a live session.
 

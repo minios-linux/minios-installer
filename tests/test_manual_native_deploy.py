@@ -7,7 +7,9 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 
 from manual_executor import InstallTarget, ManualExecutionResult
-from manual_partitioning import ExistingPartitionRef, LayoutSnapshot, ManualAction, ManualPlanner, MountAssignment, SectorExtent, scan_manual_layout
+from manual_partitioning import (ExistingPartitionRef, LayoutSnapshot, ManualAction,
+                                 ManualPartitionPlan, ManualPlanner, MountAssignment,
+                                 SectorExtent, scan_manual_layout)
 from partition_models import DiskLayout, PartitionInfo
 
 
@@ -25,6 +27,24 @@ def _result():
     targets = tuple(InstallTarget(ref, '/dev/sda{0}'.format(ref.number), ref.fstype)
                     for ref in (root, home, esp, swap))
     return ManualExecutionResult(targets, assignments)
+
+
+def _manual_uefi_plan(format_esp=False):
+    esp = ExistingPartitionRef(
+        1, 'esp', 2048, 1048576,
+        'c12a7328-f81f-11d2-ba4b-00a0c93ec93b', 'vfat')
+    root = ExistingPartitionRef(
+        2, 'root', 1050624, 4000000,
+        '0fc63daf-8483-4772-8e79-3d69d8477de4', 'ext4')
+    snapshot = LayoutSnapshot(
+        '/dev/disk/by-id/ata-test-disk', 512, 8000000, 'gpt', (esp, root))
+    actions = [ManualAction('format', root, fstype='ext4')]
+    if format_esp:
+        actions.append(ManualAction('format', esp, fstype='vfat'))
+    return ManualPlanner().stage(snapshot, actions, [
+        MountAssignment(root, 'root', '/', 'ext4', True),
+        MountAssignment(esp, 'esp', '/boot/efi', 'vfat', format_esp),
+    ], use_efi=True)
 
 
 def test_collection_mounts_children_before_copy_and_cleans_in_reverse(tmp_path):
@@ -72,9 +92,10 @@ def test_native_manual_failure_cleans_mounted_collection(tmp_path):
 
     result = _result()
     state = InstallState(install_mode='native', target_device='/dev/sda')
-    state.manual_partition_plan = object()
+    state.manual_partition_plan = type('InjectedPlan', (), {'use_efi': False})()
     mounted = [str(tmp_path / 'root'), str(tmp_path / 'root/home')]
     with patch('native_deploy._preflight_manual_native'), \
+         patch('native_deploy._preflight_selected_kernel'), \
          patch('native_deploy.execute_manual_plan', return_value=result), \
          patch('native_deploy._mount_manual_targets', return_value=(
              mounted[0], str(tmp_path), mounted, native_deploy._manual_assignment_entries(result))), \
@@ -85,6 +106,88 @@ def test_native_manual_failure_cleans_mounted_collection(tmp_path):
         with pytest.raises(RuntimeError, match='copy failed'):
             native_deploy._run_manual_native_install(state, lambda *_: None, lambda *_: None)
     unmount.assert_called_once_with(mounted)
+
+
+def test_manual_reused_esp_preflight_uses_stable_partition_path():
+    import native_deploy
+
+    plan = _manual_uefi_plan()
+    with patch('native_deploy._preflight_writable_efi_variables') as variables, \
+         patch('native_deploy._preflight_reused_efi_payload_path') as payload:
+        native_deploy._preflight_manual_reused_efi(plan)
+
+    variables.assert_called_once_with()
+    payload.assert_called_once_with('/dev/disk/by-id/ata-test-disk-part1')
+
+
+def test_manual_formatted_esp_is_not_treated_as_reused():
+    import native_deploy
+
+    plan = _manual_uefi_plan(format_esp=True)
+    with patch('native_deploy._preflight_writable_efi_variables') as variables, \
+         patch('native_deploy._preflight_reused_efi_payload_path') as payload:
+        native_deploy._preflight_manual_reused_efi(plan)
+
+    assert not variables.called
+    assert not payload.called
+
+
+def test_manual_new_or_formatted_esp_checks_payload_capacity_before_execution():
+    import native_deploy
+
+    plan = _manual_uefi_plan(format_esp=True)
+    with patch('native_deploy.get_live_source_mount', return_value='/media/minios'), \
+         patch('native_deploy._regular_efi_tree_bytes', return_value=500 * 1024 * 1024):
+        with pytest.raises(RuntimeError, match='does not fit'):
+            native_deploy._preflight_manual_new_efi_capacity(plan)
+
+
+@pytest.mark.parametrize('message', (
+    'writable UEFI firmware variables',
+    'conflicting debian boot configuration',
+    'enough free space',
+))
+def test_manual_reused_esp_preflight_failure_stops_before_execution(message):
+    import native_deploy
+    from install_state import InstallState
+
+    state = InstallState(install_mode='native', target_device='/dev/sda')
+    state.manual_partition_plan = type('InjectedPlan', (), {'use_efi': True})()
+    with patch('native_deploy._preflight_manual_native'), \
+         patch('native_deploy._preflight_efi_payload_contract'), \
+         patch('native_deploy._preflight_manual_reused_efi', side_effect=RuntimeError(message)), \
+         patch('native_deploy.execute_manual_plan') as execute:
+        with pytest.raises(RuntimeError, match=message):
+            native_deploy._run_manual_native_install(
+                state, lambda *_: None, lambda *_: None)
+
+    assert not execute.called
+
+
+def test_contradictory_manual_plan_is_rejected_before_executor():
+    import native_deploy
+    from install_state import InstallState
+
+    base = _manual_uefi_plan()
+    esp = next(assignment.target for assignment in base.assignments if assignment.role == 'esp')
+    plan = ManualPartitionPlan(
+        base.snapshot,
+        base.actions + (
+            ManualAction('delete', esp),
+            ManualAction('shrink', esp, SectorExtent(esp.start_sector, esp.size_sectors // 2)),
+        ),
+        base.assignments,
+        use_efi=True,
+        required_root_sectors=base.required_root_sectors,
+        alignment_sectors=base.alignment_sectors,
+    )
+    state = InstallState(install_mode='native', target_device='/dev/sda')
+    state.manual_partition_plan = plan
+    with patch('native_deploy.execute_manual_plan') as execute:
+        with pytest.raises(Exception, match='delete|deleted'):
+            native_deploy._run_manual_native_install(
+                state, lambda *_: None, lambda *_: None)
+    assert not execute.called
 
 
 def test_manual_preflight_rejects_unavailable_format_tool_before_execution():

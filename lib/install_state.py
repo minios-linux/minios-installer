@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-try:
-    from dataclasses import dataclass, field
-except ImportError:  # Python 3.6 until the backport is repository-published
-    from dataclasses_compat import dataclass, field  # type: ignore
+from dataclasses import dataclass, field
 
 from typing import List, Optional
 import os

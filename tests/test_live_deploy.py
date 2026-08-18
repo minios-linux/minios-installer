@@ -139,6 +139,32 @@ class TestLiveDeploySafety:
         call_kwargs = exec_plan.call_args[1] if exec_plan.call_args else {}
         assert call_kwargs.get("cancel_cb") is not None
 
+    def test_live_bios_esp_payload_is_preflighted_before_partitioning(self):
+        from install_state import InstallState
+        from live_deploy import run_live_install
+        from partition_models import PartitionPlan, PlannedPartition
+
+        plan = PartitionPlan(device='/dev/sdb', use_gpt=False, wipe_disk=True, use_efi=False)
+        plan.partitions.append(PlannedPartition(
+            'create', 'esp', 100, 200, 'fat32', path='/dev/sdb2', mountpoint='/boot/efi'))
+        state = InstallState(
+            install_mode='live', placement='erase_all', target_device='/dev/sdb', filesystem='ext4')
+
+        with patch('live_deploy.resolve_install_device', return_value='/dev/sdb'), \
+             patch('live_deploy.find_minios_source', return_value='/media/minios'), \
+             patch('live_deploy.scan_disk', return_value=MagicMock()), \
+             patch('live_deploy.build_plan', return_value=plan), \
+             patch('live_deploy.efi_payload_bytes', side_effect=ValueError('EFI payload too large')) as measure, \
+             patch('live_deploy.execute_plan') as execute:
+            try:
+                run_live_install(state, lambda *_: None, lambda *_: None)
+                assert False, 'expected EFI payload preflight failure'
+            except ValueError as exc:
+                assert 'EFI payload' in str(exc)
+
+        measure.assert_called_once_with('/media/minios')
+        assert not execute.called
+
     def test_run_live_install_refuses_live_disk(self):
         from install_state import InstallState
         from live_deploy import run_live_install

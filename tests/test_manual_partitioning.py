@@ -35,6 +35,18 @@ def test_stages_immutable_sector_exact_plan_and_serializes():
         plan.snapshot.partitions[0].partuuid = 'changed'
 
 
+def test_create_in_free_space_is_not_data_destructive():
+    layout = snapshot()
+    extent = SectorExtent(305152, 4096)
+    plan = ManualPlanner().stage(
+        layout,
+        [ManualAction('create', extent=extent, fstype='ext4'),
+         ManualAction('format', extent, fstype='ext4')],
+        [MountAssignment(extent, 'root', '/', 'ext4', True)],
+    )
+    assert not plan.destructive
+
+
 @pytest.mark.parametrize('mount', ['/var/lib/data', '/srv/build-output'])
 def test_allows_arbitrary_safe_absolute_mountpoints(mount):
     refs = snapshot().partitions
@@ -110,6 +122,21 @@ def test_shrink_delete_and_existing_format_are_staged_without_execution():
     assert plan.summary_lines()[1:4] == [
         'Delete partition 2', 'Shrink partition 1: 2048-42047 to 2048-22527 sectors',
         'Format partition 1 as ext4']
+
+
+def test_rejects_delete_with_other_target_operations_and_duplicate_shrink():
+    refs = snapshot().partitions
+    root_assignment = [MountAssignment(refs[0], 'root', '/', 'ext4')]
+    with pytest.raises(ManualPlanError, match='delete|deleted'):
+        ManualPlanner().stage(snapshot(), [
+            ManualAction('delete', refs[1]),
+            ManualAction('shrink', refs[1], SectorExtent(refs[1].start_sector, 20480)),
+        ], root_assignment)
+    with pytest.raises(ManualPlanError, match='shrunk only once'):
+        ManualPlanner().stage(snapshot(), [
+            ManualAction('shrink', refs[0], SectorExtent(2048, 20480)),
+            ManualAction('shrink', refs[0], SectorExtent(2048, 18432)),
+        ], root_assignment)
 
 
 def test_reserves_partition_table_metadata_and_validates_existing_filesystem_intent():

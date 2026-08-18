@@ -14,7 +14,7 @@ from partition_models import (DiskLayout, PartitionInfo, ResizeOperation,
                               PLACEMENT_ALONGSIDE_OS)
 from partition_planner import build_plan
 from partition_resize import plan_shrink, select_resize_candidate
-from partition_executor import execute_plan
+from partition_executor import _apply_resize, execute_plan
 from partition_scanner import scan_disk
 
 
@@ -63,6 +63,41 @@ def test_selects_supported_partition_before_trailing_swap():
     )
 
     assert select_resize_candidate(layout).path == "/dev/sda2"
+
+
+def test_selects_windows_data_partition_before_gpt_recovery():
+    layout = layout_with_last("ntfs")
+    layout.partition_table = "gpt"
+    layout.partitions[1].parttype = "ebd0a0a2-b9e5-4433-87c0-68b6b72699c7"
+    layout.partitions.append(
+        PartitionInfo(
+            "sda3", "/dev/sda3", 746, 26002, 26748, "ntfs",
+            start_sector=26002 * MIB_SECTORS,
+            size_sectors=746 * MIB_SECTORS,
+            partition_number=3,
+            parttype="de94bba4-06d1-4d40-a16a-bfd50179d6ac",
+        )
+    )
+
+    assert select_resize_candidate(layout).path == "/dev/sda2"
+
+
+def test_rejects_unknown_partition_after_windows_data_partition():
+    layout = layout_with_last("ntfs")
+    layout.partition_table = "gpt"
+    layout.partitions[1].parttype = "ebd0a0a2-b9e5-4433-87c0-68b6b72699c7"
+    layout.partitions.append(
+        PartitionInfo(
+            "sda3", "/dev/sda3", 746, 26002, 26748, "",
+            start_sector=26002 * MIB_SECTORS,
+            size_sectors=746 * MIB_SECTORS,
+            partition_number=3,
+            parttype="01234567-89ab-cdef-0123-456789abcdef",
+        )
+    )
+
+    with pytest.raises(ValueError):
+        select_resize_candidate(layout)
 
 
 def test_native_alongside_keeps_trailing_swap_candidate_compatible():
@@ -174,6 +209,19 @@ def test_ntfs_executor_uses_check_no_action_resize_then_boundary():
     assert text.index("ntfsresize --size") < text.index("sfdisk --no-reread")
 
 
+def test_ntfs_real_resize_confirms_without_force():
+    resize = ResizeOperation("/dev/sda2", 2, "ntfs", 2048, 40000000,
+                             20000000, 512)
+    plan = PartitionPlan("/dev/sda", False, False, resize=resize)
+    with patch("partition_executor._run") as run:
+        _apply_resize(plan, lambda _message: None, dry_run=True)
+
+    args, kwargs = run.call_args_list[2]
+    assert args[0] == ["ntfsresize", "--size", "10240000000", "/dev/sda2"]
+    assert "--force" not in args[0]
+    assert kwargs["input_text"] == "y\n"
+
+
 def test_real_resize_verifies_geometry_before_mkpart():
     resize = ResizeOperation("/dev/sda2", 2, "ext4", 2048, 40000000,
                              20000000, 512)
@@ -241,3 +289,19 @@ def test_scanner_recognizes_gpt_efi_partition_type():
         layout = scan_disk("/dev/sda")
     assert layout.partitions[0].role == "esp"
     assert layout.has_efi is True
+
+
+def test_scanner_normalizes_ntfs3_filesystem_type():
+    disk = {
+        "name": "sda", "size": str(512 * 100000), "type": "disk",
+        "log-sec": "512", "pttype": "gpt",
+        "children": [{
+            "name": "sda1", "size": str(512 * 90000), "start": "2048",
+            "partn": "1", "type": "part", "fstype": "ntfs3", "mountpoint": "",
+        }],
+    }
+    with patch("partition_scanner._run_lsblk", return_value=disk):
+        layout = scan_disk("/dev/sda")
+    assert layout.partitions[0].fstype == "ntfs"
+    assert layout.partitions[0].role == "windows"
+    assert layout.has_windows is True

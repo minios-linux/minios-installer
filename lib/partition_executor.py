@@ -3,13 +3,15 @@
 
 import gettext
 import os
+import shutil
 import stat
 import subprocess
+import tempfile
 import time
 from typing import Callable, List, Optional, Tuple
 
 from command_utils import run_command
-from disk_utils import partition_device_path
+from disk_utils import get_live_source_mount, partition_device_path
 from format_utils import format_partitions
 from install_state import InstallCanceled
 from mount_utils import force_unmount_device, mount_partition
@@ -34,11 +36,20 @@ def _check_cancel(cancel_cb: Optional[Callable[[], bool]], after_wipe: bool = Fa
         raise InstallCanceled(_("Installation canceled by user."))
 
 
-def _run(cmd: List[str], message: str, log_cb: Callable[[str], None], dry_run: bool = False) -> None:
+def _run(cmd: List[str], message: str, log_cb: Callable[[str], None], dry_run: bool = False,
+         input_text: Optional[str] = None) -> None:
     log_cb("$ " + " ".join(cmd))
     if dry_run:
         return
-    run_command(cmd, message)
+    if input_text is None:
+        run_command(cmd, message)
+        return
+    result = subprocess.run(
+        cmd, input=input_text, universal_newlines=True,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
+    )
+    if result.returncode:
+        raise RuntimeError(message + "\n" + (result.stdout or ""))
 
 
 def _partition_index(plan: PartitionPlan, part: PlannedPartition) -> int:
@@ -70,6 +81,7 @@ def _apply_partition_table(
         _check_cancel(cancel_cb)
         _apply_resize(plan, log_cb, dry_run, cancel_cb=cancel_cb)
         if not dry_run:
+            _revalidate_modified_layout(plan)
             _revalidate_planned_free_extent(plan)
     if plan.wipe_disk:
         if not dry_run:
@@ -125,6 +137,8 @@ def _apply_partition_table(
         else:
             timeout = 20
         _wait_for_partitions(plan, timeout=timeout)
+        if not plan.wipe_disk:
+            _revalidate_modified_layout(plan, include_created=True)
 
 
 def _verify_existing_partition(plan: PartitionPlan, path: str, expected_fstype: Optional[str] = None) -> None:
@@ -137,7 +151,12 @@ def _verify_existing_partition(plan: PartitionPlan, path: str, expected_fstype: 
         raise RuntimeError(_("Planned existing partition is no longer on the selected target disk."))
     if expected_fstype:
         fstype = subprocess.check_output(["lsblk", "-n", "-o", "FSTYPE", path], universal_newlines=True).strip().lower()
-        accepted = ("vfat", "fat", "fat16", "fat32") if expected_fstype == "fat32" else (expected_fstype.lower(),)
+        if expected_fstype == "fat32":
+            accepted = ("vfat", "fat", "fat16", "fat32")
+        elif expected_fstype.lower() == "ntfs":
+            accepted = ("ntfs", "ntfs3")
+        else:
+            accepted = (expected_fstype.lower(),)
         if fstype not in accepted:
             raise RuntimeError(_("Planned existing partition no longer has the expected filesystem."))
 
@@ -158,13 +177,49 @@ def _revalidate_preserve_plan(plan: PartitionPlan) -> None:
             raise RuntimeError(_("Planned free extent is no longer available."))
 
 
+def _revalidate_modified_layout(plan: PartitionPlan, include_created: bool = False) -> None:
+    """Verify preserved and newly allocated exact geometry before formatting."""
+    if not plan.expected_partitions:
+        return
+    from partition_scanner import scan_disk
+    current = scan_disk(plan.device)
+    observed = {part.partition_number: part for part in current.partitions}
+    expected_numbers = {item[0] for item in plan.expected_partitions}
+    created = [part for part in plan.partitions if part.action == "create"] if include_created else []
+    created_numbers = {_partition_index(plan, part) for part in created}
+    if set(observed) != expected_numbers | created_numbers:
+        raise RuntimeError(_("Partition layout does not match the installation plan."))
+
+    for number, start, size, parttype, partuuid in plan.expected_partitions:
+        part = observed[number]
+        expected_size = (
+            plan.resize.new_size_sectors
+            if plan.resize and number == plan.resize.partition_number
+            else size
+        )
+        if (part.start_sector, part.size_sectors, part.parttype, part.partuuid) != (
+                start, expected_size, parttype, partuuid):
+            raise RuntimeError(_("A preserved partition changed unexpectedly."))
+
+    sectors_per_mib = (1024 * 1024) // current.logical_sector_size
+    for planned in created:
+        part = observed[_partition_index(plan, planned)]
+        if (part.start_sector != planned.start_mib * sectors_per_mib or
+                part.size_sectors != (planned.end_mib - planned.start_mib) * sectors_per_mib):
+            raise RuntimeError(_("A created partition does not match the installation plan."))
+
+
 def _revalidate_planned_free_extent(plan: PartitionPlan) -> None:
     """The alongside extent only exists after a successful shrink."""
     if not plan.expected_free_extent:
         return
     from partition_scanner import scan_disk
     current = scan_disk(plan.device)
-    if plan.expected_free_extent not in [(e.start_mib, e.end_mib) for e in current.free_extents]:
+    expected_start, expected_end = plan.expected_free_extent
+    if not any(
+        extent.start_mib <= expected_start and extent.end_mib >= expected_end
+        for extent in current.free_extents
+    ):
         raise RuntimeError(_("Resized partition did not create the planned free extent."))
 
 
@@ -177,13 +232,52 @@ def _revalidate_reused_esp(plan: PartitionPlan) -> None:
     current_uuid = subprocess.check_output(["blkid", "-s", "PARTUUID", "-o", "value", plan.esp_path], universal_newlines=True).strip()
     if current_uuid != plan.esp_partuuid:
         raise RuntimeError(_("Planned ESP identity changed after the plan was created."))
+    mount_dir = tempfile.mkdtemp(prefix="minios-esp-preflight-")
+    mounted = False
     try:
-        available = int(subprocess.check_output(["lsblk", "-b", "-n", "-o", "FSAVAIL", plan.esp_path], universal_newlines=True).strip())
-    except Exception as exc:
-        raise RuntimeError(_("Could not measure free space on the reused ESP.")) from exc
-    required = plan.esp_min_mib * 1024 * 1024
-    if available < required:
-        raise RuntimeError(_("Reused ESP does not have enough free space for the EFI payload."))
+        result = subprocess.run(
+            ["mount", "-t", "vfat", "-o", "ro,nosuid,nodev,noexec", plan.esp_path, mount_dir],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(_("Could not mount the reused ESP for free-space validation."))
+        mounted = True
+        existing_bytes = _regular_tree_bytes(os.path.join(mount_dir, "EFI"))
+        source_mount = get_live_source_mount()
+        source_bytes = _regular_tree_bytes(os.path.join(source_mount, "EFI"))
+        for architecture in ("i386-efi", "x86_64-efi"):
+            source_bytes += _regular_tree_bytes(
+                os.path.join(source_mount, "minios", "boot", "grub", architecture))
+        filesystem = os.statvfs(mount_dir)
+        available = filesystem.f_bavail * filesystem.f_frsize
+        required = ((existing_bytes + source_bytes) * 125 + 99) // 100 + 1024 * 1024
+        if available < required:
+            raise RuntimeError(_("Reused ESP does not have enough free space for transactional EFI publication."))
+    finally:
+        if mounted:
+            result = subprocess.run(
+                ["umount", mount_dir], stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL, check=False,
+            )
+            if result.returncode != 0:
+                raise RuntimeError(_("Could not unmount the reused ESP after validation."))
+        shutil.rmtree(mount_dir, ignore_errors=True)
+
+
+def _regular_tree_bytes(path: str) -> int:
+    if not os.path.exists(path):
+        return 0
+    total = 0
+    for root, directories, files in os.walk(path, followlinks=False):
+        for name in directories:
+            if not stat.S_ISDIR(os.lstat(os.path.join(root, name)).st_mode):
+                raise RuntimeError(_("EFI tree contains an unsafe directory."))
+        for name in files:
+            mode = os.lstat(os.path.join(root, name)).st_mode
+            if not stat.S_ISREG(mode):
+                raise RuntimeError(_("EFI tree contains an unsafe file."))
+            total += os.path.getsize(os.path.join(root, name))
+    return total
 
 
 def _target_block_names(device: str) -> set:
@@ -263,7 +357,8 @@ def _apply_resize(plan: PartitionPlan, log_cb: Callable[[str], None], dry_run: b
         _check_cancel(cancel_cb)
         _run(["ntfsresize", "--no-action", "--size", str(new_bytes), path], _("NTFS resize validation failed."), log_cb, dry_run)
         _check_cancel(cancel_cb)
-        _run(["ntfsresize", "--size", str(new_bytes), path], _("Failed to resize NTFS."), log_cb, dry_run)
+        _run(["ntfsresize", "--size", str(new_bytes), path], _("Failed to resize NTFS."),
+             log_cb, dry_run, input_text="y\n")
     else:
         raise RuntimeError(_("Unsupported resize filesystem."))
     command = ["sfdisk", "--no-reread", "-N", str(resize.partition_number), plan.device]

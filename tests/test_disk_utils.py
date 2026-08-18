@@ -427,7 +427,10 @@ class TestDeviceSafety:
     def test_get_live_root_disk_normalizes_pkname(self):
         from disk_utils import get_live_root_disk
 
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
         with patch('disk_utils.get_live_source_mount', return_value='/run/initramfs/memory/data'), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
              patch('disk_utils.run_command', side_effect=['/dev/sdb1', 'sdb']):
             assert get_live_root_disk() == '/dev/sdb'
 
@@ -441,6 +444,16 @@ class TestDeviceSafety:
              patch('os.stat', return_value=fake_stat), \
              patch('disk_utils.run_command', side_effect=['/dev/sr0', '', 'rom']):
             assert get_live_root_disk() == '/dev/sr0'
+
+    def test_get_live_root_disk_preserves_partitioned_whole_disk(self):
+        from disk_utils import get_live_root_disk
+
+        fake_stat = MagicMock(st_mode=stat.S_IFBLK)
+        with patch('disk_utils.get_live_source_mount', return_value='/run/initramfs/memory/data'), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.stat', return_value=fake_stat), \
+             patch('disk_utils.run_command', side_effect=['/dev/sdb', 'sdb\nsdb\n', 'disk']):
+            assert get_live_root_disk() == '/dev/sdb'
 
     def test_get_live_root_disk_nvme_partition_without_pkname(self):
         from disk_utils import get_live_root_disk

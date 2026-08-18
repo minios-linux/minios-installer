@@ -171,7 +171,11 @@ class ManualPartitionPlan(namedtuple(
 
     @property
     def destructive(self):
-        return any(action.kind in ("delete", "shrink", "format", "create") for action in self.actions)
+        return any(
+            action.kind in ("delete", "shrink") or
+            (action.kind == "format" and isinstance(action.target, ExistingPartitionRef))
+            for action in self.actions
+        )
 
 
 def scan_manual_layout(layout):
@@ -238,6 +242,7 @@ class ManualPlanner(object):
         created = []
         shrunk = {}
         formatted = set()
+        action_kinds = {}
         for action in plan.actions:
             if action.kind not in self.SUPPORTED_ACTIONS:
                 raise ManualPlanError("unsupported manual operation: {0}".format(action.kind))
@@ -248,6 +253,16 @@ class ManualPlanner(object):
                 continue
             if action.target not in known and not (action.kind == "format" and action.target in created):
                 raise ManualPlanError("stale or missing existing partition identity")
+            if action.target in known:
+                seen = action_kinds.setdefault(action.target, set())
+                if action.kind == "delete":
+                    if seen:
+                        raise ManualPlanError("delete cannot be combined with another operation on the same partition")
+                elif "delete" in seen:
+                    raise ManualPlanError("deleted partition cannot be modified")
+                if action.kind == "shrink" and "shrink" in seen:
+                    raise ManualPlanError("partition can be shrunk only once")
+                seen.add(action.kind)
             if action.kind == "shrink":
                 if not isinstance(action.extent, SectorExtent) or action.extent.start_sector != action.target.start_sector or action.extent.size_sectors >= action.target.size_sectors:
                     raise ManualPlanError("shrink must retain start sector and reduce size")

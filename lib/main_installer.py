@@ -1311,8 +1311,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if ask_confirmation(
                 self,
                 _("Cancel installation?"),
-                _("The install may already have written to the selected disk. "
-                  "Cancel requests a cooperative stop."),
+                _("Changes already completed on the selected disk will not be rolled back. "
+                  "Canceling may leave the MiniOS installation incomplete."),
                 destructive=True,
                 confirm_label=_("Cancel Install"),
                 cancel_label=_("Keep Installing")):
@@ -2928,7 +2928,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         def on_placement(btn, placement):
             if btn.get_active():
                 controller = getattr(self, "manual_controller", None)
-                if self.state.placement == "manual" and placement != "manual" and controller and controller.destructive:
+                if (self.state.placement == "manual" and placement != "manual" and controller and
+                        (controller.actions or controller.assignments)):
                     if not self._confirm_manual_discard(_("Discard staged manual partition changes?")):
                         self.manual_placement_radio.set_active(True)
                         return
@@ -3756,9 +3757,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         return ask_confirmation(
             self,
             text,
-            _("These changes have not been written, but include destructive "
-              "disk actions."),
-            destructive=True,
+            _("These staged changes have not been written to disk."),
             confirm_label=_("Discard Changes"))
 
     def _refresh_manual_placement(self):
@@ -3817,6 +3816,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 assignment.mountpoint if assignment else "-", action))
             row = Gtk.ListBoxRow()
             row.target = ref
+            if any(a.kind == "delete" and a.target == ref for a in controller.actions):
+                row.set_sensitive(False)
             row.add(label)
             rows.add(row)
         for extent in controller.snapshot.free_extents:
@@ -3862,7 +3863,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._update_partition_preview()
 
     def _manual_confirm(self, text):
-        return self._confirm_manual_discard(text)
+        return ask_confirmation(
+            self,
+            text,
+            _("This only stages the change. Nothing will be written to disk until the final confirmation."),
+            confirm_label=_("Stage Change"),
+        )
 
     def _manual_create(self, _button):
         target = getattr(self, "manual_selected_target", None)
@@ -3943,7 +3949,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.manual_controller.undo(); self._manual_after_change()
 
     def _manual_reset(self, _button):
-        if not self.manual_controller.destructive or self._confirm_manual_discard(_("Reset all staged manual partition changes?")):
+        if not (self.manual_controller.actions or self.manual_controller.assignments) or self._confirm_manual_discard(_("Reset all staged manual partition changes?")):
             self.manual_controller.reset(); self._manual_after_change()
 
     def _on_alongside_size_changed(self, spin):
@@ -4180,7 +4186,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         selected = getattr(row, "device", None) if row else None
         previous = self.state.target_device
         controller = getattr(self, "manual_controller", None)
-        if (selected and previous and selected != previous and controller and controller.destructive and
+        if (selected and previous and selected != previous and controller and
+                (controller.actions or controller.assignments) and
                 not self._confirm_manual_discard(_("Discard staged manual partition changes and switch disks?"))):
             old_row = getattr(self, "disk_rows", {}).get(previous)
             if old_row:
@@ -4442,7 +4449,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 "<b>{}</b>\n{}".format(
                     GLib.markup_escape_text(_("Existing partition will be resized")),
                     GLib.markup_escape_text(
-                        _("Back up important files and connect reliable power. Interruption during filesystem resize can cause data loss.")
+                        _("Back up important data before continuing. This installation shrinks an existing filesystem and changes the partition table. If resizing fails or the installation is interrupted, data may be lost. Installing alongside another system also changes boot configuration, so boot repair may be required.")
                     ),
                 )
             )
@@ -4450,8 +4457,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             confirm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
             self.resize_confirm = Gtk.CheckButton()
             self.resize_confirm.get_accessible().set_name(
-                _("I understand that the existing partition will be modified."))
-            confirm_label = Gtk.Label(label=_("I understand that the existing partition will be modified."), xalign=0)
+                _("I understand that resizing an existing partition can cause data loss."))
+            confirm_label = Gtk.Label(label=_("I understand that resizing an existing partition can cause data loss."), xalign=0)
             confirm_label.set_line_wrap(True)
             confirm_box.pack_start(self.resize_confirm, False, False, 0)
             confirm_box.pack_start(confirm_label, True, True, 0)
@@ -4618,7 +4625,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if manual_destructive:
             banner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
             banner.get_style_context().add_class("warning-banner")
-            confirm = Gtk.CheckButton(label=_("I understand the listed manual actions can permanently destroy data."))
+            confirm = Gtk.CheckButton(label=_("I understand that the listed manual actions modify existing partitions and can cause permanent data loss."))
             banner.pack_start(confirm, True, True, 0)
             confirm.connect("toggled", lambda btn: self.next_button.set_sensitive(btn.get_active() and getattr(self, "summary_package_can_continue", True)))
             box.pack_start(banner, False, False, 0)
@@ -4703,8 +4710,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if not ask_confirmation(
                 self,
                 _("Cancel installation?"),
-                _("The install may already have written to the selected disk. "
-                  "Cancel requests a cooperative stop."),
+                _("Changes already completed on the selected disk will not be rolled back. "
+                  "Canceling may leave the MiniOS installation incomplete."),
                 destructive=True,
                 confirm_label=_("Cancel Install"),
                 cancel_label=_("Keep Installing")):

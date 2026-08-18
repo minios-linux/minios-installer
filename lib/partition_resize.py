@@ -9,6 +9,17 @@ from partition_models import DiskLayout, PartitionInfo, ResizeOperation
 
 
 SUPPORTED_FILESYSTEMS = ("ext2", "ext3", "ext4", "ntfs")
+MICROSOFT_BASIC_DATA_GUID = "ebd0a0a2-b9e5-4433-87c0-68b6b72699c7"
+WINDOWS_RECOVERY_GUID = "de94bba4-06d1-4d40-a16a-bfd50179d6ac"
+
+
+def _is_ignorable_trailing_partition(layout: DiskLayout, part: PartitionInfo) -> bool:
+    if part.fstype.lower() in ("swap", "linux-swap", "linux-swap(v1)"):
+        return True
+    return (
+        layout.partition_table == "gpt"
+        and part.parttype.lower() == WINDOWS_RECOVERY_GUID
+    )
 
 
 def select_resize_candidate(layout: DiskLayout) -> PartitionInfo:
@@ -16,16 +27,31 @@ def select_resize_candidate(layout: DiskLayout) -> PartitionInfo:
         raise ValueError("Exact partition geometry is unavailable")
     if layout.has_nested_layout or any(part.has_children for part in layout.partitions):
         raise ValueError("Nested partition layouts cannot be resized safely")
+    if layout.has_mapped_layout:
+        raise ValueError("Mapped partition layouts cannot be resized safely")
     if not layout.partitions:
         raise ValueError("No partition is available to resize")
     ordered = sorted(layout.partitions, key=lambda part: part.start_sector + part.size_sectors)
+    seen_numbers = set()
+    previous_end = 0
+    for part in sorted(ordered, key=lambda item: item.start_sector):
+        if (part.partition_number <= 0 or part.partition_number in seen_numbers or
+                part.start_sector < 0 or part.size_sectors <= 0 or
+                part.start_sector < previous_end or
+                part.start_sector + part.size_sectors > layout.size_sectors):
+            raise ValueError("Exact non-overlapping partition geometry is required")
+        seen_numbers.add(part.partition_number)
+        previous_end = part.start_sector + part.size_sectors
     candidate = None
     for index in range(len(ordered) - 1, -1, -1):
         part = ordered[index]
         if part.fstype.lower() not in SUPPORTED_FILESYSTEMS:
             continue
+        if (layout.partition_table == "gpt" and part.fstype.lower() == "ntfs" and
+                part.parttype.lower() != MICROSOFT_BASIC_DATA_GUID):
+            continue
         trailing = ordered[index + 1:]
-        if all(item.fstype.lower() in ("swap", "linux-swap", "linux-swap(v1)") for item in trailing):
+        if all(_is_ignorable_trailing_partition(layout, item) for item in trailing):
             candidate = part
             break
     if candidate is None:

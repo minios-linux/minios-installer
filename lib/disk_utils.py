@@ -99,12 +99,17 @@ def get_live_root_disk() -> str:
             raise RuntimeError(_('Live media source is not a block device: ') + path)
         return path
 
-    pkname = run_command(
+    pkname_output = run_command(
         ['lsblk', '-n', '-o', 'PKNAME', root_src],
         _('Failed to detect root disk')
-    ).strip()
-    if pkname:
-        return verified(pkname)
+    )
+    pknames = {line.strip() for line in pkname_output.splitlines() if line.strip()}
+    if len(pknames) > 1:
+        raise RuntimeError(_('Live media source has ambiguous parent disks.'))
+    if pknames:
+        parent = normalize_device_path(next(iter(pknames)))
+        if os.path.realpath(parent) != os.path.realpath(root_src):
+            return verified(parent)
 
     # Whole-disk media (CD/DVD/ISO, USB image without partition parent) must not be
     # mangled by digit stripping: /dev/sr0 would become /dev/sr.
