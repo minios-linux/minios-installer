@@ -57,8 +57,9 @@ from partition_scanner import scan_disk
 from user_config_writer import load_config_values
 from minios_security.capabilities import load_capabilities, support_class, supports
 from minios_security.security_profiles import SECURITY_PROFILE_IDS, profile_required_capabilities
-from minios_gui import (LogView, apply_minios_css, ask_confirmation,
-                        resolve_icon, show_error_dialog)
+from minios_gui import (LogView, StatusBanner, apply_minios_css, ask_confirmation,
+                        classify_module, format_bytes, new_header_bar, resolve_icon,
+                        show_error_dialog)
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
@@ -883,52 +884,28 @@ def create_completion(items, entry):
 
 
 def describe_module_name(name):
-    lower = name.lower()
+    role_id, icons = classify_module(name)
+    role = {
+        "core": _("Core system"),
+        "kernel": _("Kernel and drivers"),
+        "firmware": _("Hardware firmware"),
+        "gui-base": _("Graphical base"),
+        "desktop": _("Desktop environment"),
+        "toolbox": _("Toolbox utilities"),
+        "ultra": _("Ultra applications"),
+        "apps": _("Application bundle"),
+        "browser": _("Web browser"),
+        "custom": _("Custom module"),
+    }[role_id]
     stem = re.sub(r"\.sb$", "", name)
     stem = re.sub(r"^[0-9]+-", "", stem)
     stem = stem.replace("-amd64", "").replace("_", "-")
     friendly = stem.replace("-", " ").title()
-    if "core" in lower:
-        role = _("Core system")
-        icons = ["application-x-executable", "computer", "system-run"]
-    elif "kernel" in lower:
-        role = _("Kernel and drivers")
-        icons = ["cpu", "application-x-firmware", "system-run"]
-    elif "firmware" in lower:
-        role = _("Hardware firmware")
-        icons = ["application-x-firmware", "media-flash"]
-    elif "gui-base" in lower:
-        role = _("Graphical base")
-        icons = ["preferences-desktop-display", "video-display"]
-    elif "desktop" in lower or "xfce" in lower or "kde" in lower or "gnome" in lower or "lxqt" in lower:
-        role = _("Desktop environment")
-        icons = ["user-desktop", "preferences-desktop"]
-    elif "toolbox" in lower:
-        role = _("Toolbox utilities")
-        icons = ["applications-utilities", "applications-accessories"]
-    elif "ultra" in lower:
-        role = _("Ultra applications")
-        icons = ["applications-graphics", "applications-other"]
-    elif "apps" in lower or "applications" in lower:
-        role = _("Application bundle")
-        icons = ["applications-other", "application-x-addon"]
-    elif "firefox" in lower or "browser" in lower:
-        role = _("Web browser")
-        icons = ["web-browser", "firefox", "internet-web-browser"]
-    else:
-        role = _("Custom module")
-        icons = ["package-x-generic"]
     return role, friendly, name, icons
 
 
 def format_module_size(size):
-    if size is None:
-        return _("Size unavailable")
-    if size >= 1024 * 1024 * 1024:
-        return "{:.1f} GiB".format(size / (1024.0 * 1024.0 * 1024.0))
-    if size >= 1024 * 1024:
-        return "{:.0f} MiB".format(size / (1024.0 * 1024.0))
-    return "{:.0f} KiB".format(size / 1024.0)
+    return format_bytes(size) or _("Size unavailable")
 
 
 def parse_keyboard_layouts(value):
@@ -999,11 +976,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
     def __init__(self, application):
         super().__init__(application=application, title=_(APP_TITLE))
-        header = Gtk.HeaderBar(show_close_button=True)
-        header.set_has_subtitle(False)
-        header.get_style_context().add_class("minios-headerbar")
-        header.props.title = _(APP_TITLE)
-        self.set_titlebar(header)
+        self.set_titlebar(new_header_bar(_(APP_TITLE)))
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name(ICON_WINDOW)
         apply_minios_css(resolve_css_path())
@@ -4343,17 +4316,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.content_body.pack_start(box, False, False, 0)
 
         if not can_install:
-            banner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-            banner.get_style_context().add_class("error-banner")
-            banner.pack_start(
-                Gtk.Image.new_from_icon_name("dialog-error", Gtk.IconSize.LARGE_TOOLBAR),
-                False,
-                False,
-                0,
-            )
-            block_text = Gtk.Label(xalign=0)
-            block_text.set_line_wrap(True)
-            block_text.set_markup(
+            banner = StatusBanner(intent='error')
+            banner.label.set_markup(
                 "<b>{}</b>\n{}".format(
                     GLib.markup_escape_text(lines[0]),
                     GLib.markup_escape_text(
@@ -4361,7 +4325,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
                     ),
                 )
             )
-            banner.pack_start(block_text, True, True, 0)
             box.pack_start(banner, False, False, 0)
 
         if can_install and plan and plan.wipe_disk:
