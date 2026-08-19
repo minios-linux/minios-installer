@@ -1,7 +1,7 @@
 minios-installer (3.0.3) unstable; urgency=high
 
-  * Use minios-gui 1.1.0 for the shared HeaderBar and module
-    presentation metadata used by the module-selection UI.
+  * Use minios-gui 1.1.0 for the shared HeaderBar, module presentation metadata,
+    and keyboard-accessible contextual Help popovers.
   * Register compact format-1 kernel package state for native installations.
   * Validate kernel payload hashes, dependencies, architecture, repository
     metadata, and pinning before publishing native bootloader state.

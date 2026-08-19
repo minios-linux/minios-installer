@@ -57,8 +57,9 @@ from partition_scanner import scan_disk
 from user_config_writer import load_config_values
 from minios_security.capabilities import load_capabilities, support_class, supports
 from minios_security.security_profiles import SECURITY_PROFILE_IDS, profile_required_capabilities
-from minios_gui import (LogView, StatusBanner, apply_minios_css, ask_confirmation,
-                        classify_module, format_bytes, new_header_bar, resolve_icon,
+from minios_gui import (HelpPopoverButton, LogView, StatusBanner,
+                        apply_minios_css, ask_confirmation, classify_module,
+                        format_bytes, new_header_bar, resolve_icon,
                         show_error_dialog)
 
 gi.require_version("Gtk", "3.0")
@@ -1660,17 +1661,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
         lang_label = Gtk.Label(label=_("Boot menu language:"), xalign=0)
         lang_label.set_valign(Gtk.Align.CENTER)
         lang_label_box.pack_start(lang_label, True, True, 0)
-        self.boot_lang_info = Gtk.Image.new_from_icon_name(
-            resolve_icon("dialog-information-symbolic"), Gtk.IconSize.MENU)
-        self.boot_lang_info.get_style_context().add_class("field-help-icon")
-        self.boot_lang_info.set_valign(Gtk.Align.CENTER)
-        # Tooltip always available; wording covers both live and native fallback cases.
-        self.boot_lang_info.set_tooltip_text(
-            _(
-                "Language of the boot menu on the installed system. "
-                "For a full install this is also used if the installer cannot set up the standard GRUB bootloader."
-            )
+        boot_lang_help = _(
+            "Language of the boot menu on the installed system. "
+            "For a full install this is also used if the installer cannot set up the standard GRUB bootloader."
         )
+        self.boot_lang_info = HelpPopoverButton(
+            _("Boot menu language:"), summary=boot_lang_help,
+            compact=True, tooltip=boot_lang_help)
+        self.boot_lang_info.set_valign(Gtk.Align.CENTER)
         lang_label_box.pack_end(self.boot_lang_info, False, False, 0)
         startup_label = Gtk.Label(label=_("Default startup:"), xalign=0)
         startup_label.set_valign(Gtk.Align.CENTER)
@@ -2966,14 +2964,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
         fs_label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         fs_label_box.pack_start(
             Gtk.Label(label=_("Filesystem:"), xalign=0), True, True, 0)
-        info = Gtk.Image.new_from_icon_name(
-            resolve_icon("dialog-information-symbolic"), Gtk.IconSize.MENU)
-        info.get_style_context().add_class("field-help-icon")
-        info_box = Gtk.EventBox()
-        info_box.set_visible_window(False)
+        info_box = HelpPopoverButton(
+            _("Filesystem:"), summary=FILESYSTEM_HELP_MARKUP,
+            compact=True, markup=True)
         info_box.set_valign(Gtk.Align.CENTER)
-        info_box.add(info)
-        info_box.set_tooltip_markup(FILESYSTEM_HELP_MARKUP)
         fs_label_box.pack_end(info_box, False, False, 0)
         adv_grid.attach(fs_label_box, 0, 0, 1, 1)
         fs_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
