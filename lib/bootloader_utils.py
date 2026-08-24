@@ -183,21 +183,44 @@ def install_extlinux_bootloader(device: str, primary: str, efi: Optional[str], b
     if not os.path.exists(exe_path):
         raise RuntimeError(_("EXTLINUX installer not found: {path}").format(path=exe_path))
 
+    proc = None
     try:
-        import tempfile
-        fd, tmp_exe = tempfile.mkstemp(prefix='extlinux-', suffix='.bin')
-        os.close(fd)
-        shutil.copyfile(exe_path, tmp_exe)
-        os.chmod(tmp_exe, 0o755)
-        proc = subprocess.run(
-            [tmp_exe, '--install', boot_dir],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            universal_newlines=True
-        )
-        for line in proc.stdout.splitlines():
-            log_cb(line)
-        for line in proc.stderr.splitlines():
-            log_cb(line)
+        os.chmod(exe_path, 0o755)
+        try:
+            proc = subprocess.run(
+                [exe_path, '--install', boot_dir],
+                cwd=boot_dir,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
+        except OSError as exc:
+            log_cb(_("Could not run EXTLINUX from the target filesystem: {error}").format(error=str(exc)))
+
+        if proc is not None:
+            for line in proc.stdout.splitlines():
+                log_cb(line)
+            for line in proc.stderr.splitlines():
+                log_cb(line)
+
+        if proc is None or proc.returncode != 0:
+            if proc is not None:
+                log_cb(_("EXTLINUX install failed (code {code}); retrying from a temporary executable.").format(code=proc.returncode))
+            import tempfile
+            fd, tmp_exe = tempfile.mkstemp(prefix='extlinux-', suffix='.bin')
+            os.close(fd)
+            shutil.copyfile(exe_path, tmp_exe)
+            os.chmod(tmp_exe, 0o755)
+            proc = subprocess.run(
+                [tmp_exe, '--install', boot_dir],
+                cwd=boot_dir,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
+            for line in proc.stdout.splitlines():
+                log_cb(line)
+            for line in proc.stderr.splitlines():
+                log_cb(line)
+
         if proc.returncode != 0:
             raise RuntimeError(_("Error installing boot loader (code {code}).").format(code=proc.returncode))
         log_cb(_("Ran extlinux installer (code {code}).").format(code=proc.returncode))

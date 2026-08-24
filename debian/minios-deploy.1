@@ -25,7 +25,8 @@ to preview commands without making changes.
 .SH INSTALL OPTIONS
 .TP
 .B --mode live|native
-Installation mode. Default: live.
+Installation mode. Default: live. On live images without the required native
+installation contracts, only live is accepted; native mode is hidden and rejected.
 .TP
 .B --filesystem FS
 Root filesystem. Default: ext4. Native mode accepts ext2, ext4, and btrfs.

@@ -13,6 +13,7 @@ import re
 import stat
 import subprocess
 import gettext
+import json
 from typing import List, Dict, Optional, Callable
 from command_utils import run_command
 
@@ -21,6 +22,46 @@ from command_utils import run_command
 gettext.bindtextdomain('minios-installer', '/usr/share/locale')
 gettext.textdomain('minios-installer')
 _ = gettext.gettext
+
+
+NATIVE_KERNEL_MANIFEST_PATH = '/usr/share/minios/kernel-dpkg/manifest.json'
+
+
+def _json_contract(path: str):
+    try:
+        with open(path, 'r', encoding='utf-8', errors='strict') as stream:
+            value = json.load(stream)
+    except (OSError, ValueError, UnicodeError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def native_install_supported(source_mount: Optional[str] = None,
+                             kernel_manifest_path: str = NATIVE_KERNEL_MANIFEST_PATH) -> bool:
+    """Return whether the booted live image advertises native-install contracts.
+
+    Outside a detected MiniOS live session this stays permissive so development,
+    tests, and command help are not tied to host filesystem contents. On actual
+    live media, both the format-1 kernel registration data and the verified EFI
+    architecture contract are required before native/full mode is exposed.
+    """
+    if source_mount is None:
+        try:
+            source_mount = get_live_source_mount()
+        except RuntimeError:
+            return True
+
+    kernel = _json_contract(kernel_manifest_path)
+    if not kernel or kernel.get('format') != 1:
+        return False
+
+    efi = _json_contract(os.path.join(source_mount, 'minios', 'boot', 'efi-manifest.json'))
+    if not efi or efi.get('format') != 1 or efi.get('layout') != 'dual-architecture-esp':
+        return False
+    architectures = efi.get('architectures')
+    return (isinstance(architectures, dict) and
+            isinstance(architectures.get('x64'), dict) and
+            isinstance(architectures.get('ia32'), dict))
 
 
 def normalize_device_path(device: str) -> str:

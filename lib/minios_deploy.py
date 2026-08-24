@@ -8,7 +8,7 @@ import re
 import sys
 
 from disk_utils import ensure_safe_target_device, get_device_identity
-from disk_utils import find_available_disks
+from disk_utils import find_available_disks, native_install_supported
 from install_state import InstallState, UserConfig
 from live_deploy import run_live_install, runtime_supports_luks_persistence
 from module_selection import (
@@ -121,6 +121,8 @@ def _nonnegative_int(value: str) -> int:
 
 def _validate_cli_inputs(args) -> None:
     """Reject unsafe or malformed textual CLI values before planning a disk write."""
+    if getattr(args, "mode", "live") == "native" and not native_install_supported():
+        raise ValueError("This live image supports only live installation; use --mode live")
     user, _customized = user_config_from_args(args)
     checks = (
         ("username", user.username, r"[a-z_][a-z0-9_-]{0,31}"),
@@ -309,6 +311,7 @@ def build_parser(luks_available=None):
     persistence_modes = ["none", "native", "dynfilefs", "raw"]
     if luks_available:
         persistence_modes.append("luks")
+    install_modes = ["live", "native"] if native_install_supported() else ["live"]
     parser = argparse.ArgumentParser(
         prog="minios-deploy",
         description="MiniOS installer command-line interface",
@@ -324,7 +327,7 @@ def build_parser(luks_available=None):
     p.add_argument("--filesystem", default="ext4")
     p.add_argument("--placement", default="erase_all", choices=["erase_all", "free_space", "alongside_os"])
     p.add_argument("--alongside-size", type=_nonnegative_int, default=0, help="space to create for MiniOS when resizing, in MiB (default: calculated requirement)")
-    p.add_argument("--mode", default="live", choices=["live", "native"])
+    p.add_argument("--mode", default="live", choices=install_modes)
     p.add_argument("--modules", default="", help="comma-separated .sb modules used for the space calculation")
     p.add_argument("--persistence-mode", default="none", choices=persistence_modes, help="live session persistence mode")
     p.add_argument("--persistence-size", type=_nonnegative_int, default=0, metavar="MIB", help="container persistence size in MiB (default: 4000)")
@@ -334,7 +337,7 @@ def build_parser(luks_available=None):
 
     p = sub.add_parser("install", help="perform an install")
     p.add_argument("device")
-    p.add_argument("--mode", default="live", choices=["live", "native"],
+    p.add_argument("--mode", default="live", choices=install_modes,
                    help="install live modules layout or a regular native system")
     p.add_argument("--security-profile", choices=SECURITY_PROFILE_IDS,
                    help="security profile preset (default: convenient for live, balanced for native)")

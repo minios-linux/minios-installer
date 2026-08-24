@@ -8,7 +8,10 @@ minios-installer \- Install MiniOS to disk from live session
 .B minios-installer
 is a GTK3 graphical wizard for installing MiniOS from a live session to a
 target disk. It supports modular live installations and conventional native
-installations.
+installations. The wizard detects native-install capability from the booted
+image rather than its release number. Images without the required format-1 kernel
+metadata and EFI architecture contract automatically use compatibility mode and
+permit live installation only.
 .PP
 The installer creates and validates an explicit partition plan before any
 destructive operation. Placement modes include erase-all, existing free space,

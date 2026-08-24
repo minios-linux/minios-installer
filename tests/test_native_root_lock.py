@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import sys
 import os
 import tempfile
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
@@ -30,6 +31,15 @@ def _run_apply(user_config):
     ) as svc:
         _apply_native_settings("/target", state, logs.append, dry_run=False)
     return calls, logs, svc
+
+
+def test_native_backend_is_blocked_before_disk_access_without_contracts():
+    import native_deploy
+
+    state = InstallState(install_mode="native", target_device="/dev/sda")
+    with patch("native_deploy.native_install_supported", return_value=False):
+        with pytest.raises(RuntimeError, match="not supported by this live image"):
+            native_deploy.run_native_install(state, lambda *_args: None, lambda *_args: None)
 
 
 def test_native_locks_root_when_no_root_password():

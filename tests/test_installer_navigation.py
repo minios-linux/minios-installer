@@ -16,6 +16,19 @@ from main_installer import (InstallerWindow, backend_command_for_state,
                             native_security_summary_text)
 
 
+def test_missing_native_contracts_keep_live_installation():
+    state = InstallState(install_mode="live")
+    window = SimpleNamespace(
+        state=state,
+        native_install_available=False,
+        _refresh_mode_card_styles=Mock(),
+    )
+
+    InstallerWindow._set_install_mode(window, "native")
+
+    assert state.install_mode == "live"
+    window._refresh_mode_card_styles.assert_called_once_with()
+
 def test_only_viewed_non_current_steps_are_clickable():
     viewed = {0, 1, 3}
     assert can_navigate_to_viewed_step(0, 1, viewed)

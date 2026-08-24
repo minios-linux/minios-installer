@@ -16,7 +16,7 @@ import time
 from typing import Callable, List, Optional, Set
 
 from bundle_source import BundleOverlay, preflight_selected_bundles
-from disk_utils import get_live_source_mount, partition_device_path, resolve_install_device
+from disk_utils import get_live_source_mount, native_install_supported, partition_device_path, resolve_install_device
 from install_state import InstallCanceled, InstallState
 from kernel_metadata import (
     prepare_kernel_registration,
@@ -1969,6 +1969,8 @@ def run_native_install(
     log_cb: Callable[[str], None],
     dry_run: bool = False,
 ) -> None:
+    if not native_install_supported():
+        raise RuntimeError(_("Full installation is not supported by this live image. Use live installation instead."))
     if state.placement == "manual":
         if not state.target_device:
             raise RuntimeError(_("No target device selected."))

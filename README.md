@@ -10,6 +10,11 @@ GTK3 wizard and command-line backend for installing MiniOS from a live session.
   configures the target, installs required packages, generates initramfs, and
   installs the supported bootloader.
 
+The installer detects native-install capabilities from the booted image rather
+than from its release number. If the image does not provide the required format-1
+kernel metadata and EFI architecture contract, compatibility mode is enabled
+automatically and only **Live** installation is available.
+
 Placement choices are erase-all, existing free space, alongside a supported
 final partition, and GUI manual partitioning for native installations.
 

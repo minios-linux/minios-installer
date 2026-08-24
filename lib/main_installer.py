@@ -23,6 +23,7 @@ if _LIB_DIR not in sys.path:
 from disk_utils import (
     find_available_disks,
     get_device_identity,
+    native_install_supported,
     pause_disk_monitoring,
     resolve_install_device,
     resume_disk_monitoring,
@@ -985,6 +986,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._apply_window_size_limits()
 
         self.state = InstallState(boot_config_type=self._get_default_boot_config())
+        self.native_install_available = native_install_supported()
+        if not self.native_install_available:
+            self.state.set_install_mode("live")
         self.state.download_missing_packages = True
         self.available_locales = read_available_locales()
         self.available_timezones = read_available_timezones()
@@ -1480,11 +1484,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
         )
         card_box.pack_start(lead, False, False, 0)
 
+        mode_intro = _("Install a live MiniOS system or a full native system.")
+        if not self.native_install_available:
+            mode_intro = _("Compatibility mode: this live image supports only live system installation.")
         features = (
             (
                 "system-software-install-symbolic",
                 _("Choose installation type"),
-                _("Install a live MiniOS system or a full native system."),
+                mode_intro,
             ),
             (
                 "drive-harddisk-symbolic",
@@ -1517,9 +1524,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._nav(True)
 
     def _step_mode(self):
+        mode_description = _("Choose whether MiniOS should keep its live module layout or be installed as a regular Linux system.")
+        if not self.native_install_available:
+            mode_description = _("This live image supports only live system installation with the current installer.")
         self._page_title(
             _("Installation Mode"),
-            _("Choose whether MiniOS should keep its live module layout or be installed as a regular Linux system."),
+            mode_description,
         )
 
         self.mode_cards = {}
@@ -1550,6 +1560,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         for mode, title, desc in choices:
             frame = Gtk.Frame()
             frame.get_style_context().add_class("choice-card")
+            available = mode != "native" or self.native_install_available
             selected = self.state.install_mode == mode or (
                 mode == "live" and self.state.install_mode != "native"
             )
@@ -1588,6 +1599,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             inner.pack_start(texts, True, True, 0)
             event.add(inner)
             frame.add(event)
+            frame.set_sensitive(available)
             card_height_group.add_widget(frame)
             self.mode_cards[mode] = (frame, radio)
 
@@ -1605,6 +1617,15 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
             make_handlers(mode, radio, event)
             cards_box.pack_start(frame, False, False, 0)
+
+        if not self.native_install_available:
+            compatibility_note = Gtk.Label(
+                label=_("Full installation is unavailable because this live image does not provide the native-install metadata required by the current installer."),
+                xalign=0,
+            )
+            compatibility_note.set_line_wrap(True)
+            compatibility_note.get_style_context().add_class("dim-label")
+            cards_box.pack_start(compatibility_note, False, False, 4)
 
         self.content_body.pack_start(cards_box, False, False, 0)
 
@@ -1698,6 +1719,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 ctx.remove_class("choice-card-selected")
 
     def _set_install_mode(self, mode):
+        if mode == "native" and not getattr(self, "native_install_available", True):
+            self._refresh_mode_card_styles()
+            return
         if self.state.install_mode == mode:
             self._refresh_mode_card_styles()
             return

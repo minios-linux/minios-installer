@@ -39,6 +39,29 @@ def write_efi_manifest(source):
 
 
 class TestMiniOSDeploy:
+    def test_cli_hides_native_mode_when_image_lacks_contracts(self):
+        import minios_deploy
+
+        with patch('minios_deploy.native_install_supported', return_value=False):
+            parser = minios_deploy.build_parser(luks_available=True)
+        try:
+            parser.parse_args(['plan', '/dev/sdb', '--mode', 'native'])
+            assert False, 'expected native mode to be hidden without native contracts'
+        except SystemExit as exc:
+            assert exc.code == 2
+
+    def test_cli_rejects_native_mode_when_image_lacks_contracts(self):
+        import minios_deploy
+
+        parser = minios_deploy.build_parser(luks_available=True)
+        args = parser.parse_args(['plan', '/dev/sdb', '--mode', 'native'])
+        with patch('minios_deploy.native_install_supported', return_value=False):
+            try:
+                minios_deploy._validate_cli_inputs(args)
+                assert False, 'expected native-mode rejection without native contracts'
+            except ValueError as exc:
+                assert 'only live installation' in str(exc)
+
     def test_luks_persistence_defaults_to_raw_compatible_4000_mib(self):
         import minios_deploy
 

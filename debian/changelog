@@ -1,3 +1,14 @@
+minios-installer (3.0.4) unstable; urgency=medium
+
+  * Detect native-install support from image contracts instead of release
+    versions; keep older images in live-only compatibility mode and block
+    native/full installation consistently in the GUI, CLI, and backend.
+  * Restore the MiniOS 2.x EXTLINUX installation path for BIOS live installs:
+    run the target copy from its boot directory first and use a temporary copy
+    only as fallback, so upgraded installers keep legacy images BIOS-bootable.
+
+ -- crims0n <crims0n@minios.dev>  Mon, 24 Aug 2026 13:53:28 +0300
+
 minios-installer (3.0.3) unstable; urgency=high
 
   * Use minios-gui 1.1.0 for the shared HeaderBar, module presentation metadata,

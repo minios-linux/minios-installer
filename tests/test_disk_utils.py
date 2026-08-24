@@ -14,6 +14,45 @@ from unittest.mock import patch, MagicMock, mock_open
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 
 
+class TestNativeInstallCompatibility:
+    def _write_contracts(self, tmp_path):
+        import json
+
+        source = tmp_path / 'source'
+        efi = source / 'minios/boot/efi-manifest.json'
+        efi.parent.mkdir(parents=True)
+        efi.write_text(json.dumps({
+            'format': 1,
+            'layout': 'dual-architecture-esp',
+            'architectures': {'x64': {}, 'ia32': {}},
+        }), encoding='utf-8')
+        kernel = tmp_path / 'kernel-manifest.json'
+        kernel.write_text(json.dumps({'format': 1}), encoding='utf-8')
+        return source, kernel
+
+    def test_native_install_requires_image_contracts(self, tmp_path):
+        from disk_utils import native_install_supported
+
+        source, kernel = self._write_contracts(tmp_path)
+        assert native_install_supported(str(source), str(kernel))
+
+        kernel.unlink()
+        assert not native_install_supported(str(source), str(kernel))
+
+    def test_native_install_rejects_missing_efi_contract(self, tmp_path):
+        from disk_utils import native_install_supported
+
+        source, kernel = self._write_contracts(tmp_path)
+        (source / 'minios/boot/efi-manifest.json').unlink()
+        assert not native_install_supported(str(source), str(kernel))
+
+    def test_non_live_development_host_stays_permissive(self):
+        from disk_utils import native_install_supported
+
+        with patch('disk_utils.get_live_source_mount', side_effect=RuntimeError('not live')):
+            assert native_install_supported()
+
+
 class TestFormatSizeToGb:
     """Tests for format_size_to_gb function."""
 
