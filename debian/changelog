@@ -1,6 +1,7 @@
 minios-installer (3.0.5) unstable; urgency=medium
 
   * Exclude VCS metadata and generated build/test artifacts
+  * Prefer built-in dataclasses when building with Python 3.7 or newer
 
  -- crims0n <crims0n@minios.dev>  Thu, 27 Aug 2026 19:37:15 +0300
 
