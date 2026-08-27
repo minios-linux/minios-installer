@@ -1,0 +1,42 @@
+# Exclude VCS metadata.
+tar-ignore=.git
+tar-ignore=.bzr
+tar-ignore=.hg
+tar-ignore=.svn
+
+# Exclude Python and test caches.
+tar-ignore=.pytest_cache
+tar-ignore=.coverage
+tar-ignore=.coverage.*
+tar-ignore=.hypothesis
+tar-ignore=.mypy_cache
+tar-ignore=.nox
+tar-ignore=.pyre
+tar-ignore=.pytype
+tar-ignore=.ruff_cache
+tar-ignore=.tox
+tar-ignore=__pycache__
+tar-ignore=*.pyc
+tar-ignore=*.pyd
+tar-ignore=*.pyo
+tar-ignore=htmlcov
+
+# Exclude generated translations and Debian build state.
+tar-ignore=*.mo
+tar-ignore=debian/.debhelper
+tar-ignore=debian/debhelper-build-stamp
+tar-ignore=debian/files
+tar-ignore=debian/*.substvars
+tar-ignore=debian/*.debhelper
+tar-ignore=debian/*.log
+tar-ignore=debian/minios-installer
+tar-ignore=debian/tmp
+
+# Exclude package artifacts if they are placed in the source tree.
+tar-ignore=minios-installer_*.build
+tar-ignore=minios-installer_*.buildinfo
+tar-ignore=minios-installer_*.changes
+tar-ignore=minios-installer_*.deb
+tar-ignore=minios-installer_*.dsc
+tar-ignore=minios-installer_*.tar.*
+tar-ignore=minios-installer_*.udeb
