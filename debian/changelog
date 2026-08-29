@@ -26,7 +26,7 @@ minios-installer (3.0.6) unstable; urgency=medium
     controls that legacy or partially capable images cannot confirm
   * Resolve the Python 3.6 dataclasses backport correctly in Bionic builds
 
- -- crims0n <crims0n@minios.dev>  Sun, 30 Aug 2026 02:10:42 +0300
+ -- crims0n <crims0n@minios.dev>  Sun, 30 Aug 2026 02:12:41 +0300
 
 minios-installer (3.0.5) unstable; urgency=medium
 

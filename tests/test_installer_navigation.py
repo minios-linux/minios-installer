@@ -149,6 +149,9 @@ def test_security_profile_descriptions_match_install_mode():
 def test_partial_security_summary_does_not_promise_unsupported_behavior():
     state = InstallState(install_mode="live", security_profile="balanced")
     window = SimpleNamespace(state=state)
+    window._profile_description = lambda profile: InstallerWindow._profile_description(
+        window, profile
+    )
 
     full = InstallerWindow._profile_summary_description(window, "balanced", "full")
     partial = InstallerWindow._profile_summary_description(window, "balanced", "partial")
