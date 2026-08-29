@@ -53,10 +53,10 @@ from partition_geometry import (erase_swap_limits, resize_boundary_x,
                                 resize_size_at_x, trailing_swap_boundary_x,
                                 trailing_swap_size_at_x)
 from partition_planner import _use_efi_for_layout, build_plan
-from partition_resize import select_resize_candidate
+from partition_resize import NoResizeCandidateError, select_resize_candidate
 from partition_scanner import scan_disk
 from user_config_writer import load_config_values
-from minios_security.capabilities import load_capabilities, support_class, supports
+from minios_security.capabilities import load_capabilities, support_class
 from minios_security.security_profiles import SECURITY_PROFILE_IDS, profile_required_capabilities
 from minios_gui import (HelpPopoverButton, LogView, StatusBanner,
                         apply_minios_css, ask_confirmation, classify_module,
@@ -209,13 +209,6 @@ def install_session_summary(state):
                     )
                 )
     return lines
-
-
-def native_security_summary_text():
-    return _(
-        "Full install: the security profile is applied directly to the target "
-        "system first, followed by user settings and then live-only cleanup."
-    )
 
 
 FILESYSTEM_HELP_MARKUP = _(
@@ -1456,22 +1449,19 @@ class InstallerWindow(Gtk.ApplicationWindow):
     # --- Steps -----------------------------------------------------------------
 
     def _step_welcome(self):
-        self._page_title(
-            _("Install MiniOS"),
-            _("A guided installer for copying MiniOS to a disk with a clear preview before any destructive action."),
-        )
+        self._page_title(_("Install MiniOS"))
 
         card = Gtk.Frame()
         card.get_style_context().add_class("content-card")
-        card.set_margin_top(12)
-        card_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
-        card_box.set_margin_top(18)
-        card_box.set_margin_bottom(18)
+        card.set_margin_top(8)
+        card_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        card_box.set_margin_top(14)
+        card_box.set_margin_bottom(14)
         card_box.set_margin_start(18)
         card_box.set_margin_end(18)
 
         image = Gtk.Image.new_from_icon_name(ICON_WINDOW, Gtk.IconSize.DIALOG)
-        image.set_pixel_size(96)
+        image.set_pixel_size(80)
         image.set_halign(Gtk.Align.CENTER)
         card_box.pack_start(image, False, False, 0)
 
@@ -1479,29 +1469,36 @@ class InstallerWindow(Gtk.ApplicationWindow):
         lead.set_line_wrap(True)
         lead.set_markup(
             "<b>{}</b>".format(
-                GLib.markup_escape_text(_("This wizard will guide you through the installation."))
+                GLib.markup_escape_text(
+                    _("Configure MiniOS step by step. Nothing is written to the selected disk until you confirm the installation.")
+                )
             )
         )
         card_box.pack_start(lead, False, False, 0)
 
-        mode_intro = _("Install a live MiniOS system or a full native system.")
+        mode_intro = _("Choose between a modular live system and a regular Linux installation, then select a security profile.")
         if not self.native_install_available:
-            mode_intro = _("Compatibility mode: this live image supports only live system installation.")
+            mode_intro = _("This image supports live installation only; you can still choose the security profile.")
         features = (
             (
                 "system-software-install-symbolic",
-                _("Choose installation type"),
+                _("Choose mode and security"),
                 mode_intro,
             ),
             (
+                "preferences-system-symbolic",
+                _("Configure the system"),
+                _("Set language, time zone, network, keyboard, and user accounts."),
+            ),
+            (
                 "drive-harddisk-symbolic",
-                _("Select modules and disk layout"),
-                _("Pick what to install and where it should be written."),
+                _("Choose content and target disk"),
+                _("Select MiniOS modules, disk layout, and how live-system changes should be stored."),
             ),
             (
                 "emblem-ok-symbolic",
-                _("Review before writing"),
-                _("No disk changes are made until the final confirmation."),
+                _("Review before installing"),
+                _("Check the complete configuration and planned disk changes before installation starts."),
             ),
         )
         for icon_name, title, text in features:
@@ -1524,7 +1521,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._nav(True)
 
     def _step_mode(self):
-        mode_description = _("Choose whether MiniOS should keep its live module layout or be installed as a regular Linux system.")
+        mode_description = _("Choose how MiniOS should work after installation: as a modular live system or as a regular Linux system.")
         if not self.native_install_available:
             mode_description = _("This live image supports only live system installation with the current installer.")
         self._page_title(
@@ -1543,16 +1540,16 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 "live",
                 _("Live system installation"),
                 _(
-                    "Portable MiniOS with modules. Root account stays like the live image "
-                    "(default root password is toor unless you change it)."
+                    "Modular live system: keeps MiniOS modules and can save changes between reboots. "
+                    "Designed for portable installations, especially on USB drives."
                 ),
             ),
             (
                 "native",
                 _("Full installation"),
                 _(
-                    "Regular Linux install. You create a user account; root is locked by default "
-                    "and you use sudo."
+                    "Regular Linux system: MiniOS is unpacked to disk and changes are saved directly. "
+                    "Live modules and separate session storage are not used."
                 ),
             ),
         )
@@ -1763,17 +1760,62 @@ class InstallerWindow(Gtk.ApplicationWindow):
         return labels.get(profile, profile)
 
     def _profile_description(self, profile):
-        descriptions = {
-            "convenient": _("Keeps MiniOS easy to use: passwordless sudo/polkit, relaxed desktop access, and visible default password hints."),
-            "balanced": _("Recommended for regular installs: prevents live-config from setting up autologin and requires passwords for local administration while keeping practical remote-access policy."),
-            "strict": _("Harder posture: prevents live-config from setting up autologin, disables SSH root login and SSH password authentication, hides password hints, hardens XRDP, and strips risky groups."),
-        }
-        return descriptions.get(profile, "")
+        live_mode = self.state.install_mode == "live"
+        if profile == "convenient":
+            if live_mode:
+                return _(
+                    "For a MiniOS live system used on a trusted device. Automatic login remains available, "
+                    "administration does not require a password, and SSH allows password login "
+                    "including root. XRDP can accept network connections."
+                )
+            return _(
+                "For a system used on a trusted device. Administration does not require a password, "
+                "and SSH allows password login, including root if the root account is enabled. "
+                "XRDP can accept network connections."
+            )
+        if profile == "balanced":
+            if live_mode:
+                return _(
+                    "Safer for shared or networked use. Automatic login is disabled, administration "
+                    "requires a password, SSH allows password login for users but blocks root login, "
+                    "and XRDP is limited to local or tunneled connections."
+                )
+            return _(
+                "Recommended for a regular installation. Administration requires your password, "
+                "SSH allows password login for users but blocks root login, and XRDP is limited to "
+                "local or tunneled connections."
+            )
+        if profile == "strict":
+            if live_mode:
+                return _(
+                    "For untrusted networks. Automatic login is disabled, administration requires "
+                    "a password, SSH accepts keys only and blocks root login, and XRDP is disabled."
+                )
+            return _(
+                "For higher security. Administration requires your password, SSH accepts keys only "
+                "and blocks root login, XRDP is disabled, and the user is not added to high-privilege "
+                "virtualization or container groups."
+            )
+        return ""
+
+    def _refresh_security_remote_controls(self):
+        checks = getattr(self, "remote_service_checks", {})
+        xrdp = checks.get("xrdp")
+        if xrdp is not None:
+            strict = self.state.security_profile == "strict"
+            xrdp.set_sensitive(not strict)
+            if strict and xrdp.get_active():
+                xrdp.set_active(False)
+        note = getattr(self, "remote_access_note", None)
+        if note is not None:
+            note.set_text(
+                _("Enabled remote access services start automatically. The selected profile still controls which login methods they accept.")
+            )
 
     def _step_security(self):
         self._page_title(
             _("Security Profile"),
-            _("Choose the security posture to apply during installation."),
+            _("Choose how strictly MiniOS should protect administration, login, and remote access."),
         )
         cards_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         cards_box.set_margin_top(8)
@@ -1823,6 +1865,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                                 ctx.add_class("choice-card-selected")
                             else:
                                 ctx.remove_class("choice-card-selected")
+                        self._refresh_security_remote_controls()
 
                 def on_click(_widget, _event):
                     r.set_active(True)
@@ -1834,14 +1877,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
             make_handlers(profile, radio, event)
             cards_box.pack_start(frame, False, False, 0)
 
-        note = Gtk.Label(xalign=0)
-        note.set_line_wrap(True)
-        note.get_style_context().add_class("dim-label")
-        note.set_text(
-            _("Live installs write the individual settings to config.conf for the next boot. The autologin option prevents new setup; it does not remove autologin already configured in a persistent session. Full installs apply the selected posture directly to the target system.")
-        )
-        cards_box.pack_start(note, False, False, 8)
-
         available_remote_services = available_remote_access_services()
         remote_frame = Gtk.Frame()
         remote_frame.get_style_context().add_class("summary-card")
@@ -1851,7 +1886,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         remote_box.set_margin_start(10)
         remote_box.set_margin_end(10)
         remote_title = Gtk.Label(xalign=0)
-        remote_title.set_markup("<b>{}</b>".format(GLib.markup_escape_text(_("Incoming remote access"))))
+        remote_title.set_markup("<b>{}</b>".format(GLib.markup_escape_text(_("Remote access services"))))
         def update_remote_service(service, active):
             enable, disable = set_service_enabled(
                 self.state.user_config.enable_services,
@@ -1864,6 +1899,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.state.user_config_customized = True
 
         enabled_remote = set(self.state.user_config.enable_services.split(","))
+        self.remote_service_checks = {}
+        self.remote_access_note = None
 
         if available_remote_services:
             remote_box.pack_start(remote_title, False, False, 0)
@@ -1873,7 +1910,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 check = Gtk.CheckButton(label=label)
                 check.set_active(service in enabled_remote)
                 check.connect("toggled", lambda btn, name=service: update_remote_service(name, btn.get_active()))
+                self.remote_service_checks[service] = check
                 remote_box.pack_start(check, False, False, 0)
+            self.remote_access_note = Gtk.Label(xalign=0)
+            self.remote_access_note.set_line_wrap(True)
+            self.remote_access_note.get_style_context().add_class("dim-label")
+            remote_box.pack_start(self.remote_access_note, False, False, 0)
+            self._refresh_security_remote_controls()
             remote_frame.add(remote_box)
             cards_box.pack_start(remote_frame, False, False, 8)
 
@@ -2531,14 +2574,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
             grid.attach(Gtk.Label(label=_("Confirm password:"), xalign=0), 0, row, 1, 1)
             grid.attach(root_confirm_box, 1, row, 1, 1)
             row += 1
-            root_hint = Gtk.Label(
-                label=_("Live systems often use root password “toor” by default."),
-                xalign=0,
-            )
-            root_hint.set_line_wrap(True)
-            root_hint.get_style_context().add_class("dim-label")
-            grid.attach(root_hint, 1, row, 1, 1)
-            row += 1
 
         grid.attach(self.users_validation_label, 0, row, 2, 1)
         self.content_body.pack_start(grid, False, False, 0)
@@ -2919,6 +2954,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         )
         self.alongside_placement_description.set_line_wrap(True)
         self.alongside_placement_description.get_style_context().add_class("dim-label")
+        self.alongside_placement_description.set_no_show_all(True)
 
         def on_placement(btn, placement):
             if btn.get_active():
@@ -2932,6 +2968,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                     self.state.manual_partition_plan = None
                 self.state.placement = placement
                 self._refresh_manual_placement()
+                self._refresh_alongside_placement()
                 self._update_partition_preview()
 
         erase_radio.connect("toggled", lambda btn: on_placement(btn, PLACEMENT_ERASE_ALL))
@@ -2951,6 +2988,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.manual_placement_description = Gtk.Label(xalign=0)
         self.manual_placement_description.set_line_wrap(True)
         self.manual_placement_description.get_style_context().add_class("dim-label")
+        self.manual_placement_description.set_no_show_all(True)
         settings_box.pack_start(self.manual_placement_description, False, False, 0)
 
         self.manual_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -2959,6 +2997,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         alongside_size_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         alongside_size_box.set_margin_start(24)
+        alongside_size_box.set_no_show_all(True)
+        self.alongside_size_box = alongside_size_box
         alongside_size_box.pack_start(Gtk.Label(label=_("Space for MiniOS:"), xalign=0), False, False, 0)
         required_root = max(1, self.state.required_root_mib)
         self.alongside_size_spin = Gtk.SpinButton.new_with_range(required_root, 1048576, 1024)
@@ -3147,16 +3187,16 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _refresh_persistence_choices(self):
         if not hasattr(self, "persistence_combo"):
             return
-        choices = [("none", _("Discard changes on restart"))]
+        choices = [("none", _("Do not save changes"))]
         if self.state.install_mode == "live":
             if self.state.filesystem not in ("fat32", "ntfs"):
-                choices.append(("native", _("Native persistent changes")))
+                choices.append(("native", _("Save directly on the MiniOS partition")))
             choices.extend((
-                ("dynfilefs", _("Expandable persistent changes (DynFileFS)")),
-                ("raw", _("Fixed-size persistent changes (Raw image)")),
+                ("dynfilefs", _("Expandable storage (DynFileFS)")),
+                ("raw", _("Fixed-size storage (ext4 image)")),
             ))
             if runtime_supports_luks_persistence():
-                choices.append(("luks", _("Encrypted persistent changes (LUKS)")))
+                choices.append(("luks", _("Encrypted storage (LUKS)")))
         valid = {value for value, _label in choices}
         selected = self.state.persistence_mode
         if selected not in valid:
@@ -3186,13 +3226,17 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if not hasattr(self, "persistence_note"):
             return
         notes = {
-            "none": _("Changes are kept in memory and discarded on restart."),
-            "native": _("The initrd stores changes directly on a POSIX-compatible target filesystem."),
-            "dynfilefs": _("The initrd creates expandable DynFileFS storage with the selected maximum size."),
-            "raw": _("The initrd creates a fixed-size ext4 image for persistent changes."),
-            "luks": _("The initrd creates changes.luks and asks for its password on first boot; the installer never stores it."),
+            "none": _("Changes made during this session will be lost after restart."),
+            "native": _("Changes are saved directly on the MiniOS partition and remain available after restart."),
+            "dynfilefs": _("Changes are saved in an expandable container that grows as needed up to the selected size."),
+            "raw": _("Changes are saved in a fixed-size container; the selected amount of disk space is reserved for it."),
+            "luks": _("Changes are saved in an encrypted container. On first boot you create a password; later boots require it to access the saved changes."),
         }
-        self.persistence_note.set_text(notes.get(mode, ""))
+        note = notes.get(mode, "")
+        if self.state.install_mode == "live" and not runtime_supports_luks_persistence():
+            unavailable = _("Encrypted session storage is not available in this MiniOS image. The other storage modes save changes without encryption.")
+            note = "{}\n{}".format(note, unavailable) if note else unavailable
+        self.persistence_note.set_text(note)
 
     def _clear_partition_legend(self):
         if not hasattr(self, "partition_legend"):
@@ -3755,7 +3799,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if not hasattr(self, "manual_placement_radio"):
             return
         available = False
-        reason = _("Manual partitioning is available only for full (native) installations.")
+        reason = ""
         snapshot = None
         if self.state.install_mode == "native" and self.state.target_device:
             try:
@@ -3769,8 +3813,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
         elif self.state.install_mode == "native":
             reason = _("Select an eligible GPT or primary-MBR disk first.")
         self.manual_placement_radio.set_sensitive(available)
-        self.manual_placement_description.set_text(
-            reason if available else _("Not available: {reason}").format(reason=reason))
+        # In live mode the disabled radio button is enough; repeating that manual
+        # partitioning belongs to full installation only makes the page noisier.
+        show_reason = available or bool(self.state.install_mode == "native" and self.state.target_device and reason)
+        if show_reason:
+            self.manual_placement_description.set_text(reason)
+            self.manual_placement_description.show()
+        else:
+            self.manual_placement_description.hide()
         if not available and self.state.placement == "manual":
             self.erase_placement_radio.set_active(True)
             return
@@ -3985,6 +4035,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._alongside_geometry = None
         reason = _("Select a disk first.")
         missing = []
+        generic_unavailable = True
         if self.state.target_device:
             try:
                 layout = scan_disk(self.state.target_device)
@@ -4031,15 +4082,33 @@ class InstallerWindow(Gtk.ApplicationWindow):
                         "minimum": minimum_size,
                         "maximum": max_size,
                     }
+                generic_unavailable = False
+            except NoResizeCandidateError as exc:
+                reason = str(exc)
             except Exception as exc:
                 reason = str(exc)
+                generic_unavailable = False
         self.alongside_placement_radio.set_sensitive(available)
-        self.alongside_size_spin.set_sensitive(available and self.state.placement == PLACEMENT_ALONGSIDE_OS)
+        alongside_selected = available and self.state.placement == PLACEMENT_ALONGSIDE_OS
+        self.alongside_size_spin.set_sensitive(alongside_selected)
+        if hasattr(self, "alongside_size_box"):
+            if alongside_selected:
+                self.alongside_size_box.show()
+            else:
+                self.alongside_size_box.hide()
         if not available:
             self.partition_geometry_hint.hide()
-        self.alongside_placement_description.set_text(
-            reason if available else _("Not available: {reason}").format(reason=reason)
+        # A disabled choice already communicates that this layout cannot be used.
+        # Keep only actionable diagnostics; a generic "no resize candidate" note
+        # adds noise without giving the user anything to fix here.
+        show_reason = available or bool(missing) or (
+            bool(self.state.target_device) and not generic_unavailable
         )
+        if show_reason:
+            self.alongside_placement_description.set_text(reason)
+            self.alongside_placement_description.show()
+        else:
+            self.alongside_placement_description.hide()
         if missing:
             self._resize_missing_packages = missing
             self.install_resize_tools_button.set_no_show_all(False)
@@ -4277,41 +4346,33 @@ class InstallerWindow(Gtk.ApplicationWindow):
         remote_label = Gtk.Label(xalign=0)
         remote_label.set_line_wrap(True)
         if remote:
-            remote_label.set_text(_("Incoming remote access: {services}").format(services=", ".join(remote)))
+            remote_label.set_text(_("Remote access services: {services}").format(services=", ".join(remote)))
         else:
-            remote_label.set_text(_("Incoming remote access: disabled"))
+            remote_label.set_text(_("Remote access services: none enabled"))
         box.pack_start(remote_label, False, False, 0)
+
+        klass = "full"
+        if self.state.install_mode != "native":
+            registry = load_capabilities("/")
+            requirements = profile_required_capabilities(self.state.security_profile)
+            klass = support_class(registry, requirements)
 
         detail = Gtk.Label(xalign=0)
         detail.set_line_wrap(True)
-        if self.state.install_mode == "native":
-            detail.set_text(native_security_summary_text())
-            box.pack_start(detail, False, False, 0)
-            return box
-
-        registry = load_capabilities("/")
-        requirements = profile_required_capabilities(self.state.security_profile)
-        klass = support_class(registry, requirements)
-        missing = ["{}={}".format(cid, value) for cid, value in requirements if not supports(registry, cid, value)]
-        if klass == "full":
-            detail.set_text(_("Live install: this image advertises full support for the selected profile."))
-        elif klass == "legacy":
-            detail.set_text(
-                _("Live install: this image has no capabilities registry, so enforcement cannot be proven. The installer will still write forward-compatible profile keys.")
-            )
-        else:
-            detail.set_text(
-                _("Live install: this image is missing some advertised profile capabilities. The installer will still write the profile keys, but enforcement may be partial.")
-            )
+        detail.set_text(self._profile_summary_description(
+            self.state.security_profile, klass
+        ))
         box.pack_start(detail, False, False, 0)
-
-        if missing and klass != "legacy":
-            missing_label = Gtk.Label(xalign=0)
-            missing_label.set_line_wrap(True)
-            missing_label.get_style_context().add_class("dim-label")
-            missing_label.set_text(_("Missing: {items}").format(items=", ".join(missing[:6])))
-            box.pack_start(missing_label, False, False, 0)
+        if self.state.install_mode == "native":
+            return box
         return box
+
+    def _profile_summary_description(self, profile, support="full"):
+        if support == "legacy":
+            return _("This older MiniOS image may not support every setting in the selected security profile.")
+        if support == "partial":
+            return _("Some settings in the selected security profile are not supported by this MiniOS image.")
+        return self._profile_description(profile)
 
     def _step_summary(self):
         self._page_title(
@@ -4472,10 +4533,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if self.state.install_mode == "live" and self.state.persistence_mode != "none":
             mode = self.state.persistence_mode
             labels = {
-                "native": _("Native persistent changes"),
-                "dynfilefs": _("Expandable persistent changes (DynFileFS): {size} MiB").format(size=self.state.persistence_size_mib),
-                "raw": _("Fixed-size persistent changes (Raw image): {size} MiB").format(size=self.state.persistence_size_mib),
-                "luks": _("Encrypted persistent changes (LUKS): {size} MiB\nchanges.luks will be created and unlocked by initrd on first boot.").format(size=self.state.persistence_size_mib),
+                "native": _("Changes will be saved directly on the MiniOS partition."),
+                "dynfilefs": _("Expandable saved changes: up to {size} MiB.").format(size=self.state.persistence_size_mib),
+                "raw": _("Fixed-size saved changes: {size} MiB reserved.").format(size=self.state.persistence_size_mib),
+                "luks": _("Encrypted saved changes: {size} MiB. You will create a password on first boot and use it on later boots.").format(size=self.state.persistence_size_mib),
             }
             persistence_label = Gtk.Label(label=labels.get(mode, mode), xalign=0)
             persistence_label.set_line_wrap(True)

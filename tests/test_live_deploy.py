@@ -44,6 +44,22 @@ class TestLiveDeploySafety:
              patch('live_deploy.subprocess.run', return_value=result):
             assert source_supports_luks_persistence(str(tmp_path)) is False
 
+    def test_luks_source_resolves_generic_initrd_symlink_once(self, tmp_path):
+        from live_deploy import source_supports_luks_persistence
+
+        boot = tmp_path / 'boot'
+        boot.mkdir()
+        versioned = boot / 'initrfs-6.12.img'
+        versioned.write_bytes(b'initrd')
+        (boot / 'initrfs.img').symlink_to(versioned.name)
+        result = MagicMock(returncode=0, stdout='etc/minios-initramfs-crypt\n')
+        with patch('live_deploy.shutil.which', return_value='/usr/bin/lsinitrd'), \
+             patch('live_deploy.subprocess.run', return_value=result) as run:
+            assert source_supports_luks_persistence(str(tmp_path)) is True
+
+        run.assert_called_once()
+        assert run.call_args[0][0][1] == str(versioned)
+
     def test_luks_boot_options_require_crypto_initrd_without_a_passphrase(self):
         from install_state import InstallState
         from live_deploy import _persistence_boot_options
@@ -58,7 +74,7 @@ class TestLiveDeploySafety:
                 _persistence_boot_options(state, '/media/minios')
                 assert False, 'expected cryptsetup capability failure'
             except RuntimeError as exc:
-                assert 'crypto-capable live initrd' in str(exc)
+                assert 'Encrypted session storage is not supported' in str(exc)
 
     def test_non_encrypted_persistence_boot_options_do_not_require_crypto(self):
         from install_state import InstallState
@@ -88,7 +104,7 @@ class TestLiveDeploySafety:
                 run_live_install(state, lambda *_: None, lambda *_: None)
                 assert False, 'expected source initrd capability failure'
             except RuntimeError as exc:
-                assert 'crypto-capable live initrd' in str(exc)
+                assert 'Encrypted session storage is not supported' in str(exc)
         assert not execute.called
 
     def test_run_live_install_cleans_generated_config(self, tmp_path):

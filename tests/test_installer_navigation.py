@@ -12,8 +12,7 @@ import pytest
 
 from install_state import InstallState
 from main_installer import (InstallerWindow, backend_command_for_state,
-                            can_navigate_to_viewed_step, format_log_message,
-                            native_security_summary_text)
+                            can_navigate_to_viewed_step, format_log_message)
 
 
 def test_missing_native_contracts_keep_live_installation():
@@ -133,11 +132,48 @@ def test_fallback_log_is_private_and_does_not_follow_predictable_symlink(tmp_pat
         os.fstat(descriptors[0])
 
 
-def test_native_security_summary_matches_deployment_order():
-    assert native_security_summary_text() == (
-        "Full install: the security profile is applied directly to the target "
-        "system first, followed by user settings and then live-only cleanup."
+def test_security_profile_descriptions_match_install_mode():
+    state = InstallState(install_mode="live", security_profile="balanced")
+    window = SimpleNamespace(state=state)
+
+    live_text = InstallerWindow._profile_description(window, "balanced")
+    assert "Automatic login is disabled" in live_text
+    assert "SSH allows password login for users but blocks root login" in live_text
+
+    state.install_mode = "native"
+    native_text = InstallerWindow._profile_description(window, "balanced")
+    assert "Recommended for a regular installation" in native_text
+    assert "Automatic login" not in native_text
+
+
+def test_partial_security_summary_does_not_promise_unsupported_behavior():
+    state = InstallState(install_mode="live", security_profile="balanced")
+    window = SimpleNamespace(state=state)
+
+    full = InstallerWindow._profile_summary_description(window, "balanced", "full")
+    partial = InstallerWindow._profile_summary_description(window, "balanced", "partial")
+
+    assert "SSH allows password login" in full
+    assert "not supported" in partial
+    assert "SSH allows password login" not in partial
+
+
+def test_strict_profile_disables_xrdp_control():
+    state = InstallState(install_mode="live", security_profile="strict")
+    xrdp = Mock()
+    xrdp.get_active.return_value = True
+    note = Mock()
+    window = SimpleNamespace(
+        state=state,
+        remote_service_checks={"xrdp": xrdp},
+        remote_access_note=note,
     )
+
+    InstallerWindow._refresh_security_remote_controls(window)
+
+    xrdp.set_sensitive.assert_called_once_with(False)
+    xrdp.set_active.assert_called_once_with(False)
+    note.set_text.assert_called_once()
 
 
 def test_append_log_sends_identical_record_to_disk_and_shared_view(tmp_path):

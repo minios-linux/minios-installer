@@ -13,7 +13,8 @@ from partition_models import (DiskLayout, PartitionInfo, ResizeOperation,
                               PartitionPlan, PlannedPartition,
                               PLACEMENT_ALONGSIDE_OS)
 from partition_planner import build_plan
-from partition_resize import plan_shrink, select_resize_candidate
+from partition_resize import (NoResizeCandidateError, plan_shrink,
+                              select_resize_candidate)
 from partition_executor import _apply_resize, execute_plan
 from partition_scanner import scan_disk
 
@@ -49,6 +50,14 @@ def test_selects_supported_tail_partition():
     for kwargs in ({"fstype": "xfs"}, {"mounted": True}, {"nested": True}):
         with pytest.raises(ValueError):
             select_resize_candidate(layout_with_last(**kwargs))
+
+
+def test_distinguishes_generic_unavailability_from_actionable_resize_errors():
+    with pytest.raises(NoResizeCandidateError):
+        select_resize_candidate(layout_with_last(fstype="xfs"))
+    with pytest.raises(ValueError) as mounted:
+        select_resize_candidate(layout_with_last(mounted=True))
+    assert not isinstance(mounted.value, NoResizeCandidateError)
 
 
 def test_selects_supported_partition_before_trailing_swap():

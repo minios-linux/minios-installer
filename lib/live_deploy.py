@@ -75,11 +75,24 @@ def _source_initrd_paths(source: str) -> tuple:
         names = os.listdir(boot_dir)
     except OSError:
         return ()
-    return tuple(
-        os.path.join(boot_dir, name)
-        for name in names
-        if name.startswith(("initrfs", "initrd")) and os.path.isfile(os.path.join(boot_dir, name))
-    )
+
+    boot_dir_real = os.path.realpath(boot_dir)
+    initrds = []
+    seen = set()
+    for name in names:
+        if not name.startswith(("initrfs", "initrd")):
+            continue
+        path = os.path.realpath(os.path.join(boot_dir, name))
+        try:
+            if os.path.commonpath((boot_dir_real, path)) != boot_dir_real:
+                continue
+        except ValueError:
+            continue
+        if not os.path.isfile(path) or path in seen:
+            continue
+        seen.add(path)
+        initrds.append(path)
+    return tuple(initrds)
 
 
 def source_supports_luks_persistence(source: str) -> bool:
@@ -117,7 +130,7 @@ def _persistence_boot_options(state: InstallState, source: str) -> tuple:
     if state.persistence_size_mib <= 0:
         raise RuntimeError(_("Container persistence requires a size greater than zero."))
     if mode == "luks" and not source_supports_luks_persistence(source):
-        raise RuntimeError(_("Encrypted persistence requires a crypto-capable live initrd. Container creation and the password prompt are handled at boot."))
+        raise RuntimeError(_("Encrypted session storage is not supported by this MiniOS image. Choose another session storage mode."))
     return ("perchmode={}".format(mode), "perchsize={}".format(state.persistence_size_mib))
 
 

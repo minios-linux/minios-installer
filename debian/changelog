@@ -1,3 +1,32 @@
+minios-installer (3.0.6) unstable; urgency=medium
+
+  * Explain live and full installation modes in terms of their actual system
+    behavior instead of root-account policy details
+  * Remove internal live/full configuration details from the security profile
+    selection page
+  * Localize disk-resize availability and safety errors shown by the
+    partitioning page
+  * Describe session-storage choices by what users keep after reboot instead
+    of exposing initrd implementation details
+  * Resolve and deduplicate generic initrd symlinks when validating encrypted
+    persistence, so valid MiniOS images are not rejected before installation
+  * Remove the redundant welcome-page subtitle and refresh the overview card
+    to cover mode/security, system settings, modules/session storage, disk
+    layout, and the final review before installation
+  * Hide non-actionable unavailable-layout explanations on the partitioning
+    page and show the alongside-size control only when that layout is selected,
+    while retaining diagnostics that the user can actually act on
+  * Remove the redundant default root-password hint from the Users page
+  * Rewrite security-profile descriptions around user-visible login and
+    administration behavior, clarify remote-access service controls, and keep
+    XRDP unavailable when the Strict profile is selected
+  * Replace internal security-capability details in the summary with concise
+    user-facing compatibility warnings
+  * Keep actionable resize diagnostics visible and avoid promising security
+    controls that legacy or partially capable images cannot confirm
+
+ -- crims0n <crims0n@minios.dev>  Sun, 30 Aug 2026 02:07:37 +0300
+
 minios-installer (3.0.5) unstable; urgency=medium
 
   * Exclude VCS metadata and generated build/test artifacts

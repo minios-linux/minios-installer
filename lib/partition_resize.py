@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import gettext
 import re
 import subprocess
 from typing import Callable, Optional
@@ -8,9 +9,18 @@ from typing import Callable, Optional
 from partition_models import DiskLayout, PartitionInfo, ResizeOperation
 
 
+gettext.bindtextdomain("minios-installer", "/usr/share/locale")
+gettext.textdomain("minios-installer")
+_ = gettext.gettext
+
+
 SUPPORTED_FILESYSTEMS = ("ext2", "ext3", "ext4", "ntfs")
 MICROSOFT_BASIC_DATA_GUID = "ebd0a0a2-b9e5-4433-87c0-68b6b72699c7"
 WINDOWS_RECOVERY_GUID = "de94bba4-06d1-4d40-a16a-bfd50179d6ac"
+
+
+class NoResizeCandidateError(ValueError):
+    """The disk has no supported trailing partition to offer for shrinking."""
 
 
 def _is_ignorable_trailing_partition(layout: DiskLayout, part: PartitionInfo) -> bool:
@@ -24,13 +34,13 @@ def _is_ignorable_trailing_partition(layout: DiskLayout, part: PartitionInfo) ->
 
 def select_resize_candidate(layout: DiskLayout) -> PartitionInfo:
     if not layout.geometry_complete or not layout.size_sectors:
-        raise ValueError("Exact partition geometry is unavailable")
+        raise ValueError(_("Exact partition geometry is unavailable"))
     if layout.has_nested_layout or any(part.has_children for part in layout.partitions):
-        raise ValueError("Nested partition layouts cannot be resized safely")
+        raise ValueError(_("Nested partition layouts cannot be resized safely"))
     if layout.has_mapped_layout:
-        raise ValueError("Mapped partition layouts cannot be resized safely")
+        raise ValueError(_("Mapped partition layouts cannot be resized safely"))
     if not layout.partitions:
-        raise ValueError("No partition is available to resize")
+        raise NoResizeCandidateError(_("No partition is available to resize"))
     ordered = sorted(layout.partitions, key=lambda part: part.start_sector + part.size_sectors)
     seen_numbers = set()
     previous_end = 0
@@ -39,7 +49,7 @@ def select_resize_candidate(layout: DiskLayout) -> PartitionInfo:
                 part.start_sector < 0 or part.size_sectors <= 0 or
                 part.start_sector < previous_end or
                 part.start_sector + part.size_sectors > layout.size_sectors):
-            raise ValueError("Exact non-overlapping partition geometry is required")
+            raise ValueError(_("Exact non-overlapping partition geometry is required"))
         seen_numbers.add(part.partition_number)
         previous_end = part.start_sector + part.size_sectors
     candidate = None
@@ -55,11 +65,13 @@ def select_resize_candidate(layout: DiskLayout) -> PartitionInfo:
             candidate = part
             break
     if candidate is None:
-        raise ValueError("No supported tail partition is available to resize")
+        raise NoResizeCandidateError(
+            _("No suitable partition can be safely shrunk to make room for MiniOS")
+        )
     if candidate.mountpoint:
-        raise ValueError("The resize candidate is mounted")
+        raise ValueError(_("The resize candidate is mounted"))
     if not candidate.partition_number or not candidate.start_sector or not candidate.size_sectors:
-        raise ValueError("Exact resize candidate geometry is unavailable")
+        raise ValueError(_("Exact resize candidate geometry is unavailable"))
     return candidate
 
 
@@ -76,7 +88,7 @@ def probe_minimum_size_sectors(partition: PartitionInfo, sector_size: int,
         block_match = re.search(r"Block size:\s*(\d+)", info)
         count_match = re.search(r"minimum size of the filesystem(?: is|:)\s+(\d+)", estimate, re.I)
         if not block_match or not count_match:
-            raise ValueError("Could not determine the minimum ext filesystem size")
+            raise ValueError(_("Could not determine the minimum ext filesystem size"))
         minimum_bytes = int(block_match.group(1)) * int(count_match.group(1))
     elif fs == "ntfs":
         info = output(["ntfsresize", "--info", partition.path])
@@ -84,10 +96,10 @@ def probe_minimum_size_sectors(partition: PartitionInfo, sector_size: int,
         if not match:
             match = re.search(r"minimum.*?([0-9]+)\s+bytes", info, re.I)
         if not match:
-            raise ValueError("Could not determine the minimum NTFS size")
+            raise ValueError(_("Could not determine the minimum NTFS size"))
         minimum_bytes = int(match.group(1))
     else:
-        raise ValueError("Unsupported filesystem for resizing")
+        raise ValueError(_("Unsupported filesystem for resizing"))
     return (minimum_bytes + sector_size - 1) // sector_size
 
 
@@ -103,7 +115,7 @@ def plan_shrink(layout: DiskLayout, required_mib: int,
     safety_sectors = (safety_mib * 1024 * 1024) // layout.logical_sector_size
     new_size = (new_size // alignment) * alignment
     if new_size < minimum + safety_sectors:
-        raise ValueError("The last partition cannot be shrunk enough safely")
+        raise ValueError(_("The last partition cannot be shrunk enough safely"))
     return ResizeOperation(candidate.path, candidate.partition_number,
                            candidate.fstype.lower(), candidate.start_sector,
                            candidate.size_sectors, new_size,
