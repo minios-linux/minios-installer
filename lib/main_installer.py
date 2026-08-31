@@ -71,7 +71,6 @@ from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 
 APPLICATION_ID = "org.minios.installer"
 APP_NAME = "minios-installer"
-APP_TITLE = "MiniOS Installer"
 LOCALE_DIRECTORY = "/usr/share/locale"
 CSS_SYSTEM_PATH = "/usr/share/minios-installer/style.css"
 _SHARE_STYLES = os.path.normpath(os.path.join(_LIB_DIR, "..", "share", "styles", "style.css"))
@@ -970,8 +969,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
     ]
 
     def __init__(self, application):
-        super().__init__(application=application, title=_(APP_TITLE))
-        self.set_titlebar(new_header_bar(_(APP_TITLE)))
+        super().__init__(application=application, title=_("MiniOS Installer"))
+        self.set_titlebar(new_header_bar(_("MiniOS Installer")))
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name(ICON_WINDOW)
         apply_minios_css(resolve_css_path())
