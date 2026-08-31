@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2026-08-30 23:14+0300\n"
-"PO-Revision-Date: 2026-08-28 13:24+0000\n"
+"POT-Creation-Date: 2026-09-01 00:10+0300\n"
+"PO-Revision-Date: 2026-08-31 21:10+0000\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
 "Language: id\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: lib/bootloader_utils.py:67 lib/copy_utils.py:77 lib/copy_utils.py:79
-#: lib/live_deploy.py:62 lib/native_deploy.py:124 lib/native_deploy.py:214
+#: lib/live_deploy.py:62 lib/native_deploy.py:134 lib/native_deploy.py:224
 #: lib/partition_executor.py:36
 msgid "Installation canceled by user."
 msgstr "Instalasi dibatalkan oleh pengguna."
@@ -27,7 +27,7 @@ msgstr "Instalasi dibatalkan oleh pengguna."
 msgid "Detected bootloader type: {type}"
 msgstr "Terdeteksi tipe bootloader: {type}"
 
-#: lib/bootloader_utils.py:99 lib/native_deploy.py:1016
+#: lib/bootloader_utils.py:99 lib/native_deploy.py:1026
 msgid "Installing GRUB bootloader..."
 msgstr "Menginstal bootloader GRUB..."
 
@@ -81,7 +81,7 @@ msgstr "Menggunakan SYSLINUX untuk memuat GRUB"
 msgid "Installing EXTLINUX bootloader..."
 msgstr "Menginstal bootloader EXTLINUX..."
 
-#: lib/bootloader_utils.py:184 lib/native_deploy.py:444
+#: lib/bootloader_utils.py:184 lib/native_deploy.py:454
 #, python-brace-format
 msgid "EXTLINUX installer not found: {path}"
 msgstr "Installer EXTLINUX tidak ditemukan: {path}"
@@ -501,7 +501,7 @@ msgstr "Penyimpanan sesi terenkripsi tidak didukung oleh image MiniOS ini. Pilih
 msgid "Manual partitioning plans are not executable yet."
 msgstr "Rencana partisi manual belum dapat dijalankan."
 
-#: lib/live_deploy.py:146 lib/native_deploy.py:1976 lib/native_deploy.py:1980
+#: lib/live_deploy.py:146 lib/native_deploy.py:1986 lib/native_deploy.py:1990
 msgid "No target device selected."
 msgstr "Tidak ada perangkat target yang dipilih."
 
@@ -509,11 +509,11 @@ msgstr "Tidak ada perangkat target yang dipilih."
 msgid "Cannot find MiniOS image."
 msgstr "Tidak dapat menemukan image MiniOS."
 
-#: lib/live_deploy.py:167 lib/native_deploy.py:1358 lib/native_deploy.py:2060
+#: lib/live_deploy.py:167 lib/native_deploy.py:1368 lib/native_deploy.py:2070
 msgid "Preparing target disk..."
 msgstr "Menyiapkan disk target..."
 
-#: lib/live_deploy.py:181 lib/native_deploy.py:1364 lib/native_deploy.py:2064
+#: lib/live_deploy.py:181 lib/native_deploy.py:1374 lib/native_deploy.py:2074
 msgid "Dry run complete."
 msgstr "Simulasi selesai."
 
@@ -537,20 +537,20 @@ msgstr "Menginstal bootloader BIOS..."
 msgid "UEFI/GPT install: EFI files copied; no BIOS bootloader written."
 msgstr "Instalasi UEFI/GPT: File EFI sudah disalin; bootloader BIOS tidak ditulis."
 
-#: lib/live_deploy.py:260 lib/native_deploy.py:1406 lib/native_deploy.py:2107
+#: lib/live_deploy.py:260 lib/native_deploy.py:1416 lib/native_deploy.py:2117
 msgid "Unmounting disk..."
 msgstr "Unmounting disk..."
 
-#: lib/live_deploy.py:263 lib/live_deploy.py:277 lib/native_deploy.py:1417
-#: lib/native_deploy.py:2110 lib/native_deploy.py:2118
+#: lib/live_deploy.py:263 lib/live_deploy.py:277 lib/native_deploy.py:1427
+#: lib/native_deploy.py:2120 lib/native_deploy.py:2128
 msgid "Cleaned up target mounts."
 msgstr "Mount target telah dibersihkan."
 
-#: lib/live_deploy.py:266 lib/native_deploy.py:1411 lib/native_deploy.py:2112
+#: lib/live_deploy.py:266 lib/native_deploy.py:1421 lib/native_deploy.py:2122
 msgid "Installation complete!"
 msgstr "Instalasi selesai!"
 
-#: lib/live_deploy.py:279 lib/native_deploy.py:1419 lib/native_deploy.py:2120
+#: lib/live_deploy.py:279 lib/native_deploy.py:1429 lib/native_deploy.py:2130
 #, python-brace-format
 msgid "Warning: failed to unmount target: {error}"
 msgstr "Peringatan: gagal unmount target: {error}"
@@ -736,7 +736,7 @@ msgstr "Instal"
 #: lib/main_installer.py:972 lib/main_installer.py:973
 #: share/applications/minios-installer.desktop:4
 msgid "MiniOS Installer"
-msgstr "MiniOS Installer"
+msgstr "Penginstal MiniOS"
 
 #: lib/main_installer.py:1251 lib/main_installer.py:1252
 msgid "Hold to show password"
@@ -1655,7 +1655,7 @@ msgstr "Kesalahan Instalasi"
 msgid "No target disk selected."
 msgstr "Tidak ada disk target yang dipilih."
 
-#: lib/main_installer.py:4299 lib/native_deploy.py:1336
+#: lib/main_installer.py:4299 lib/native_deploy.py:1346
 msgid "No validated manual partitioning plan selected."
 msgstr "Tidak ada rencana partisi manual yang tervalidasi dipilih."
 
@@ -1981,485 +1981,485 @@ msgstr "Menolak untuk menghapus target yang masih ter-mount: {path}"
 msgid "Target device still has mounted filesystems: {mounts}"
 msgstr "Perangkat target masih memiliki filesystem yang ter-mount: {mounts}"
 
-#: lib/native_deploy.py:178
+#: lib/native_deploy.py:188
 msgid "Preparing file copy..."
 msgstr "Menyiapkan penyalinan file..."
 
-#: lib/native_deploy.py:211
+#: lib/native_deploy.py:221
 msgid "Failed to start native file copy."
 msgstr "Gagal memulai penyalinan file native."
 
-#: lib/native_deploy.py:231
+#: lib/native_deploy.py:241
 #, python-brace-format
 msgid "Copying system files... {percent}% ({copied} MiB, {rate:.1f} MiB/s)"
 msgstr "Menyalin file sistem... {percent}% ({copied} MiB, {rate:.1f} MiB/detik)"
 
-#: lib/native_deploy.py:249
+#: lib/native_deploy.py:259
 #, python-brace-format
 msgid "System files copied. 100% ({copied} MiB in {seconds:.1f}s)."
 msgstr "File sistem berhasil disalin. 100% ({copied} MiB dalam {seconds:.1f} detik)."
 
-#: lib/native_deploy.py:273
+#: lib/native_deploy.py:283
 msgid "Patching sysvinit quiet logger for native boot..."
 msgstr "Melakukan patch sysvinit quiet logger untuk native boot..."
 
-#: lib/native_deploy.py:310
+#: lib/native_deploy.py:320
 msgid "Writing /etc/fstab..."
 msgstr "Menulis /etc/fstab..."
 
-#: lib/native_deploy.py:389
+#: lib/native_deploy.py:399
 msgid "No kernel modules found in installed system; native boot cannot be configured."
 msgstr "Tidak ditemukan modul kernel di sistem yang diinstal; native boot tidak dapat dikonfigurasi."
 
-#: lib/native_deploy.py:403
+#: lib/native_deploy.py:413
 msgid "No live kernel image found for native install."
 msgstr "Tidak ditemukan image kernel live untuk instalasi native."
 
-#: lib/native_deploy.py:404
+#: lib/native_deploy.py:414
 #, python-brace-format
 msgid "Copying kernel {kernel}..."
 msgstr "Menyalin kernel {kernel}..."
 
-#: lib/native_deploy.py:419
+#: lib/native_deploy.py:429
 msgid "No supported initramfs generator is available in the installed system."
 msgstr "Tidak ada generator initramfs yang didukung di sistem yang terinstal."
 
-#: lib/native_deploy.py:431
+#: lib/native_deploy.py:441
 msgid "SYSLINUX boot files not found on live media."
 msgstr "File boot SYSLINUX tidak ditemukan pada media live."
 
-#: lib/native_deploy.py:436
+#: lib/native_deploy.py:446
 msgid "Would install EXTLINUX native bootloader."
 msgstr "Akan menginstal bootloader native EXTLINUX."
 
-#: lib/native_deploy.py:461
+#: lib/native_deploy.py:471
 #, python-brace-format
 msgid "SYSLINUX MBR image not found: {path}"
 msgstr "Image SYSLINUX MBR tidak ditemukan: {path}"
 
-#: lib/native_deploy.py:498
+#: lib/native_deploy.py:508
 #, python-brace-format
 msgid "Service action skipped for legacy target without service tools: {action} {name}"
 msgstr "Aksi layanan dilewati untuk target legacy tanpa alat layanan: {action} {name}"
 
-#: lib/native_deploy.py:574
+#: lib/native_deploy.py:584
 msgid "Locale generation failed for the requested locale configuration."
 msgstr "Pembuatan locale gagal untuk konfigurasi locale yang diminta."
 
-#: lib/native_deploy.py:581
+#: lib/native_deploy.py:591
 msgid "Warning: update-locale failed; /etc/default/locale was written directly."
 msgstr "Peringatan: update-locale gagal; /etc/default/locale ditulis secara langsung."
 
-#: lib/native_deploy.py:622
+#: lib/native_deploy.py:632
 msgid "The generated GRUB configuration requires GRUB 2.12 and cannot be loaded by the IA32 GRUB 2.06 core."
 msgstr "Konfigurasi GRUB yang dihasilkan memerlukan GRUB 2.12 dan tidak dapat dimuat oleh core GRUB 2.06 IA32."
 
-#: lib/native_deploy.py:641 lib/native_deploy.py:672
+#: lib/native_deploy.py:651 lib/native_deploy.py:682
 msgid "The verified EFI source is missing."
 msgstr "Sumber EFI terverifikasi tidak ditemukan."
 
-#: lib/native_deploy.py:643 lib/native_deploy.py:670
+#: lib/native_deploy.py:653 lib/native_deploy.py:680
 msgid "The verified EFI source is not a real directory."
 msgstr "Sumber EFI terverifikasi bukan direktori yang valid."
 
-#: lib/native_deploy.py:652 lib/native_deploy.py:676
+#: lib/native_deploy.py:662 lib/native_deploy.py:686
 msgid "The verified EFI source contains an unsafe directory."
 msgstr "Sumber EFI terverifikasi berisi direktori yang tidak aman."
 
-#: lib/native_deploy.py:657 lib/native_deploy.py:679
+#: lib/native_deploy.py:667 lib/native_deploy.py:689
 msgid "The verified EFI source contains an unsafe file."
 msgstr "Sumber EFI terverifikasi berisi file yang tidak aman."
 
-#: lib/native_deploy.py:693
+#: lib/native_deploy.py:703
 msgid "The verified EFI manifest references an unsafe file."
 msgstr "Manifest EFI terverifikasi merujuk pada file yang tidak aman."
 
-#: lib/native_deploy.py:713
+#: lib/native_deploy.py:723
 msgid "The live medium has no valid EFI architecture contract."
 msgstr "Media live tidak memiliki kontrak arsitektur EFI yang valid."
 
-#: lib/native_deploy.py:715
+#: lib/native_deploy.py:725
 msgid "The live medium has an unsupported EFI architecture contract."
 msgstr "Media live memiliki kontrak arsitektur EFI yang tidak didukung."
 
-#: lib/native_deploy.py:718 lib/native_deploy.py:722
+#: lib/native_deploy.py:728 lib/native_deploy.py:732
 msgid "The live medium EFI architecture contract is incomplete."
 msgstr "Kontrak arsitektur EFI pada media live tidak lengkap."
 
-#: lib/native_deploy.py:724
+#: lib/native_deploy.py:734
 msgid "The IA32 EFI chain must use the Bookworm GRUB 2.06 compatibility core."
 msgstr "Rantai EFI IA32 harus menggunakan core GRUB 2.06 Bookworm untuk kompatibilitas."
 
-#: lib/native_deploy.py:727
+#: lib/native_deploy.py:737
 msgid "The Debian x64 EFI chain must use the Trixie GRUB 2.12 core."
 msgstr "Rantai EFI Debian x64 harus menggunakan core GRUB 2.12 Trixie."
 
-#: lib/native_deploy.py:730
+#: lib/native_deploy.py:740
 msgid "The x64 EFI chain has no supported GRUB version contract."
 msgstr "Rantai EFI x64 tidak memiliki kontrak versi GRUB yang didukung."
 
-#: lib/native_deploy.py:733
+#: lib/native_deploy.py:743
 msgid "The live medium EFI manifest has no verified files."
 msgstr "Manifest EFI pada media live tidak memiliki file yang terverifikasi."
 
-#: lib/native_deploy.py:746
+#: lib/native_deploy.py:756
 msgid "The live medium EFI architecture contract has an unsafe loader path."
 msgstr "Kontrak arsitektur EFI pada media live memiliki jalur loader yang tidak aman."
 
-#: lib/native_deploy.py:752
+#: lib/native_deploy.py:762
 msgid "The verified EFI loader is missing."
 msgstr "Loader EFI terverifikasi tidak ditemukan."
 
-#: lib/native_deploy.py:754
+#: lib/native_deploy.py:764
 msgid "The verified EFI loader does not match its manifest."
 msgstr "Loader EFI terverifikasi tidak sesuai dengan manifest-nya."
 
-#: lib/native_deploy.py:772
+#: lib/native_deploy.py:782
 msgid "The verified EFI GRUB binary is unsafe."
 msgstr "Berkas biner GRUB EFI terverifikasi tidak aman."
 
-#: lib/native_deploy.py:776
+#: lib/native_deploy.py:786
 msgid "The verified EFI GRUB binary is missing."
 msgstr "Berkas biner GRUB EFI terverifikasi tidak ditemukan."
 
-#: lib/native_deploy.py:780
+#: lib/native_deploy.py:790
 msgid "The verified EFI GRUB vendor prefix is ambiguous."
 msgstr "Prefiks vendor GRUB EFI terverifikasi ambigu."
 
-#: lib/native_deploy.py:838
+#: lib/native_deploy.py:848
 msgid "The reused EFI system partition does not belong to the target disk."
 msgstr "Partisi sistem EFI yang digunakan kembali tidak berasal dari disk target."
 
-#: lib/native_deploy.py:841
+#: lib/native_deploy.py:851
 msgid "Existing UEFI boot entries cannot be read."
 msgstr "Entri boot UEFI yang sudah ada tidak dapat dibaca."
 
-#: lib/native_deploy.py:848
+#: lib/native_deploy.py:858
 msgid "The reused EFI system partition has no stable partition identity."
 msgstr "Partisi sistem EFI yang digunakan kembali tidak memiliki identitas partisi yang stabil."
 
-#: lib/native_deploy.py:857
+#: lib/native_deploy.py:867
 msgid "The MiniOS UEFI boot entry could not be created."
 msgstr "Entri boot UEFI MiniOS tidak dapat dibuat."
 
-#: lib/native_deploy.py:860 lib/native_deploy.py:868
+#: lib/native_deploy.py:870 lib/native_deploy.py:878
 msgid "The MiniOS UEFI boot entry could not be verified."
 msgstr "Entri boot UEFI MiniOS tidak dapat diverifikasi."
 
-#: lib/native_deploy.py:876
+#: lib/native_deploy.py:886
 msgid "The EFI destination is not a real directory."
 msgstr "Tujuan EFI bukan direktori yang valid."
 
-#: lib/native_deploy.py:904 lib/native_deploy.py:1236
+#: lib/native_deploy.py:914 lib/native_deploy.py:1246
 #, python-brace-format
 msgid "The reused EFI system partition has an unsafe {vendor} directory."
 msgstr "Partisi sistem EFI yang digunakan kembali memiliki direktori {vendor} yang tidak aman."
 
-#: lib/native_deploy.py:914 lib/native_deploy.py:1246
+#: lib/native_deploy.py:924 lib/native_deploy.py:1256
 #, python-brace-format
 msgid "The reused EFI system partition has a conflicting {vendor} boot configuration."
 msgstr "Partisi sistem EFI yang digunakan kembali memiliki konfigurasi boot {vendor} yang konflik."
 
-#: lib/native_deploy.py:922 lib/native_deploy.py:1251
+#: lib/native_deploy.py:932 lib/native_deploy.py:1261
 #, python-brace-format
 msgid "The reused EFI system partition has a conflicting {vendor} module tree."
 msgstr "Partisi sistem EFI yang digunakan ulang memiliki pohon modul {vendor} yang bertentangan."
 
-#: lib/native_deploy.py:941 lib/native_deploy.py:1230
+#: lib/native_deploy.py:951 lib/native_deploy.py:1240
 msgid "The MiniOS EFI destination is not a real directory."
 msgstr "Tujuan EFI MiniOS bukan direktori yang valid."
 
-#: lib/native_deploy.py:949
+#: lib/native_deploy.py:959
 msgid "A reused EFI system partition requires a MiniOS firmware boot entry."
 msgstr "Partisi sistem EFI yang digunakan ulang memerlukan entri boot firmware MiniOS."
 
-#: lib/native_deploy.py:1001
+#: lib/native_deploy.py:1011
 #, python-brace-format
 msgid "EFI publication failed and the original EFI tree remains at {backup}: {error}"
 msgstr "Publikasi EFI gagal dan pohon EFI asli tetap berada di {backup}: {error}"
 
-#: lib/native_deploy.py:1006
+#: lib/native_deploy.py:1016
 #, python-brace-format
 msgid "EFI publication failed and its partial destination could not be removed: {error}"
 msgstr "Publikasi EFI gagal dan sebagian tujuan tidak dapat dihapus: {error}"
 
-#: lib/native_deploy.py:1027
+#: lib/native_deploy.py:1037
 msgid "GRUB configuration generator not found in installed system."
 msgstr "Generator konfigurasi GRUB tidak ditemukan di sistem yang diinstal."
 
-#: lib/native_deploy.py:1035
+#: lib/native_deploy.py:1045
 msgid "os-prober failed; refusing to create an incomplete multiboot configuration."
 msgstr "os-prober gagal; menolak membuat konfigurasi multiboot yang tidak lengkap."
 
-#: lib/native_deploy.py:1037
+#: lib/native_deploy.py:1047
 msgid "Detected other installed systems:"
 msgstr "Sistem lain terdeteksi:"
 
-#: lib/native_deploy.py:1043
+#: lib/native_deploy.py:1053
 msgid "GRUB configuration was not created."
 msgstr "Konfigurasi GRUB tidak dibuat."
 
-#: lib/native_deploy.py:1054
+#: lib/native_deploy.py:1064
 msgid "The live medium has no verified EFI chain."
 msgstr "Media live tidak memiliki rantai EFI yang terverifikasi."
 
-#: lib/native_deploy.py:1058
+#: lib/native_deploy.py:1068
 msgid "The reused EFI system partition has no stable device identity."
 msgstr "Partisi sistem EFI yang digunakan ulang tidak memiliki identitas perangkat yang stabil."
 
-#: lib/native_deploy.py:1070
+#: lib/native_deploy.py:1080
 msgid "Installing native bootloader..."
 msgstr "Menginstal bootloader native..."
 
-#: lib/native_deploy.py:1081
+#: lib/native_deploy.py:1091
 msgid "Native UEFI install requires the verified EFI chain and GRUB configuration tools."
 msgstr "Instalasi UEFI native memerlukan rantai EFI yang terverifikasi dan alat konfigurasi GRUB."
 
-#: lib/native_deploy.py:1085
+#: lib/native_deploy.py:1095
 msgid "Native installation requires GRUB packages in the installed target. Enable package download before modifying the disk."
 msgstr "Instalasi native memerlukan paket GRUB di target yang diinstal. Aktifkan pengunduhan paket sebelum memodifikasi disk."
 
-#: lib/native_deploy.py:1088
+#: lib/native_deploy.py:1098
 msgid "GRUB is not available; using offline EXTLINUX fallback."
 msgstr "GRUB tidak tersedia; menggunakan fallback EXTLINUX offline."
 
-#: lib/native_deploy.py:1113
+#: lib/native_deploy.py:1123
 #, python-brace-format
 msgid "Manual native deployment requires unavailable tools before disk changes: {tools}"
 msgstr "Deploy native manual memerlukan tools yang tidak tersedia sebelum perubahan disk: {tools}"
 
-#: lib/native_deploy.py:1119
+#: lib/native_deploy.py:1129
 #, python-brace-format
 msgid "APT cache prepared: {count} packages, {size:.1f} MiB. Required target packages: {required}"
 msgstr "Cache APT disiapkan: {count} paket, {size:.1f} MiB. Paket target yang dibutuhkan: {required}"
 
-#: lib/native_deploy.py:1144
+#: lib/native_deploy.py:1154
 msgid "This manual installation cannot prove its target boot packages without package download before the disk can be modified."
 msgstr "Instalasi manual ini tidak dapat memastikan paket boot target tanpa pengunduhan paket sebelum disk dapat dimodifikasi."
 
-#: lib/native_deploy.py:1148
+#: lib/native_deploy.py:1158
 msgid "Required manual-install boot packages cannot be downloaded before disk modification."
 msgstr "Paket boot manual-install yang dibutuhkan tidak dapat diunduh sebelum modifikasi disk."
 
-#: lib/native_deploy.py:1155
+#: lib/native_deploy.py:1165
 #, python-brace-format
 msgid "Required manual-install boot packages could not be staged before disk modification: {error}"
 msgstr "Paket boot manual-install yang dibutuhkan tidak dapat disiapkan sebelum modifikasi disk: {error}"
 
-#: lib/native_deploy.py:1183
+#: lib/native_deploy.py:1193
 #, python-brace-format
 msgid "Validated format-1 kernel {version} before disk modification."
 msgstr "Format kernel-1 {version} telah divalidasi sebelum modifikasi disk."
 
-#: lib/native_deploy.py:1202
+#: lib/native_deploy.py:1212
 msgid "Reusing an EFI system partition requires writable UEFI firmware variables before the disk can be modified."
 msgstr "Menggunakan ulang partisi sistem EFI memerlukan variabel firmware UEFI yang dapat ditulis sebelum disk dapat dimodifikasi."
 
-#: lib/native_deploy.py:1224
+#: lib/native_deploy.py:1234
 msgid "Could not mount the reused EFI system partition for publication validation."
 msgstr "Tidak dapat me-mount partisi sistem EFI yang digunakan ulang untuk validasi publikasi."
 
-#: lib/native_deploy.py:1259
+#: lib/native_deploy.py:1269
 msgid "Reused EFI system partition does not have enough free space for transactional publication."
 msgstr "Partisi sistem EFI yang digunakan ulang tidak memiliki ruang kosong yang cukup untuk publikasi transaksional."
 
-#: lib/native_deploy.py:1267
+#: lib/native_deploy.py:1277
 msgid "Could not unmount the reused EFI system partition after publication validation."
 msgstr "Tidak dapat melepaskan mount partisi sistem EFI yang digunakan ulang setelah validasi publikasi."
 
-#: lib/native_deploy.py:1298
+#: lib/native_deploy.py:1308
 msgid "The EFI payload does not fit the selected EFI system partition."
 msgstr "Payload EFI tidak muat di partisi sistem EFI yang dipilih."
 
-#: lib/native_deploy.py:1376 lib/native_deploy.py:2071
+#: lib/native_deploy.py:1386 lib/native_deploy.py:2081
 msgid "Configuring installed system..."
 msgstr "Mengonfigurasi sistem yang terpasang..."
 
-#: lib/native_deploy.py:1527
+#: lib/native_deploy.py:1537
 #, python-brace-format
 msgid "Removing live-only artifact: {path}"
 msgstr "Menghapus artefak khusus live: {path}"
 
-#: lib/native_deploy.py:1556
+#: lib/native_deploy.py:1566
 #, python-brace-format
 msgid "Removing live-only packages: {packages}"
 msgstr "Menghapus paket khusus live: {packages}"
 
-#: lib/native_deploy.py:1574
+#: lib/native_deploy.py:1584
 msgid "Warning: apt-get not found in target; falling back to dpkg cleanup."
 msgstr "Peringatan: apt-get tidak ditemukan di target; menggunakan dpkg cleanup sebagai cadangan."
 
-#: lib/native_deploy.py:1576
+#: lib/native_deploy.py:1586
 msgid "Warning: apt purge failed; trying forced dpkg remove for live-only packages."
 msgstr "Peringatan: apt purge gagal; mencoba paksa dpkg remove untuk paket hanya-live."
 
-#: lib/native_deploy.py:1579
+#: lib/native_deploy.py:1589
 msgid "Warning: live-only package removal failed; continuing with artifact cleanup."
 msgstr "Peringatan: penghapusan paket hanya-live gagal; melanjutkan dengan pembersihan artefak."
 
-#: lib/native_deploy.py:1581
+#: lib/native_deploy.py:1591
 msgid "No live-only packages need removal."
 msgstr "Tidak ada paket khusus live yang perlu dihapus."
 
-#: lib/native_deploy.py:1590
+#: lib/native_deploy.py:1600
 msgid "Generating SSH host keys..."
 msgstr "Membuat kunci host SSH..."
 
-#: lib/native_deploy.py:1601
+#: lib/native_deploy.py:1611
 msgid "Generating default SSL snakeoil certificate..."
 msgstr "Membuat sertifikat SSL snakeoil default..."
 
-#: lib/native_deploy.py:1612
+#: lib/native_deploy.py:1622
 msgid "No additional native packages are required."
 msgstr "Tidak ada paket native tambahan yang diperlukan."
 
-#: lib/native_deploy.py:1620
+#: lib/native_deploy.py:1630
 #, python-brace-format
 msgid "Offline bootloader fallback will be used. Missing optional packages: {packages}"
 msgstr "Bootloader offline fallback akan digunakan. Paket opsional yang hilang: {packages}"
 
-#: lib/native_deploy.py:1627
+#: lib/native_deploy.py:1637
 msgid "The mandatory native kernel toolchain was not staged before disk modification."
 msgstr "Toolchain kernel native wajib belum disiapkan sebelum modifikasi disk."
 
-#: lib/native_deploy.py:1640
+#: lib/native_deploy.py:1650
 #, python-brace-format
 msgid "Installing packages for standard native system: {packages}"
 msgstr "Menginstal paket untuk sistem native standar: {packages}"
 
-#: lib/native_deploy.py:1659
+#: lib/native_deploy.py:1669
 msgid "Repairing copied package state from the staged APT cache..."
 msgstr "Memperbaiki status paket yang disalin dari cache APT yang telah disiapkan..."
 
-#: lib/native_deploy.py:1701
+#: lib/native_deploy.py:1711
 #, python-brace-format
 msgid "Kernel package registration verification failed: {command}"
 msgstr "Verifikasi registrasi paket kernel gagal: {command}"
 
-#: lib/native_deploy.py:1703
+#: lib/native_deploy.py:1713
 msgid "Kernel package registration left an inconsistent dpkg database."
 msgstr "Registrasi paket kernel menyebabkan database dpkg tidak konsisten."
 
-#: lib/native_deploy.py:1707
+#: lib/native_deploy.py:1717
 #, python-brace-format
 msgid "Registered kernel package is an autoremove candidate: {package}"
 msgstr "Paket kernel yang terdaftar menjadi kandidat autoremove: {package}"
 
-#: lib/native_deploy.py:1719
+#: lib/native_deploy.py:1729
 #, python-brace-format
 msgid "Registered kernel version/status mismatch: {package}"
 msgstr "Versi/status kernel yang terdaftar tidak cocok: {package}"
 
-#: lib/native_deploy.py:1729
+#: lib/native_deploy.py:1739
 #, python-brace-format
 msgid "Registered kernel package has no trusted file list: {package}"
 msgstr "Paket kernel yang terdaftar tidak memiliki daftar file tepercaya: {package}"
 
-#: lib/native_deploy.py:1738
+#: lib/native_deploy.py:1748
 #, python-brace-format
 msgid "Cannot read registered kernel file list: {package}"
 msgstr "Tidak dapat membaca daftar file kernel yang terdaftar: {package}"
 
-#: lib/native_deploy.py:1745
+#: lib/native_deploy.py:1755
 #, python-brace-format
 msgid "Registered kernel path has no dpkg owner: {path}"
 msgstr "Path kernel yang terdaftar tidak memiliki pemilik dpkg: {path}"
 
-#: lib/native_deploy.py:1753
+#: lib/native_deploy.py:1763
 msgid "Cannot verify kernel APT marks and holds."
 msgstr "Tidak dapat memverifikasi tanda dan hold APT kernel."
 
-#: lib/native_deploy.py:1760
+#: lib/native_deploy.py:1770
 #, python-brace-format
 msgid "Kernel APT mark/hold mismatch: {package}"
 msgstr "Tanda/hold APT kernel tidak sesuai: {package}"
 
-#: lib/native_deploy.py:1788
+#: lib/native_deploy.py:1798
 msgid "depmod is required for format-1 kernel integration."
 msgstr "depmod diperlukan untuk integrasi kernel format-1."
 
-#: lib/native_deploy.py:1846
+#: lib/native_deploy.py:1856
 #, python-brace-format
 msgid "Using existing user account: {user}"
 msgstr "Menggunakan akun pengguna yang sudah ada: {user}"
 
-#: lib/native_deploy.py:1849
+#: lib/native_deploy.py:1859
 #, python-brace-format
 msgid "Creating user account: {user}"
 msgstr "Membuat akun pengguna: {user}"
 
-#: lib/native_deploy.py:1880
+#: lib/native_deploy.py:1890
 #, python-brace-format
 msgid "Warning: user-setup reported failure after creating {user}; continuing with that account."
 msgstr "Peringatan: user-setup melaporkan kegagalan setelah membuat {user}; melanjutkan dengan akun tersebut."
 
-#: lib/native_deploy.py:1882
+#: lib/native_deploy.py:1892
 msgid "Warning: user-setup failed; falling back to useradd."
 msgstr "Peringatan: user-setup gagal; menggunakan useradd sebagai cadangan."
 
-#: lib/native_deploy.py:1895
+#: lib/native_deploy.py:1905
 msgid "Setting hostname..."
 msgstr "Mengatur hostname..."
 
-#: lib/native_deploy.py:1899
+#: lib/native_deploy.py:1909
 msgid "Setting locale..."
 msgstr "Mengatur locale..."
 
-#: lib/native_deploy.py:1902
+#: lib/native_deploy.py:1912
 msgid "Setting timezone..."
 msgstr "Mengatur zona waktu..."
 
-#: lib/native_deploy.py:1915
+#: lib/native_deploy.py:1925
 msgid "Setting keyboard layout..."
 msgstr "Mengatur tata letak keyboard..."
 
-#: lib/native_deploy.py:1925
+#: lib/native_deploy.py:1935
 msgid "Configuring static IPv4 network..."
 msgstr "Mengonfigurasi jaringan IPv4 statis..."
 
-#: lib/native_deploy.py:1945
+#: lib/native_deploy.py:1955
 msgid "Root password configured."
 msgstr "Kata sandi root telah dikonfigurasi."
 
-#: lib/native_deploy.py:1948
+#: lib/native_deploy.py:1958
 msgid "Locking root account (no root password set)..."
 msgstr "Mengunci akun root (kata sandi root belum diatur)..."
 
-#: lib/native_deploy.py:1973
+#: lib/native_deploy.py:1983
 msgid "Full installation is not supported by this live image. Use live installation instead."
 msgstr "Instalasi penuh tidak didukung oleh live image ini. Gunakan instalasi live sebagai gantinya."
 
-#: lib/native_deploy.py:2012
+#: lib/native_deploy.py:2022
 msgid "Required boot packages cannot be downloaded. Check the internet connection, APT availability, and free cache space before continuing."
 msgstr "Paket boot yang diperlukan tidak dapat diunduh. Periksa koneksi internet, ketersediaan APT, dan ruang cache yang tersedia sebelum melanjutkan."
 
-#: lib/native_deploy.py:2014
+#: lib/native_deploy.py:2024
 msgid "Downloading required boot packages before modifying the disk..."
 msgstr "Mengunduh paket boot yang diperlukan sebelum memodifikasi disk..."
 
-#: lib/native_deploy.py:2020
+#: lib/native_deploy.py:2030
 #, python-brace-format
 msgid "Required boot packages could not be downloaded before disk modification: {error}"
 msgstr "Paket boot yang diperlukan tidak dapat diunduh sebelum modifikasi disk: {error}"
 
-#: lib/native_deploy.py:2026
+#: lib/native_deploy.py:2036
 msgid "This installation requires GRUB and os-prober before the disk can be modified. Enable package download and connect to the internet, or choose a single BIOS/MBR erase-all installation."
 msgstr "Instalasi ini memerlukan GRUB dan os-prober sebelum disk dapat dimodifikasi. Aktifkan unduhan paket dan sambungkan ke internet, atau pilih instalasi hapus semua BIOS/MBR tunggal."
 
-#: lib/native_deploy.py:2033
+#: lib/native_deploy.py:2043
 msgid "The mandatory native kernel toolchain cannot be downloaded before disk modification."
 msgstr "Toolchain kernel native wajib tidak dapat diunduh sebelum modifikasi disk."
 
-#: lib/native_deploy.py:2035
+#: lib/native_deploy.py:2045
 msgid "Downloading the mandatory native kernel toolchain before modifying the disk..."
 msgstr "Mengunduh toolchain kernel native wajib sebelum memodifikasi disk..."
 
-#: lib/native_deploy.py:2041
+#: lib/native_deploy.py:2051
 #, python-brace-format
 msgid "The mandatory native kernel toolchain could not be staged before disk modification: {error}"
 msgstr "Toolchain kernel native wajib tidak dapat disiapkan sebelum modifikasi disk: {error}"
 
-#: lib/native_deploy.py:2081
+#: lib/native_deploy.py:2091
 #, python-brace-format
 msgid "Applying live module user groups to native user: {groups}"
 msgstr "Menerapkan grup pengguna modul live ke pengguna native: {groups}"

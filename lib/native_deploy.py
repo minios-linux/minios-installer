@@ -72,12 +72,22 @@ NATIVE_LIVE_ONLY_PACKAGES = (
 )
 
 NATIVE_REMOVED_APPLICATION_PACKAGES = (
+    "driveutility",
     "minios-configurator",
+    "minios-gui",
+    "minios-help",
+    "minios-image-builder",
+    "minios-image-compose",
     "minios-installer",
     "minios-kernel-manager",
+    "minios-module-manager",
     "minios-session-manager",
+    "minios-store",
+    "minios-store-common",
     "minios-store-gui",
+    "minios-tools",
     "minios-welcome",
+    "python3-minios-gui",
 )
 
 NATIVE_LIVE_ONLY_ARTIFACTS = (

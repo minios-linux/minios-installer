@@ -204,15 +204,24 @@ def test_native_cleanup_purges_live_packages_and_artifacts():
             "Package: minios-live-config\nStatus: install ok installed\n\n"
             "Package: user-setup\nStatus: install ok installed\n\n"
             "Package: minios-tools\nStatus: install ok installed\n\n"
-            "Package: minios-dracut\nStatus: install ok installed\n\n"
             "Package: minios-installer\nStatus: install ok installed\n\n"
+            "Package: minios-live-config-doc\nStatus: install ok installed\n\n"
+            "Package: minios-live-config-systemd\nStatus: install ok installed\n\n"
+            "Package: minios-live-config-sysvinit\nStatus: install ok installed\n\n"
             "Package: minios-configurator\nStatus: install ok installed\n\n"
+            "Package: driveutility\nStatus: install ok installed\n\n"
+            "Package: minios-gui\nStatus: install ok installed\n\n"
+            "Package: minios-help\nStatus: install ok installed\n\n"
+            "Package: minios-image-builder\nStatus: install ok installed\n\n"
+            "Package: minios-image-compose\nStatus: install ok installed\n\n"
             "Package: minios-kernel-manager\nStatus: install ok installed\n\n"
+            "Package: minios-module-manager\nStatus: install ok installed\n\n"
             "Package: minios-session-manager\nStatus: install ok installed\n\n"
             "Package: minios-welcome\nStatus: install ok installed\n\n"
             "Package: minios-store-gui\nStatus: install ok installed\n\n"
             "Package: minios-store\nStatus: install ok installed\n\n"
-            "Package: minios-store-common\nStatus: install ok installed\n\n",
+            "Package: minios-store-common\nStatus: install ok installed\n\n"
+            "Package: python3-minios-gui\nStatus: install ok installed\n\n",
         )
         _write(os.path.join(target, "etc/systemd/system/basic.target.wants/live-config.service"))
         _write(os.path.join(target, "usr/bin/apt-get"))
@@ -236,13 +245,16 @@ def test_native_cleanup_purges_live_packages_and_artifacts():
         joined = [" ".join(c) for c in calls]
         purge = next(j for j in joined if "apt-get purge -y --allow-remove-essential" in j)
         for package in (
-            "minios-live-config", "user-setup", "minios-configurator",
-            "minios-installer", "minios-kernel-manager", "minios-session-manager",
-            "minios-store-gui", "minios-welcome",
+            "driveutility", "minios-configurator", "minios-gui", "minios-help",
+            "minios-image-builder", "minios-image-compose", "minios-installer",
+            "minios-kernel-manager", "minios-live-config", "minios-live-config-doc",
+            "minios-live-config-systemd", "minios-live-config-sysvinit",
+            "minios-module-manager",
+            "minios-session-manager", "minios-store", "minios-store-common",
+            "minios-store-gui", "minios-tools", "minios-welcome",
+            "python3-minios-gui",
         ):
             assert package in purge
-        for package in ("minios-store ", "minios-store-common", "minios-tools", "minios-dracut"):
-            assert package not in purge
         assert any("apt-get autoremove --purge -y" in j for j in joined), joined
         assert not os.path.exists(os.path.join(target, "etc/systemd/system/basic.target.wants/live-config.service"))
         assert not os.path.exists(os.path.join(target, "usr/bin/audio-allowuser.sh"))
