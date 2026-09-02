@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2026-09-01 00:10+0300\n"
-"PO-Revision-Date: 2026-08-31 21:10+0000\n"
+"POT-Creation-Date: 2026-09-02 13:49+0300\n"
+"PO-Revision-Date: 2026-09-02 10:42+0000\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
 "Language: id\n"
@@ -776,6 +776,7 @@ msgid "Next"
 msgstr "Berikutnya"
 
 #: lib/main_installer.py:1451
+#: share/polkit/org.minios.installer.policy:8
 msgid "Install MiniOS"
 msgstr "Instal MiniOS"
 
@@ -2813,3 +2814,7 @@ msgstr "Instal sistem ini secara permanen ke hard disk Anda"
 #: share/applications/minios-installer.desktop:124
 msgid "install;"
 msgstr "instal;"
+
+#: share/polkit/org.minios.installer.policy:17
+msgid "Authentication is required to run MiniOS Installer"
+msgstr "Autentikasi diperlukan untuk menjalankan Penginstal MiniOS"

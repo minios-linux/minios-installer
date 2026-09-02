@@ -1,3 +1,9 @@
+minios-installer (3.0.9) unstable; urgency=medium
+
+  * Refresh translations
+
+ -- crims0n <crims0n@minios.dev>  Wed, 02 Sep 2026 14:22:21 +0300
+
 minios-installer (3.0.8) unstable; urgency=medium
 
   * Remove MiniOS live utilities and applications from native installations.

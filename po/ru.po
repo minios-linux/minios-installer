@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: minios-installer 2.2\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2026-09-01 00:10+0300\n"
-"PO-Revision-Date: 2026-08-30 19:55+0000\n"
+"POT-Creation-Date: 2026-09-02 13:49+0300\n"
+"PO-Revision-Date: 2026-09-02 10:42+0000\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
 "Language: ru\n"
@@ -777,6 +777,7 @@ msgid "Next"
 msgstr "Далее"
 
 #: lib/main_installer.py:1451
+#: share/polkit/org.minios.installer.policy:8
 msgid "Install MiniOS"
 msgstr "Установить MiniOS"
 
@@ -2814,3 +2815,7 @@ msgstr "Установить эту систему на жёсткий диск"
 #: share/applications/minios-installer.desktop:124
 msgid "install;"
 msgstr "установить;"
+
+#: share/polkit/org.minios.installer.policy:17
+msgid "Authentication is required to run MiniOS Installer"
+msgstr "Для запуска Установщика MiniOS требуется аутентификация"

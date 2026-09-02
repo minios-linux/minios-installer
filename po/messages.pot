@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 00:10+0300\n"
+"POT-Creation-Date: 2026-09-02 13:49+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -751,6 +751,7 @@ msgid "Next"
 msgstr ""
 
 #: lib/main_installer.py:1451
+#: share/polkit/org.minios.installer.policy:8
 msgid "Install MiniOS"
 msgstr ""
 
@@ -2787,4 +2788,8 @@ msgstr ""
 
 #: share/applications/minios-installer.desktop:124
 msgid "install;"
+msgstr ""
+
+#: share/polkit/org.minios.installer.policy:17
+msgid "Authentication is required to run MiniOS Installer"
 msgstr ""
