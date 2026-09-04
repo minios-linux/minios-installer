@@ -432,11 +432,33 @@ def test_target_identity_accepts_confined_usrmerged_os_release(tmp_path):
     ) == 2
 
 
+def test_format1_accepts_http_repository_uri(tmp_path):
+    manifest = write_format1_fixture(tmp_path)
+    manifest["repositories"][0]["uris"] = ["http://deb.debian.org/debian"]
+    path = tmp_path / "usr/share/minios/kernel-dpkg/manifest.json"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    plan = prepare_kernel_registration(str(tmp_path))
+    plan.close()
+
+
+@pytest.mark.parametrize("uri", ["ftp://deb.debian.org/debian", "file:///srv/debian"])
+def test_format1_rejects_non_http_repository_uri(tmp_path, uri):
+    manifest = write_format1_fixture(tmp_path)
+    manifest["repositories"][0]["uris"] = [uri]
+    path = tmp_path / "usr/share/minios/kernel-dpkg/manifest.json"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(KernelMetadataError, match="must use HTTP or HTTPS"):
+        prepare_kernel_registration(str(tmp_path))
+
+
 @pytest.mark.parametrize(
     "mutation,match",
     [
         (lambda manifest: manifest.pop("repositories"), "missing repositories"),
         (lambda manifest: manifest.update({"format": "1"}), "format must be integer 1"),
+        (lambda manifest: manifest["kernel"].update({"provider": "distribution"}), "unknown provider"),
         (lambda manifest: manifest["packages"][0].update({"role": "guessed"}), "unknown role"),
         (lambda manifest: manifest["packages"][0].update({"dpkg_instance": "wrong"}), "not canonical"),
         (lambda manifest: manifest["kernel"].update({"version": "other"}), "escapes the kernel payload boundary"),

@@ -1153,8 +1153,9 @@ def prepare_kernel_registration(root: str, allow_foreign_architectures: Optional
             _fail("{} family is unsupported".format(context))
         repository_distributions.add(repository["suite"])
         uris = _require_string_list(repository["uris"], context + ".uris")
-        if any(not uri.startswith("https://") or any(char.isspace() for char in uri) for uri in uris):
-            _fail("{} URIs must use HTTPS without whitespace".format(context))
+        if any(not uri.startswith(("http://", "https://")) or
+               any(char.isspace() for char in uri) for uri in uris):
+            _fail("{} URIs must use HTTP or HTTPS without whitespace".format(context))
         _require_string_list(repository["components"], context + ".components", _IDENTITY_RE)
         archs = _require_string_list(repository["architectures"], context + ".architectures", _ARCH_RE)
         repository_architectures.update(archs)

@@ -1,3 +1,9 @@
+minios-installer (3.0.10) unstable; urgency=medium
+
+  * Recognize current kernel metadata layouts during installation
+
+ -- crims0n <crims0n@minios.dev>  Fri, 04 Sep 2026 14:45:11 +0300
+
 minios-installer (3.0.9) unstable; urgency=medium
 
   * Refresh translations
