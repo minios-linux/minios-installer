@@ -1,0 +1,5 @@
+usr/bin/minios-installer
+usr/lib/minios-installer/main_installer.py
+usr/share/applications/minios-installer.desktop
+usr/share/polkit-1/actions/org.minios.installer.policy
+usr/share/minios-installer/style.css

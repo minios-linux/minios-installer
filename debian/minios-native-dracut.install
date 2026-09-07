@@ -1,0 +1,2 @@
+etc/kernel/postinst.d/minios-dracut
+etc/kernel/postrm.d/minios-dracut

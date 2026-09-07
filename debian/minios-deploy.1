@@ -1,4 +1,4 @@
-.TH MINIOS-DEPLOY 1 "July 2026" "MiniOS" "User Commands"
+.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.1.0" "User Commands"
 .SH NAME
 minios-deploy \- command-line interface for the MiniOS installer
 .SH SYNOPSIS
@@ -38,7 +38,7 @@ Use erase_all, free_space, or alongside_os. Manual partitioning is GUI-only.
 MiniOS capacity to release from the alongside shrink candidate.
 .TP
 .B --swap-size MIB
-Native swap size. Default: 0.
+Native installation only. Swap size. Default: 0.
 .TP
 .B --boot-layout LAYOUT
 Use auto, bios_mbr, uefi_mbr, or uefi_gpt.
@@ -51,19 +51,25 @@ Use convenient, balanced, or strict. Defaults to convenient for live and
 balanced for native installations.
 .TP
 .B --persistence-mode none|native|dynfilefs|raw|luks
-Live persistence mode. Native requires a POSIX-compatible target filesystem;
+Live installation only. The native persistence choice writes changes directly
+to a POSIX-compatible MiniOS partition; it is unrelated to
+.B --mode native .
 LUKS is listed only when the running initrd advertises crypto support and also
 requires a crypto-capable source initrd.
 .TP
 .B --persistence-size MIB
-Container persistence size. Default: 4000 MiB. Raw and LUKS are limited to
-4000 MiB on FAT32; DynFileFS is not.
+Live installation only. Container persistence size. Default: 4000 MiB. Raw and
+LUKS are limited to 4000 MiB on FAT32; DynFileFS is not.
 .TP
 .B --download-packages
-Allow required package downloads. The CLI default is disabled.
+Native installation only. Allow required package downloads. The CLI default is disabled.
+The minios-native-dracut dependency supplies a conventional dracut initramfs
+toolchain even when the live image uses livekit-mos. Without downloads,
+single-system erase-all can use EXTLINUX on BIOS or the verified live-medium
+EFI chain with a minimal native GRUB configuration on UEFI.
 .TP
 .B --boot-menu LANG
-Boot menu language code (e.g. ru_RU) or
+Live installation only. Boot menu language code (e.g. ru_RU) or
 .B multilang
 (default).
 .TP
@@ -75,16 +81,21 @@ guarantee that the eventual runtime environment will remain unchanged.
 Confirm that the target disk may be erased.
 .TP
 .B --config-file PATH
-Base
+Live installation only. Base
 .I config.conf
 to copy and merge with CLI overrides. When omitted and overrides are set, the live system
 .I /etc/live/config.conf
 is used as the base if present.
-.SH LIVE CONFIGURATION
-The following options write the same keys as
+.SH SYSTEM CONFIGURATION
+The following options customize the installed system. In live mode they write
+the same keys as
 .B minios-configurator
-into the installed
-.IR minios/config.conf .
+into
+.IR minios/config.conf ;
+in native mode the supported account, locale, timezone, keyboard, target, and
+service settings are applied directly. Options marked live-only are rejected
+with
+.B --mode native .
 Boolean options accept
 .BR true / false
 (also yes/no, on/off, 1/0).
@@ -111,16 +122,20 @@ The password options expose plaintext to shell history and the process list
 while the command is running. Avoid them in shared environments.
 .TP
 .B --link-user-dirs BOOL
+Live installation only.
 .B LIVE_LINK_USER_DIRS
 .TP
 .B --bind-user-dirs BOOL
+Live installation only.
 .B LIVE_BIND_USER_DIRS
 .TP
 .B --user-dirs-path PATH
+Live installation only.
 .B LIVE_USER_DIRS_PATH
 .SS System
 .TP
 .B --noroot BOOL
+Live installation only.
 .B LIVE_CONFIG_NOROOT
 .TP
 .B --hostname NAME
@@ -155,6 +170,8 @@ while the command is running. Avoid them in shared environments.
 .B --keyboard-variants LIST
 .B LIVE_KEYBOARD_VARIANTS
 .SS Advanced
+The following advanced options are available only with
+.B --mode live .
 .TP
 .B --module-mode simple|merged
 .B LIVE_MODULE_MODE

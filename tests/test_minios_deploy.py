@@ -62,6 +62,50 @@ class TestMiniOSDeploy:
             except ValueError as exc:
                 assert 'only live installation' in str(exc)
 
+    def test_native_mode_rejects_live_only_options(self):
+        import minios_deploy
+
+        parser = minios_deploy.build_parser(luks_available=True)
+        cases = (
+            ['--boot-menu', 'ru_RU'],
+            ['--persistence-mode', 'none'],
+            ['--persistence-size', '0'],
+            ['--config-file', '/tmp/live-config.conf'],
+            ['--link-user-dirs', 'true'],
+            ['--bind-user-dirs', 'false'],
+            ['--user-dirs-path', '/minios/userdirs'],
+            ['--noroot', 'false'],
+            ['--module-mode', 'merged'],
+            ['--live-config-cmdline', 'quiet'],
+            ['--config-debug', 'false'],
+            ['--export-logs', 'true'],
+        )
+        for option in cases:
+            args = parser.parse_args([
+                'install', '/dev/sdb', '--mode', 'native', '--yes', '--dry-run',
+            ] + option)
+            try:
+                minios_deploy._validate_cli_inputs(args)
+                assert False, 'expected native rejection for {0}'.format(option[0])
+            except ValueError as exc:
+                assert option[0] in str(exc)
+                assert '--mode live' in str(exc)
+
+    def test_live_mode_rejects_native_only_options(self):
+        import minios_deploy
+
+        parser = minios_deploy.build_parser(luks_available=True)
+        for option in (["--swap-size", "0"], ["--download-packages"]):
+            args = parser.parse_args([
+                "install", "/dev/sdb", "--mode", "live", "--yes", "--dry-run",
+            ] + option)
+            try:
+                minios_deploy._validate_cli_inputs(args)
+                assert False, "expected live rejection for {0}".format(option[0])
+            except ValueError as exc:
+                assert option[0] in str(exc)
+                assert "--mode native" in str(exc)
+
     def test_luks_persistence_defaults_to_raw_compatible_4000_mib(self):
         import minios_deploy
 
@@ -153,7 +197,7 @@ class TestMiniOSDeploy:
         from partition_models import PartitionPlan
 
         parser = minios_deploy.build_parser()
-        args = parser.parse_args(['plan', '/dev/sdb', '--mode', 'native'])
+        args = parser.parse_args(['plan', '/dev/sdb', '--mode', 'native', '--swap-size', '2048'])
         fake_plan = PartitionPlan(device='/dev/sdb', use_gpt=False, wipe_disk=True)
         with patch('minios_deploy.ensure_safe_target_device', return_value='/dev/sdb'), \
              patch('minios_deploy.scan_disk', return_value=MagicMock()), \
@@ -163,6 +207,7 @@ class TestMiniOSDeploy:
 
         assert build.call_args[1]['required_root_mib'] == 3456
         assert build.call_args[1]['alongside_size_mib'] == 0
+        assert build.call_args[1]['swap_size_mib'] == 2048
 
     def test_luks_persistence_reserves_root_space_and_rejects_native_mode(self):
         import minios_deploy
@@ -383,6 +428,41 @@ class TestMiniOSDeploy:
         conf = (target / 'boot' / 'extlinux' / 'extlinux.conf').read_text()
         assert 'APPEND root=UUID=ROOT-UUID rw quiet' in conf
 
+    def test_native_dracut_provider_activation_is_target_only(self, tmp_path):
+        import native_deploy
+
+        target = tmp_path / 'target'
+        status = target / 'var/lib/dpkg/status'
+        status.parent.mkdir(parents=True)
+        status.write_text(
+            'Package: minios-native-dracut\n'
+            'Status: install ok installed\n'
+            'Provides: linux-initramfs-tool\n\n',
+            encoding='utf-8',
+        )
+        for path in (
+            target / 'usr/bin/dracut',
+            target / 'usr/bin/apt-get',
+            target / 'usr/bin/apt-mark',
+            target / 'etc/kernel/postinst.d/minios-dracut',
+            target / 'etc/kernel/postrm.d/minios-dracut',
+        ):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('#!/bin/sh\n', encoding='utf-8')
+            path.chmod(0o755)
+
+        calls = []
+        with patch('native_deploy._chroot', side_effect=lambda _target, args, *_a, **_kw: calls.append(args)):
+            assert native_deploy._prepare_native_initramfs_provider(
+                str(target), lambda _message: None) is True
+
+        assert calls == [['apt-mark', 'manual', 'minios-native-dracut']]
+        marker = target / 'var/lib/minios-native-dracut/enabled'
+        assert not marker.exists()
+        native_deploy._enable_native_initramfs_provider(
+            str(target), lambda _message: None)
+        assert marker.read_text() == 'minios-native-dracut\n'
+
     def test_native_initramfs_uses_update_initramfs_when_dracut_missing(self, tmp_path):
         import native_deploy
 
@@ -463,22 +543,55 @@ class TestMiniOSDeploy:
 
         assert extlinux.called
 
-    def test_native_bootloader_requires_grub_for_gpt(self, tmp_path):
+    def test_native_bootloader_uses_verified_efi_fallback_without_grub(self, tmp_path):
         import native_deploy
-        import pytest
 
         target = tmp_path / 'target'
         target.mkdir()
 
+        log = lambda _msg: None
         with patch('native_deploy._mount_chroot_api'), \
              patch('native_deploy._unmount_chroot_api'), \
              patch('native_deploy._kernel_version', return_value='test'), \
              patch('native_deploy._copy_native_kernel', return_value='/boot/vmlinuz-test'), \
-             patch('native_deploy._generate_native_initramfs', return_value='/boot/initrd.img-test'):
-            with pytest.raises(RuntimeError, match='verified EFI chain'):
-                native_deploy._install_native_bootloader(
-                    str(target), '/dev/sda', '/dev/sda1', True, '/mnt/esp', lambda *_: None, lambda _msg: None
-                )
+             patch('native_deploy._generate_native_initramfs', return_value='/boot/initrd.img-test'), \
+             patch('native_deploy._install_efi_native_fallback') as fallback:
+            native_deploy._install_native_bootloader(
+                str(target), '/dev/sda', '/dev/sda2', True, '/mnt/esp',
+                lambda *_: None, log,
+            )
+
+        fallback.assert_called_once_with(
+            str(target), '/dev/sda2', '/boot/vmlinuz-test', '/boot/initrd.img-test',
+            log, dry_run=False, reuse_esp=False,
+        )
+
+    def test_offline_uefi_fallback_publishes_live_efi_and_native_config(self, tmp_path):
+        import native_deploy
+
+        source = tmp_path / 'source'
+        boot = source / 'EFI/boot'
+        boot.mkdir(parents=True)
+        (boot / 'bootx64.efi').write_bytes(b'x64-shim')
+        (boot / 'bootia32.efi').write_bytes(b'ia32-shim')
+        (boot / 'grubx64.efi').write_bytes(b'prefix=/EFI/debian')
+        (boot / 'grubia32.efi').write_bytes(b'prefix=/EFI/debian')
+        target = tmp_path / 'target'
+        (target / 'boot/efi').mkdir(parents=True)
+
+        with patch('native_deploy.get_live_source_mount', return_value=str(source)), \
+             patch('native_deploy._blkid_value', return_value='ROOT-UUID'):
+            native_deploy._install_efi_native_fallback(
+                str(target), '/dev/sda2', '/boot/vmlinuz-test', '/boot/initrd.img-test',
+                lambda _msg: None,
+            )
+
+        grub_cfg = (target / 'boot/grub/grub.cfg').read_text(encoding='utf-8')
+        assert 'linux /boot/vmlinuz-test root=UUID=ROOT-UUID rw quiet' in grub_cfg
+        assert 'initrd /boot/initrd.img-test' in grub_cfg
+        assert (target / 'boot/efi/EFI/boot/bootx64.efi').read_bytes() == b'x64-shim'
+        wrapper = (target / 'boot/efi/EFI/boot/grub.cfg').read_text(encoding='utf-8')
+        assert 'search --no-floppy --file --set=root /boot/grub/grub.cfg' in wrapper
 
     def test_native_uefi_publication_preserves_foreign_tree(self, tmp_path):
         import native_deploy
@@ -887,6 +1000,7 @@ class TestMiniOSDeploy:
         calls = []
 
         with patch('native_deploy.native_missing_packages', return_value=['grub-pc', 'grub-common']), \
+             patch('native_deploy.has_initramfs_generator', return_value=True), \
              patch('native_deploy.package_installed_or_provided', return_value=True), \
              patch('native_deploy._chroot', side_effect=lambda *args, **kwargs: calls.append((args, kwargs))):
             native_deploy._install_native_packages(str(tmp_path), False, 'ext4', state, lambda _msg: None)
@@ -914,6 +1028,7 @@ class TestMiniOSDeploy:
 
         with patch('native_deploy.native_missing_packages', return_value=[
                 'grub-pc', 'grub-common', 'initramfs-tools']), \
+             patch('native_deploy.has_initramfs_generator', return_value=False), \
              patch('native_deploy.package_installed_or_provided', return_value=False), \
              patch('native_deploy._chroot', side_effect=lambda *args, **kwargs: calls.append((args, kwargs))):
             native_deploy._install_native_packages(
@@ -924,6 +1039,23 @@ class TestMiniOSDeploy:
             'apt-get', '--no-download', 'install', '-y', '--no-install-recommends',
             'initramfs-tools',
         ]
+
+    def test_offline_boot_fallback_uses_minios_dracut_provider_without_package_staging(self, tmp_path):
+        import native_deploy
+        from install_state import InstallState
+
+        state = InstallState(download_missing_packages=False)
+        logs = []
+
+        with patch('native_deploy.native_missing_packages', return_value=['grub-pc', 'grub-common']), \
+             patch('native_deploy.has_initramfs_generator', return_value=True), \
+             patch('native_deploy.package_installed_or_provided', return_value=True), \
+             patch('native_deploy._chroot') as chroot:
+            native_deploy._install_native_packages(
+                str(tmp_path), False, 'ext4', state, logs.append)
+
+        chroot.assert_not_called()
+        assert any('Offline bootloader fallback' in line for line in logs)
 
     def test_native_copy_reserves_100_percent_for_completed_tar(self, tmp_path):
         import native_deploy

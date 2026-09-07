@@ -76,3 +76,32 @@ def test_selected_module_size_is_unavailable_when_any_scan_failed():
     from module_selection import selected_modules_size_bytes
 
     assert selected_modules_size_bytes(["00-core.sb"], {"00-core.sb": None}) is None
+
+
+def test_live_payload_excludes_active_session_and_matches_copy_plan(tmp_path, monkeypatch):
+    import module_selection
+    from copy_utils import _calculate_copy_size
+    source = tmp_path / 'minios'
+    source.mkdir()
+    (source / '00-core.sb').write_bytes(b'core')
+    (source / '01-kernel.sb').write_bytes(b'kernel')
+    (source / '02-optional.sb').write_bytes(b'unselected')
+    (source / 'boot').mkdir()
+    (source / 'boot/vmlinuz').write_bytes(b'boot')
+    session = source / 'changes/1/etc'
+    session.mkdir(parents=True)
+    (session / 'saved-file').write_bytes(b'not copied')
+    (session / 'missing-target').symlink_to('not-present')
+    monkeypatch.setattr(module_selection, 'LIVE_MINIOS_CANDIDATES', (str(source),))
+    selected = {'00-core.sb', '01-kernel.sb'}
+    assert module_selection.payload_size_bytes(selected) == 14
+    assert module_selection.payload_size_bytes(selected) == _calculate_copy_size(str(source), selected)
+
+
+def test_live_payload_still_rejects_broken_boot_asset(tmp_path, monkeypatch):
+    import module_selection
+    (tmp_path / '00-core.sb').write_bytes(b'core')
+    (tmp_path / 'boot').mkdir()
+    (tmp_path / 'boot/missing-initrd').symlink_to('not-present')
+    monkeypatch.setattr(module_selection, 'LIVE_MINIOS_CANDIDATES', (str(tmp_path),))
+    assert module_selection.payload_size_bytes(['00-core.sb']) is None

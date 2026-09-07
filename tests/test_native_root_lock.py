@@ -204,6 +204,7 @@ def test_native_cleanup_purges_live_packages_and_artifacts():
             "Package: minios-live-config\nStatus: install ok installed\n\n"
             "Package: user-setup\nStatus: install ok installed\n\n"
             "Package: minios-tools\nStatus: install ok installed\n\n"
+            "Package: minios-deploy\nStatus: install ok installed\n\n"
             "Package: minios-installer\nStatus: install ok installed\n\n"
             "Package: minios-live-config-doc\nStatus: install ok installed\n\n"
             "Package: minios-live-config-systemd\nStatus: install ok installed\n\n"
@@ -214,14 +215,17 @@ def test_native_cleanup_purges_live_packages_and_artifacts():
             "Package: minios-help\nStatus: install ok installed\n\n"
             "Package: minios-image-builder\nStatus: install ok installed\n\n"
             "Package: minios-image-compose\nStatus: install ok installed\n\n"
+            "Package: minios-kernel\nStatus: install ok installed\n\n"
             "Package: minios-kernel-manager\nStatus: install ok installed\n\n"
             "Package: minios-module-manager\nStatus: install ok installed\n\n"
+            "Package: minios-session\nStatus: install ok installed\n\n"
             "Package: minios-session-manager\nStatus: install ok installed\n\n"
             "Package: minios-welcome\nStatus: install ok installed\n\n"
             "Package: minios-store-gui\nStatus: install ok installed\n\n"
             "Package: minios-store\nStatus: install ok installed\n\n"
             "Package: minios-store-common\nStatus: install ok installed\n\n"
-            "Package: python3-minios-gui\nStatus: install ok installed\n\n",
+            "Package: python3-minios-gui\nStatus: install ok installed\n\n"
+            "Package: minios-native-dracut\nStatus: install ok installed\nProvides: linux-initramfs-tool\n\n",
         )
         _write(os.path.join(target, "etc/systemd/system/basic.target.wants/live-config.service"))
         _write(os.path.join(target, "usr/bin/apt-get"))
@@ -246,15 +250,17 @@ def test_native_cleanup_purges_live_packages_and_artifacts():
         purge = next(j for j in joined if "apt-get purge -y --allow-remove-essential" in j)
         for package in (
             "driveutility", "minios-configurator", "minios-gui", "minios-help",
-            "minios-image-builder", "minios-image-compose", "minios-installer",
-            "minios-kernel-manager", "minios-live-config", "minios-live-config-doc",
+            "minios-image-builder", "minios-image-compose", "minios-deploy",
+            "minios-installer", "minios-kernel", "minios-kernel-manager",
+            "minios-live-config", "minios-live-config-doc",
             "minios-live-config-systemd", "minios-live-config-sysvinit",
-            "minios-module-manager",
-            "minios-session-manager", "minios-store", "minios-store-common",
+            "minios-module-manager", "minios-session", "minios-session-manager",
+            "minios-store", "minios-store-common",
             "minios-store-gui", "minios-tools", "minios-welcome",
             "python3-minios-gui",
         ):
             assert package in purge
+        assert "minios-native-dracut" not in purge
         assert any("apt-get autoremove --purge -y" in j for j in joined), joined
         assert not os.path.exists(os.path.join(target, "etc/systemd/system/basic.target.wants/live-config.service"))
         assert not os.path.exists(os.path.join(target, "usr/bin/audio-allowuser.sh"))
@@ -464,6 +470,8 @@ def test_native_user_creation_happens_before_live_package_cleanup():
             "unmount_partitions",
         ):
             stack.enter_context(patch("native_deploy." + target))
+        stack.enter_context(patch("native_deploy._prepare_native_initramfs_provider", side_effect=lambda *_a, **_kw: events.append("prepare-initramfs") or True))
+        stack.enter_context(patch("native_deploy._enable_native_initramfs_provider", side_effect=lambda *_a, **_kw: events.append("enable-initramfs")))
         stack.enter_context(patch("native_deploy._collect_live_allowuser_groups", return_value=[]))
         stack.enter_context(patch("native_deploy._cleanup_native_live_packages", side_effect=lambda *_a, **_kw: events.append("cleanup")))
         stack.enter_context(patch("native_deploy.apply_security_profile", side_effect=lambda *_a, **_kw: events.append("profile")))
@@ -474,7 +482,39 @@ def test_native_user_creation_happens_before_live_package_cleanup():
         register.return_value = (registration, "/boot/vmlinuz-test", "/boot/initrd.img-test")
         native_deploy.run_native_install(state, lambda *_: None, lambda *_: None)
 
-    assert events == ["profile", "settings", "cleanup"]
+    assert events == ["prepare-initramfs", "profile", "settings", "cleanup", "enable-initramfs"]
+
+
+def test_native_uefi_erase_all_offline_reaches_disk_executor_without_grub_download():
+    import native_deploy
+    import pytest
+    from partition_models import PartitionPlan
+
+    state = InstallState(
+        install_mode="native", target_device="/dev/sda", placement="erase_all",
+        download_missing_packages=False,
+    )
+    plan = PartitionPlan(device="/dev/sda", use_gpt=True, wipe_disk=True, use_efi=True)
+
+    with patch("native_deploy.resolve_install_device", return_value="/dev/sda"), \
+         patch("native_deploy.scan_disk"), \
+         patch("native_deploy.build_plan", return_value=plan), \
+         patch("native_deploy._preflight_reused_efi_variables"), \
+         patch("native_deploy._preflight_efi_payload_contract"), \
+         patch("native_deploy._preflight_reused_efi_payload"), \
+         patch("native_deploy._preflight_selected_kernel"), \
+         patch("native_deploy.native_missing_packages", return_value=["grub-common", "efibootmgr"]), \
+         patch("native_deploy.preflight_package_download") as download_preflight, \
+         patch("native_deploy.prepare_package_cache") as prepare_cache, \
+         patch("native_deploy.preflight_selected_bundles", return_value=1024), \
+         patch("native_deploy.get_live_source_mount", return_value="/live"), \
+         patch("native_deploy._regular_efi_tree_bytes", return_value=4096), \
+         patch("native_deploy.execute_plan", side_effect=RuntimeError("reached executor")):
+        with pytest.raises(RuntimeError, match="reached executor"):
+            native_deploy.run_native_install(state, lambda *_: None, lambda *_: None)
+
+    download_preflight.assert_not_called()
+    prepare_cache.assert_not_called()
 
 
 def test_native_multiboot_offline_is_blocked_before_disk_changes():

@@ -63,12 +63,48 @@ def test_native_requirements_add_os_prober_only_for_multiboot():
     assert "os-prober" in native_package_requirements(False, "ext4", alongside=True)
 
 
+def test_native_requirements_accept_minios_dracut_provider(tmp_path):
+    from package_preflight import native_package_requirements
+
+    dracut = tmp_path / "usr/bin/dracut"
+    dracut.parent.mkdir(parents=True)
+    dracut.write_text("#!/bin/sh\n", encoding="utf-8")
+    status = tmp_path / "var/lib/dpkg/status"
+    status.parent.mkdir(parents=True)
+    status.write_text(
+        "Package: minios-native-dracut\n"
+        "Status: install ok installed\n"
+        "Provides: linux-initramfs-tool\n\n",
+        encoding="utf-8",
+    )
+
+    packages = native_package_requirements(True, "ext4", root=str(tmp_path))
+
+    assert "initramfs-tools" not in packages
+
+
+def test_native_requirements_do_not_treat_bare_dracut_core_as_provider(tmp_path):
+    from package_preflight import native_package_requirements
+
+    dracut = tmp_path / "usr/bin/dracut"
+    dracut.parent.mkdir(parents=True)
+    dracut.write_text("#!/bin/sh\n", encoding="utf-8")
+    status = tmp_path / "var/lib/dpkg/status"
+    status.parent.mkdir(parents=True)
+    status.write_text("", encoding="utf-8")
+
+    packages = native_package_requirements(True, "ext4", root=str(tmp_path))
+
+    assert "initramfs-tools" in packages
+
+
 def test_native_standard_bootloader_requirement():
     from package_preflight import native_requires_standard_bootloader
 
     assert not native_requires_standard_bootloader(False, "erase_all")
-    assert native_requires_standard_bootloader(True, "erase_all")
+    assert not native_requires_standard_bootloader(True, "erase_all")
     assert native_requires_standard_bootloader(False, "free_space")
+    assert native_requires_standard_bootloader(True, "free_space")
     assert native_requires_standard_bootloader(False, "alongside_os")
 
 

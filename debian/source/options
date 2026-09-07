@@ -29,6 +29,8 @@ tar-ignore=debian/files
 tar-ignore=debian/*.substvars
 tar-ignore=debian/*.debhelper
 tar-ignore=debian/*.log
+tar-ignore=debian/minios-deploy
+tar-ignore=debian/minios-native-dracut
 tar-ignore=debian/minios-installer
 tar-ignore=debian/tmp
 

@@ -1,0 +1,183 @@
+_minios_deploy_modules() {
+    local cur="$1" prefix="" fragment="$1" base names reply item
+    local bases="/run/initramfs/memory/data/minios /run/initramfs/memory/iso/minios /lib/live/mount/medium/minios /lib/live/mount/iso/minios /run/initramfs/memory/bundles"
+
+    if [[ "$cur" == *,* ]]; then
+        prefix="${cur%,*},"
+        fragment="${cur##*,}"
+    fi
+
+    for base in $bases; do
+        [[ -d "$base" ]] || continue
+        names="$(find "$base" -maxdepth 1 -mindepth 1 -name '*.sb' -printf '%f\n' 2>/dev/null | sort)"
+        [[ -n "$names" ]] && break
+    done
+
+    reply=( $(compgen -W "$names" -- "$fragment") )
+    COMPREPLY=()
+    for item in "${reply[@]}"; do
+        COMPREPLY+=("${prefix}${item}")
+    done
+}
+
+_minios_deploy_devices() {
+    local cur="$1" devices
+    devices="$(minios-deploy list-disks 2>/dev/null | awk 'NF {print $1}')"
+    COMPREPLY=( $(compgen -W "$devices" -- "$cur") )
+}
+
+_minios_deploy_modes() {
+    local modes="live"
+    if minios-deploy plan --help 2>/dev/null | grep -q -- '--mode {live,native}'; then
+        modes+=" native"
+    fi
+    printf '%s\n' "$modes"
+}
+
+_minios_deploy() {
+    local cur prev subcommand="" i native_mode=false
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD - 1]}"
+
+    for ((i=1; i<${#COMP_WORDS[@]}; i++)); do
+        case "${COMP_WORDS[i]}" in
+            list-disks|plan|install)
+                subcommand="${COMP_WORDS[i]}"
+                break
+                ;;
+        esac
+    done
+
+    for ((i=1; i<${#COMP_WORDS[@]}; i++)); do
+        if [[ "${COMP_WORDS[i]}" == "--mode=native" ]] || \
+           [[ "${COMP_WORDS[i]}" == "--mode" && "${COMP_WORDS[i + 1]}" == "native" ]]; then
+            native_mode=true
+            break
+        fi
+    done
+
+    if [[ -z "$subcommand" ]]; then
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "-h --help" -- "$cur") )
+        else
+            COMPREPLY=( $(compgen -W "list-disks plan install" -- "$cur") )
+        fi
+        return 0
+    fi
+
+    case "$prev" in
+        plan|install)
+            if [[ "$cur" != -* ]]; then
+                _minios_deploy_devices "$cur"
+                return 0
+            fi
+            ;;
+        --mode)
+            local modes
+            modes="$(_minios_deploy_modes)"
+            COMPREPLY=( $(compgen -W "$modes" -- "$cur") )
+            return 0
+            ;;
+        --filesystem)
+            if $native_mode; then
+                COMPREPLY=( $(compgen -W "ext2 ext4 btrfs" -- "$cur") )
+            else
+                COMPREPLY=( $(compgen -W "ext2 ext4 btrfs fat32 ntfs" -- "$cur") )
+            fi
+            return 0
+            ;;
+        --placement)
+            COMPREPLY=( $(compgen -W "erase_all free_space alongside_os" -- "$cur") )
+            return 0
+            ;;
+        --boot-layout)
+            COMPREPLY=( $(compgen -W "auto bios_mbr uefi_mbr uefi_gpt" -- "$cur") )
+            return 0
+            ;;
+        --persistence-mode)
+            if $native_mode; then
+                return 0
+            fi
+            local persistence_modes="none native dynfilefs raw"
+            [[ -e /run/initramfs/etc/minios-initramfs-crypt ]] && persistence_modes+=" luks"
+            COMPREPLY=( $(compgen -W "$persistence_modes" -- "$cur") )
+            return 0
+            ;;
+        --security-profile)
+            COMPREPLY=( $(compgen -W "convenient balanced strict" -- "$cur") )
+            return 0
+            ;;
+        --modules)
+            _minios_deploy_modules "$cur"
+            return 0
+            ;;
+        --config-file)
+            if $native_mode; then
+                return 0
+            fi
+            COMPREPLY=( $(compgen -f -- "$cur") )
+            return 0
+            ;;
+        --link-user-dirs|--bind-user-dirs|--noroot|--config-debug|--export-logs)
+            if $native_mode; then
+                return 0
+            fi
+            COMPREPLY=( $(compgen -W "true false" -- "$cur") )
+            return 0
+            ;;
+        --default-target)
+            COMPREPLY=( $(compgen -W "graphical graphical.target multi-user multi-user.target rescue rescue.target" -- "$cur") )
+            return 0
+            ;;
+        --module-mode)
+            if $native_mode; then
+                return 0
+            fi
+            COMPREPLY=( $(compgen -W "simple merged" -- "$cur") )
+            return 0
+            ;;
+        --locale|--locales)
+            local locales
+            locales="$(locale -a 2>/dev/null)"
+            COMPREPLY=( $(compgen -W "$locales" -- "$cur") )
+            return 0
+            ;;
+    esac
+
+    if [[ "$cur" != -* ]]; then
+        return 0
+    fi
+
+    local common_opts="-h --help"
+    local live_plan_opts="--persistence-mode --persistence-size"
+    local native_plan_opts="--swap-size"
+    local plan_opts="--filesystem --placement --alongside-size --mode --modules --boot-layout --json"
+    local install_opts="--mode --security-profile --filesystem --placement --alongside-size --boot-layout --modules --dry-run --yes"
+    local native_install_opts="--swap-size --download-packages"
+    local live_install_opts="--boot-menu --persistence-mode --persistence-size --config-file --link-user-dirs --bind-user-dirs --user-dirs-path --noroot --module-mode --live-config-cmdline --config-debug --export-logs"
+    local config_opts="--username --full-name --user-groups --password --root-password --hostname --locale --locales --timezone --default-target --enable-services --disable-services --keyboard-model --keyboard --keyboard-layouts --keyboard-options --keyboard-variants"
+    case "$subcommand" in
+        list-disks)
+            COMPREPLY=( $(compgen -W "$common_opts --json" -- "$cur") )
+            ;;
+        plan)
+            if $native_mode; then
+                COMPREPLY=( $(compgen -W "$common_opts $plan_opts $native_plan_opts" -- "$cur") )
+            else
+                COMPREPLY=( $(compgen -W "$common_opts $plan_opts $live_plan_opts" -- "$cur") )
+            fi
+            ;;
+        install)
+            if $native_mode; then
+                COMPREPLY=( $(compgen -W "$common_opts $install_opts $native_install_opts $config_opts" -- "$cur") )
+            else
+                COMPREPLY=( $(compgen -W "$common_opts $install_opts $live_install_opts $config_opts" -- "$cur") )
+            fi
+            ;;
+    esac
+
+    return 0
+}
+
+complete -F _minios_deploy minios-deploy

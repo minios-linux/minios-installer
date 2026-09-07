@@ -28,6 +28,44 @@ def test_missing_native_contracts_keep_live_installation():
     assert state.install_mode == "live"
     window._refresh_mode_card_styles.assert_called_once_with()
 
+
+def test_switching_to_native_clears_live_persistence_state():
+    state = InstallState(
+        install_mode="live", persistence_mode="raw", persistence_size_mib=4096,
+    )
+    state.user_config.username = "live"
+    window = SimpleNamespace(
+        state=state,
+        native_install_available=True,
+        _live_username_default="live",
+        _update_required_root_size=Mock(),
+        _refresh_mode_specific_visibility=Mock(),
+        _refresh_mode_card_styles=Mock(),
+    )
+
+    InstallerWindow._set_install_mode(window, "native")
+
+    assert state.install_mode == "native"
+    assert state.persistence_mode == "none"
+    assert state.persistence_size_mib == 0
+    assert state.download_missing_packages is True
+    window._refresh_mode_specific_visibility.assert_called_once_with()
+
+
+def test_native_mode_hides_live_boot_menu_controls():
+    widgets = [Mock(), Mock()]
+    window = SimpleNamespace(
+        state=InstallState(install_mode="native"),
+        _live_boot_widgets=widgets,
+    )
+
+    InstallerWindow._refresh_mode_specific_visibility(window)
+
+    for widget in widgets:
+        widget.set_no_show_all.assert_called_once_with(True)
+        widget.set_visible.assert_called_once_with(False)
+
+
 def test_only_viewed_non_current_steps_are_clickable():
     viewed = {0, 1, 3}
     assert can_navigate_to_viewed_step(0, 1, viewed)
@@ -46,6 +84,10 @@ def test_backend_command_records_request_without_passwords():
         target_device="/dev/disk/by-id/test disk",
         filesystem="ext4",
         swap_size_mib=8192,
+        boot_config_type="ru_RU",
+        persistence_mode="raw",
+        persistence_size_mib=2048,
+        config_override_path="/tmp/live-config.conf",
         selected_modules=["00-core.sb", "01-kernel.sb"],
         download_missing_packages=True,
     )
@@ -58,8 +100,34 @@ def test_backend_command_records_request_without_passwords():
     assert "'/dev/disk/by-id/test disk'" in command
     assert "--swap-size 8192" in command
     assert "--download-packages" in command
+    assert "--boot-menu" not in command
+    assert "--persistence-mode" not in command
+    assert "--persistence-size" not in command
+    assert "--config-file" not in command
     assert "secret" not in command
     assert "<redacted>" in command
+
+
+def test_backend_command_keeps_live_boot_and_persistence_options():
+    state = InstallState(
+        install_mode="live",
+        target_device="/dev/sdb",
+        swap_size_mib=4096,
+        boot_config_type="ru_RU",
+        persistence_mode="dynfilefs",
+        persistence_size_mib=8192,
+        config_override_path="/tmp/live-config.conf",
+        download_missing_packages=True,
+    )
+
+    command = backend_command_for_state(state)
+
+    assert "--boot-menu ru_RU" in command
+    assert "--persistence-mode dynfilefs" in command
+    assert "--persistence-size 8192" in command
+    assert "--config-file /tmp/live-config.conf" in command
+    assert "--swap-size" not in command
+    assert "--download-packages" not in command
 
 
 def test_structured_log_prefixes_each_line_and_classifies_commands():

@@ -171,6 +171,69 @@ def get_live_root_disk() -> str:
     return verified(root_src)
 
 
+def live_source_is_ram_backed() -> bool:
+    """Prove that the live tree has no block-backed dependency after toram.
+
+    A command-line flag alone is not proof: copying may fail or persistence
+    may still be on disk. Check the mounted source, writable layer and every
+    mount under the initramfs memory tree, following loop backing files.
+    """
+    memory = '/run/initramfs/memory'
+    try:
+        source = get_live_source_mount()
+        if not source.startswith(memory + '/'):
+            return False
+        rows = json.loads(run_command(
+            ['findmnt', '--json', '--list', '--output', 'TARGET,SOURCE,FSTYPE'],
+            _('Failed to inspect live storage')))['filesystems']
+        if not isinstance(rows, list) or not rows:
+            return False
+        mounts = {}
+        for row in rows:
+            if not isinstance(row, dict) or not all(
+                    isinstance(row.get(key), str) for key in ('target', 'source', 'fstype')):
+                return False
+            target = row['target']
+            if not isinstance(target, str) or not target.startswith('/'):
+                return False
+            if target in mounts and (target == memory or target.startswith(memory + '/')):
+                return False
+            mounts[target] = (row['source'], row['fstype'])
+        if memory not in mounts or mounts[memory][1] not in ('tmpfs', 'ramfs'):
+            return False
+        if not os.path.isdir(memory + '/changes') or not any(
+                path.startswith(memory + '/bundles/') for path in mounts):
+            return False
+
+        def ram_backed(path, seen=()):
+            # Loop paths recorded before switch_root retain the old prefix.
+            if path.startswith('/memory/'):
+                path = '/run/initramfs' + path
+            path = os.path.realpath(path)
+            candidates = [point for point in mounts if point == '/' or
+                          path == point or path.startswith(point.rstrip('/') + '/')]
+            if not candidates:
+                return False
+            device, filesystem = mounts[max(candidates, key=len)]
+            if filesystem in ('tmpfs', 'ramfs'):
+                return True
+            device = device.split('[', 1)[0]
+            if not re.fullmatch(r'/dev/loop[0-9]+', device) or device in seen or len(seen) >= 8:
+                return False
+            backing = run_command(
+                ['losetup', '--list', '--noheadings', '--raw', '--output', 'BACK-FILE', device],
+                _('Failed to inspect live loop storage')).strip()
+            if not backing.startswith('/') or '\n' in backing or backing.endswith(' (deleted)'):
+                return False
+            return ram_backed(backing, seen + (device,))
+
+        paths = [source, memory + '/changes']
+        paths.extend(point for point in mounts if point.startswith(memory + '/'))
+        return all(ram_backed(path) for path in paths)
+    except (OSError, RuntimeError, ValueError, TypeError, KeyError):
+        return False
+
+
 def get_device_by_id_path(device: str) -> Optional[str]:
     """
     Return a stable /dev/disk/by-id/* path for *device* when available.
@@ -368,8 +431,8 @@ def ensure_safe_target_device(device: str) -> str:
         '/lib/live/mount/iso',
     ))
 
-    # Detection failure is soft only when we are not on a live session.
-    # If live mount points exist, we *must* be able to identify the backing disk.
+    # Unknown live storage stays protected. A fully RAM-backed live tree
+    # is the only live exception: there is no source disk left to protect.
     try:
         live_disk = get_live_root_disk()
     except Exception:
@@ -383,7 +446,7 @@ def ensure_safe_target_device(device: str) -> str:
             if normalized == live_disk:
                 raise RuntimeError(_('Refusing to install to the running live media device: ') + normalized)
 
-    if not live_disk and live_mounts_exist:
+    if not live_disk and live_mounts_exist and not live_source_is_ram_backed():
         # We are running from live media (mount points present) but could not resolve the source disk.
         # Refuse to avoid accidentally destroying the running image.
         raise RuntimeError(

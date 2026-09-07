@@ -6,33 +6,31 @@ Build-Depends: debhelper, gettext, python3, python3-dataclasses | python3 (>= 3.
 Standards-Version: 4.1.3
 Homepage: https://minios.dev
 
+Package: minios-deploy
+Architecture: all
+Depends: ${misc:Depends}, python3 (>= 3.6), python3-dataclasses (>= 0.8-1minios2) | python3 (>= 3.7), parted, e2fsprogs, dosfstools, btrfs-progs, fdisk, mount, ntfs-3g, minios-native-dracut (= ${binary:Version}) | linux-initramfs-tool, openssl | whois, python3-minios-security (>= 1.0.1), udev | eudev, util-linux (>= 2.31)
+Recommends: minios-live-config (>= 11.0.5.15), user-setup
+Breaks: minios-installer (<< 3.1.0)
+Replaces: minios-installer (<< 3.1.0)
+Description: command-line MiniOS deployment backend
+ minios-deploy provides disk discovery, installation planning, and live or
+ native MiniOS deployment without a graphical interface. It is the backend
+ used by MiniOS Installer and can also be used directly for automation.
+
+Package: minios-native-dracut
+Architecture: all
+Depends: ${misc:Depends}, dracut-core
+Provides: linux-initramfs-tool
+Conflicts: dracut, initramfs-tools
+Description: native initramfs integration for MiniOS
+ minios-native-dracut keeps dracut-core available on images that use either
+ dracut-mos or livekit-mos and provides native kernel update hooks. The hooks
+ are inactive in the live system and are enabled only after a full install.
+
 Package: minios-installer
 Architecture: all
-Depends: ${misc:Depends},
-         polkitd | policykit-1,
-         pkexec | policykit-1,
-         python3 (>= 3.6),
-         python3-dataclasses (>= 0.8-1minios2) | python3 (>= 3.7),
-         python3-gi,
-         gir1.2-gtk-3.0,
-         gir1.2-glib-2.0,
-         gir1.2-pango-1.0,
-         gir1.2-udisks-2.0,
-         python3-minios-gui (>= 1.4.0),
-         parted,
-         e2fsprogs,
-         dosfstools,
-         btrfs-progs,
-         fdisk,
-         mount,
-         ntfs-3g,
-         openssl | whois,
-         python3-minios-security (>= 1.0.1),
-         udev | eudev,
-         util-linux (>= 2.31),
-         minios-configurator (>= 2.4.4)
-Recommends: minios-live-config (>= 11.0.5.15),
-            user-setup
-Description: MiniOS Linux installation utility.
- MiniOS Installer is a utility specially designed for quick and easy
- install MiniOS on a USB flash drive.
+Depends: ${misc:Depends}, minios-deploy (= ${binary:Version}), polkitd | policykit-1, pkexec | policykit-1, python3 (>= 3.6), python3-gi, gir1.2-gtk-3.0, gir1.2-glib-2.0, gir1.2-pango-1.0, gir1.2-udisks-2.0, python3-minios-gui (>= 1.4.0), python3-minios-security (>= 1.0.1)
+Description: graphical MiniOS installation utility
+ MiniOS Installer is the GTK frontend for minios-deploy. It provides guided
+ live and native installation workflows while the deployment engine remains
+ usable independently from graphical environments.

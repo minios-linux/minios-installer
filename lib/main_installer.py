@@ -106,19 +106,21 @@ def backend_command_for_state(state):
         "--security-profile", state.security_profile,
         "--filesystem", state.filesystem,
         "--placement", state.placement,
-        "--swap-size", str(state.swap_size_mib),
         "--alongside-size", str(state.alongside_size_mib),
         "--boot-layout", state.boot_layout,
-        "--boot-menu", state.boot_config_type,
-        "--modules", ",".join(state.selected_modules),
     ]
-    if state.persistence_mode != "none":
+    if state.install_mode == "native":
+        command.extend(["--swap-size", str(state.swap_size_mib)])
+    else:
+        command.extend(["--boot-menu", state.boot_config_type])
+    command.extend(["--modules", ",".join(state.selected_modules)])
+    if state.install_mode == "live" and state.persistence_mode != "none":
         command.extend(["--persistence-mode", state.persistence_mode])
         if state.persistence_size_mib:
             command.extend(["--persistence-size", str(state.persistence_size_mib)])
-    if state.download_missing_packages:
+    if state.install_mode == "native" and state.download_missing_packages:
         command.append("--download-packages")
-    if state.config_override_path:
+    if state.install_mode == "live" and state.config_override_path:
         command.extend(["--config-file", state.config_override_path])
 
     user = state.user_config
@@ -941,7 +943,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.native_install_available = native_install_supported()
         if not self.native_install_available:
             self.state.set_install_mode("live")
-        self.state.download_missing_packages = True
+        self.state.download_missing_packages = False
         self.available_locales = read_available_locales()
         self.available_timezones = read_available_timezones()
         self.available_keyboard_layouts = read_available_keyboard_layouts()
@@ -1564,7 +1566,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         self.content_body.pack_start(cards_box, False, False, 0)
 
-        # Boot settings: fixed labels/rows for both modes (no layout swap).
+        # Native installs use the standard target bootloader; menu localization
+        # belongs only to the modular live boot configuration.
         boot = Gtk.Frame(label=_("Boot Settings"))
         boot.get_style_context().add_class("content-card")
         grid = Gtk.Grid(column_spacing=12, row_spacing=12)
@@ -1640,10 +1643,18 @@ class InstallerWindow(Gtk.ApplicationWindow):
         grid.attach(lang_field, 1, 0, 1, 1)
         grid.attach(startup_label, 0, 1, 1, 1)
         grid.attach(target_combo, 1, 1, 1, 1)
+        self._live_boot_widgets = (lang_label_box, lang_field)
+        self._refresh_mode_specific_visibility()
         boot.add(grid)
         boot.set_margin_top(16)
         self.content_body.pack_start(boot, False, False, 0)
         self._nav(True)
+
+    def _refresh_mode_specific_visibility(self):
+        live = self.state.install_mode == "live"
+        for widget in getattr(self, "_live_boot_widgets", ()):
+            widget.set_no_show_all(not live)
+            widget.set_visible(live)
 
     def _refresh_mode_card_styles(self):
         for mode, (frame, _radio) in getattr(self, "mode_cards", {}).items():
@@ -1663,6 +1674,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.state.set_install_mode(mode)
         self._update_required_root_size()
         if mode == "native":
+            self.state.download_missing_packages = True
+            # Persistence is a live-only concept; do not carry a stale live
+            # choice into review, logs, or the native backend request.
+            self.state.persistence_mode = "none"
+            self.state.persistence_size_mib = 0
             # Prefer empty credentials so user must choose a real account.
             if self.state.user_config.username == self._live_username_default:
                 self.state.user_config.username = ""
@@ -1674,6 +1690,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self._users_root_confirm = ""
             self.native_allow_root = False
         else:
+            self.state.download_missing_packages = False
             if not self.state.user_config.username:
                 self.state.user_config.username = self._live_username_default
             if not self.state.user_config.full_name:
@@ -1686,7 +1703,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             if mode != "native":
                 self.swap_spin.set_value(0)
                 self.state.swap_size_mib = 0
-        # Only selection chrome changes — boot form stays identical.
+        self._refresh_mode_specific_visibility()
         self._refresh_mode_card_styles()
 
     def _profile_label(self, profile):
@@ -3055,7 +3072,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         swap_box.pack_start(swap_unit, False, False, 0)
         adv_grid.attach(swap_box, 1, 2, 1, 1)
 
-        adv_grid.attach(Gtk.Label(label=_("Session storage:"), xalign=0), 0, 3, 1, 1)
+        persistence_label = Gtk.Label(label=_("Session storage:"), xalign=0)
+        adv_grid.attach(persistence_label, 0, 3, 1, 1)
         persistence_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.persistence_combo = Gtk.ComboBoxText()
         self.persistence_combo.set_sensitive(self.state.install_mode == "live")
@@ -3096,6 +3114,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.persistence_note.set_line_wrap(True)
         self.persistence_note.get_style_context().add_class("dim-label")
         adv_grid.attach(self.persistence_note, 0, 4, 2, 1)
+        live_mode = self.state.install_mode == "live"
+        for widget in (persistence_label, persistence_box, self.persistence_note):
+            widget.set_no_show_all(not live_mode)
+            widget.set_visible(live_mode)
         self._refresh_persistence_choices()
         self._update_persistence_size_limit()
 
@@ -4154,9 +4176,15 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 meta_label.get_style_context().add_class("dim-label")
                 texts.pack_start(meta_label, False, False, 0)
             if mount_note:
-                # mount_note is pre-escaped Pango markup
+                # Dynamic mount points can be much longer than the disk row.
+                # Cap the label's natural width and allow paths to wrap instead
+                # of making GTK widen the whole installer window.
                 mount_label = Gtk.Label(xalign=0)
                 mount_label.set_markup(mount_note.lstrip("\n"))
+                mount_label.set_line_wrap(True)
+                mount_label.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+                mount_label.set_max_width_chars(64)
+                mount_label.set_hexpand(True)
                 texts.pack_start(mount_label, False, False, 0)
             box.pack_start(texts, True, True, 0)
             if mounted:

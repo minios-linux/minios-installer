@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+
+[ -e /var/lib/minios-native-dracut/enabled ] || exit 0
+[ -x /usr/bin/dracut ] || exit 0
+
+version="${1:-}"
+bootdir=/boot
+[ -n "$version" ] || exit 0
+[ "${INITRD:-}" != "No" ] || exit 0
+[ -z "${2:-}" ] || bootdir="$(dirname -- "$2")"
+
+if [ -n "${DEB_MAINT_PARAMS:-}" ]; then
+    eval "set -- $DEB_MAINT_PARAMS"
+    [ "${1:-}" = configure ] || exit 0
+fi
+
+if [ ! -f "$bootdir/../lib/modules/$version/modules.dep" ]; then
+    if [ -f "$bootdir/System.map-$version" ]; then
+        depmod -a -F "$bootdir/System.map-$version" "$version"
+    else
+        depmod -a "$version"
+    fi
+fi
+
+echo "dracut: Generating $bootdir/initrd.img-$version"
+dracut -q --force "$bootdir/initrd.img-$version" "$version"

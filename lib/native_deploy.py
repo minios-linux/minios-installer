@@ -26,10 +26,12 @@ from manual_partitioning import ExistingPartitionRef, ManualPlanError, ManualPla
 from mount_utils import mount_partition, unmount_mountpoints, unmount_partitions
 from network_config import write_network_profile
 from package_preflight import (
+    has_initramfs_generator,
     manual_native_package_requirements,
     native_missing_packages,
     native_kernel_architecture_preflight,
     native_requires_standard_bootloader,
+    package_installed,
     package_installed_or_provided,
     package_cache_summary,
     prepare_package_cache,
@@ -78,9 +80,12 @@ NATIVE_REMOVED_APPLICATION_PACKAGES = (
     "minios-help",
     "minios-image-builder",
     "minios-image-compose",
+    "minios-deploy",
     "minios-installer",
+    "minios-kernel",
     "minios-kernel-manager",
     "minios-module-manager",
+    "minios-session",
     "minios-session-manager",
     "minios-store",
     "minios-store-common",
@@ -427,6 +432,39 @@ def _generate_native_initramfs(target: str, version: str, dry_run: bool, log_cb:
         _chroot(target, ["update-initramfs", "-c", "-k", version], log_cb, dry_run=dry_run)
         return initrd
     raise RuntimeError(_("No supported initramfs generator is available in the installed system."))
+
+
+def _prepare_native_initramfs_provider(target: str, log_cb: Callable[[str], None], dry_run: bool = False) -> bool:
+    """Keep the native provider through live-package cleanup; return whether ours is used."""
+    if not package_installed("minios-native-dracut", root=target):
+        if package_installed_or_provided("linux-initramfs-tool", root=target):
+            return False
+        raise RuntimeError(_("The native initramfs provider is missing from the installed system."))
+    if not _target_has_executable(target, "/usr/bin/dracut", "/usr/sbin/dracut"):
+        raise RuntimeError(_("minios-native-dracut requires the dracut-core generator."))
+    for hook in (
+        "etc/kernel/postinst.d/minios-dracut",
+        "etc/kernel/postrm.d/minios-dracut",
+    ):
+        path = os.path.join(target, hook)
+        if not os.path.isfile(path) or not os.access(path, os.X_OK):
+            raise RuntimeError(_("minios-native-dracut kernel hooks are incomplete."))
+
+    if _target_has_executable(target, "/usr/bin/apt-get", "/bin/apt-get"):
+        if not _target_has_executable(target, "/usr/bin/apt-mark", "/usr/sbin/apt-mark"):
+            raise RuntimeError(_("apt-mark is required to preserve the native initramfs provider."))
+        _chroot(target, ["apt-mark", "manual", "minios-native-dracut"], log_cb, dry_run=dry_run)
+    return True
+
+
+def _enable_native_initramfs_provider(target: str, log_cb: Callable[[str], None], dry_run: bool = False) -> None:
+    """Enable MiniOS dracut hooks only after the native boot path is complete."""
+    log_cb(_("Enabling native dracut kernel integration..."))
+    _write_text(
+        os.path.join(target, "var", "lib", "minios-native-dracut", "enabled"),
+        "minios-native-dracut\n",
+        dry_run=dry_run,
+    )
 
 
 def _partition_index_from_path(path: str) -> Optional[int]:
@@ -801,6 +839,45 @@ def _native_grub_wrapper() -> str:
     )
 
 
+def _offline_native_grub_config(root_uuid: str, kernel: str, initrd: str) -> str:
+    """Minimal GRUB configuration for the verified-EFI offline fallback."""
+    if not re.fullmatch(r"[A-Za-z0-9._:-]+", root_uuid or ""):
+        raise RuntimeError(_("The native root filesystem has an unsafe UUID."))
+    for path in (kernel, initrd):
+        if not re.fullmatch(r"/boot/[A-Za-z0-9._+/-]+", path or ""):
+            raise RuntimeError(_("The native boot path is unsafe."))
+    return (
+        "set default=0\n"
+        "set timeout=3\n"
+        "\n"
+        "menuentry \"MiniOS\" {{\n"
+        "    linux {kernel} root=UUID={uuid} rw quiet\n"
+        "    initrd {initrd}\n"
+        "}}\n"
+    ).format(kernel=kernel, uuid=root_uuid, initrd=initrd)
+
+
+def _install_efi_native_fallback(target: str, root_part: str, kernel: str, initrd: str,
+                                 log_cb: Callable[[str], None], dry_run: bool = False,
+                                 reuse_esp: bool = False) -> None:
+    """Install a bootable UEFI native system without target GRUB packages."""
+    if reuse_esp:
+        raise RuntimeError(
+            _("Offline UEFI fallback is supported only with a newly created EFI system partition."))
+    root_uuid = _blkid_value(root_part, "UUID") if not dry_run else "DRY-RUN-UUID"
+    config = _offline_native_grub_config(root_uuid, kernel, initrd)
+    grub_cfg = os.path.join(target, "boot", "grub", "grub.cfg")
+    log_cb(_("GRUB tools are not available; using the verified offline UEFI fallback."))
+    if dry_run:
+        return
+    os.makedirs(os.path.dirname(grub_cfg), exist_ok=True)
+    with open(grub_cfg, "w", encoding="utf-8") as stream:
+        stream.write(config)
+    source_efi = os.path.join(get_live_source_mount(), "EFI")
+    target_efi = os.path.join(target, "boot", "efi", "EFI")
+    _publish_native_efi(source_efi, target_efi, _native_grub_wrapper(), reuse_esp=False)
+
+
 def _efi_grub_architectures():
     return ("i386-efi", "x86_64-efi")
 
@@ -1086,13 +1163,14 @@ def _install_native_bootloader(target: str, disk: str, root_part: str, use_efi: 
         if _can_install_grub_native(target, use_efi):
             _install_grub_native(target, disk, use_efi, progress_cb, log_cb, dry_run,
                                  esp_device=esp_device, reuse_esp=reuse_esp)
-        elif use_efi:
-            raise RuntimeError(
-                _("Native UEFI install requires the verified EFI chain and GRUB configuration tools.")
-            )
         elif require_grub:
             raise RuntimeError(
                 _("Native installation requires GRUB packages in the installed target. Enable package download before modifying the disk.")
+            )
+        elif use_efi:
+            _install_efi_native_fallback(
+                target, root_part, kernel, initrd, log_cb,
+                dry_run=dry_run, reuse_esp=reuse_esp,
             )
         else:
             log_cb(_("GRUB is not available; using offline EXTLINUX fallback."))
@@ -1387,8 +1465,10 @@ def _run_manual_native_install(state, progress_cb, log_cb, dry_run=False):
         _prepare_runtime_dirs(root_target)
         _patch_sysv_quiet_wrapper(root_target, False, log_cb)
         _mount_chroot_api(root_target, None, False, log_cb)
+        use_minios_native_dracut = False
         try:
             _install_native_packages(root_target, plan.use_efi, root_entry[2], state, log_cb)
+            use_minios_native_dracut = _prepare_native_initramfs_provider(root_target, log_cb)
             extra_user_groups = _collect_live_allowuser_groups(root_target)
             apply_security_profile(root_target, state.security_profile, log_cb, runtime_mode="native")
             _write_assignment_fstab(root_target, entries, False, log_cb)
@@ -1407,6 +1487,8 @@ def _run_manual_native_install(state, progress_cb, log_cb, dry_run=False):
                                         version=registration.kernel_version, kernel=kernel, initrd=initrd,
                                         esp_device=esp_entry[0] if esp_entry else None,
                                         reuse_esp=bool(_manual_reused_esp_path(plan)))
+            if use_minios_native_dracut:
+                _enable_native_initramfs_provider(root_target, log_cb)
             registration.complete(root_target)
         except BaseException as exc:
             registration.rollback(str(exc), root_target)
@@ -1614,7 +1696,8 @@ def _generate_ssl_snakeoil_cert(target: str, log_cb: Callable[[str], None], dry_
 
 def _install_native_packages(target: str, use_efi: bool, filesystem: str, state: InstallState, log_cb: Callable[[str], None], dry_run: bool = False) -> None:
     missing = native_missing_packages(use_efi, filesystem, root=target, alongside=state.placement != "erase_all")
-    if not package_installed_or_provided("linux-initramfs-tool", root=target):
+    if (not has_initramfs_generator(root=target) or
+            not package_installed_or_provided("linux-initramfs-tool", root=target)):
         missing = list(missing)
         if "initramfs-tools" not in missing:
             missing.append("initramfs-tools")
@@ -2034,22 +2117,25 @@ def run_native_install(
             if requires_grub:
                 raise RuntimeError(
                     _("This installation requires GRUB and os-prober before the disk can be modified. "
-                      "Enable package download and connect to the internet, or choose a single BIOS/MBR erase-all installation.")
+                      "Enable package download and connect to the internet, or choose a single-system erase-all installation.")
                 )
-            mandatory = ["initramfs-tools"]
-            package_result = preflight_package_download(mandatory)
-            if not preflight_ok(package_result):
-                raise RuntimeError(
-                    _("The mandatory native kernel toolchain cannot be downloaded before disk modification.")
-                )
-            log_cb(_("Downloading the mandatory native kernel toolchain before modifying the disk..."))
-            try:
-                state.package_cache_path = prepare_package_cache(mandatory)
-                _log_package_cache(state.package_cache_path, mandatory, log_cb)
-            except Exception as exc:
-                raise RuntimeError(
-                    _("The mandatory native kernel toolchain could not be staged before disk modification: {error}").format(error=exc)
-                )
+            mandatory = [package for package in missing if package == "initramfs-tools"]
+            if mandatory:
+                package_result = preflight_package_download(mandatory)
+                if not preflight_ok(package_result):
+                    raise RuntimeError(
+                        _("The mandatory native kernel toolchain cannot be downloaded before disk modification.")
+                    )
+                log_cb(_("Downloading the mandatory native kernel toolchain before modifying the disk..."))
+                try:
+                    state.package_cache_path = prepare_package_cache(mandatory)
+                    _log_package_cache(state.package_cache_path, mandatory, log_cb)
+                except Exception as exc:
+                    raise RuntimeError(
+                        _("The mandatory native kernel toolchain could not be staged before disk modification: {error}").format(error=exc)
+                    )
+            else:
+                log_cb(_("Using the native kernel toolchain already present on the live system."))
 
     # Measure the real, selected overlay input after non-destructive package
     # staging but before execute_plan. Rebuild so its complete payload governs
@@ -2082,9 +2168,11 @@ def run_native_install(
         _prepare_runtime_dirs(root_mount, dry_run=dry_run)
         _patch_sysv_quiet_wrapper(root_mount, dry_run, log_cb)
         _mount_chroot_api(root_mount, esp_mount, dry_run, log_cb)
+        use_minios_native_dracut = False
         try:
             _raise_if_canceled(state)
             _install_native_packages(root_mount, plan.use_efi, state.filesystem, state, log_cb, dry_run=dry_run)
+            use_minios_native_dracut = _prepare_native_initramfs_provider(root_mount, log_cb, dry_run=dry_run)
             _raise_if_canceled(state)
             extra_user_groups = _collect_live_allowuser_groups(root_mount)
             if extra_user_groups:
@@ -2108,6 +2196,8 @@ def run_native_install(
                 version=registration.kernel_version, kernel=kernel, initrd=initrd,
                 esp_device=esp_part, reuse_esp=plan.reuse_esp,
             )
+            if use_minios_native_dracut:
+                _enable_native_initramfs_provider(root_mount, log_cb, dry_run=dry_run)
             registration.complete(root_mount)
         except BaseException as exc:
             registration.rollback(str(exc), root_mount)

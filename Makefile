@@ -3,6 +3,9 @@ LIBRARIES = lib/*.py
 APPLICATIONS = share/applications/minios-installer.desktop
 POLICIES = share/polkit/org.minios.installer.policy
 STYLES = share/styles/style.css
+COMPLETIONS = completion/minios-deploy
+NATIVE_DRACUT_POSTINST = share/native-dracut/postinst
+NATIVE_DRACUT_POSTRM = share/native-dracut/postrm
 
 BINDIR = usr/bin
 LIBDIR = usr/lib/minios-installer
@@ -10,6 +13,9 @@ APPLICATIONSDIR = usr/share/applications
 POLKITACTIONSDIR = usr/share/polkit-1/actions
 LOCALEDIR = usr/share/locale
 SHAREDIR = usr/share/minios-installer
+COMPLETIONDIR = usr/share/bash-completion/completions
+NATIVE_DRACUT_POSTINSTDIR = etc/kernel/postinst.d
+NATIVE_DRACUT_POSTRMDIR = etc/kernel/postrm.d
 
 PO_FILES = $(shell find po -maxdepth 1 -name "*.po")
 MO_FILES = $(patsubst %.po,%.mo,$(PO_FILES))
@@ -32,7 +38,10 @@ install: build
 				$(DESTDIR)/$(APPLICATIONSDIR) \
 				$(DESTDIR)/$(POLKITACTIONSDIR) \
 				$(DESTDIR)/$(LOCALEDIR) \
-				$(DESTDIR)/$(SHAREDIR)
+				$(DESTDIR)/$(SHAREDIR) \
+				$(DESTDIR)/$(COMPLETIONDIR) \
+				$(DESTDIR)/$(NATIVE_DRACUT_POSTINSTDIR) \
+				$(DESTDIR)/$(NATIVE_DRACUT_POSTRMDIR)
 
 	install -m 755 $(EXECUTABLES) $(DESTDIR)/$(BINDIR)/
 	install -m 644 $(LIBRARIES) $(DESTDIR)/$(LIBDIR)/
@@ -40,6 +49,9 @@ install: build
 	install -m 644 $(APPLICATIONS) $(DESTDIR)/$(APPLICATIONSDIR)
 	install -m 644 $(POLICIES) $(DESTDIR)/$(POLKITACTIONSDIR)
 	install -m 644 $(STYLES) $(DESTDIR)/$(SHAREDIR)
+	install -m 644 $(COMPLETIONS) $(DESTDIR)/$(COMPLETIONDIR)/
+	install -m 755 $(NATIVE_DRACUT_POSTINST) $(DESTDIR)/$(NATIVE_DRACUT_POSTINSTDIR)/minios-dracut
+	install -m 755 $(NATIVE_DRACUT_POSTRM) $(DESTDIR)/$(NATIVE_DRACUT_POSTRMDIR)/minios-dracut
 
 	@for MO_FILE in $(MO_FILES); do \
 		LOCALE=$$(basename $$MO_FILE .mo); \
@@ -63,6 +75,13 @@ uninstall:
 	# Remove PolicyKit policy
 	rm -f $(DESTDIR)/$(POLKITACTIONSDIR)/org.minios.installer.policy
 	
+	# Remove bash completion
+	rm -f $(DESTDIR)/$(COMPLETIONDIR)/minios-deploy
+
+	# Remove native dracut integration hooks
+	rm -f $(DESTDIR)/$(NATIVE_DRACUT_POSTINSTDIR)/minios-dracut
+	rm -f $(DESTDIR)/$(NATIVE_DRACUT_POSTRMDIR)/minios-dracut
+
 	# Remove shared directory
 	rm -rf $(DESTDIR)/$(SHAREDIR)
 	

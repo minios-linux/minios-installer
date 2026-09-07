@@ -138,9 +138,7 @@ def native_package_requirements(use_efi: bool, filesystem: str, root: str = "/",
     else:
         packages.extend(["grub-pc", "grub-common"])
 
-    if not has_initramfs_generator(root=root):
-        packages.append("initramfs-tools")
-    elif has_installed_package_prefix("linux-image", root=root) and not package_installed_or_provided("linux-initramfs-tool", root=root):
+    if not has_initramfs_generator(root=root) or not package_installed_or_provided("linux-initramfs-tool", root=root):
         packages.append("initramfs-tools")
     if filesystem == "btrfs":
         packages.append("btrfs-progs")
@@ -163,28 +161,25 @@ def native_missing_packages(use_efi: bool, filesystem: str, root: str = "/", alo
     return missing_packages(native_package_requirements(use_efi, filesystem, root=root, alongside=alongside), root=root)
 
 
-def manual_native_package_requirements(use_efi: bool, filesystem: str, alongside: bool = False) -> List[str]:
-    """Return packages that must be staged for a manual native target.
+def manual_native_package_requirements(use_efi: bool, filesystem: str, alongside: bool = False, root: str = "/") -> List[str]:
+    """Return the standard package closure for a manual native target.
 
-    The target does not exist yet, so host package state cannot establish that
-    its copied bundle will contain a bootable GRUB and initramfs toolchain.
+    The selected MiniOS root is copied into the target, so an already installed
+    native initramfs provider such as minios-native-dracut is authoritative.
+    Bootloader and filesystem packages are still staged as a complete closure.
     """
-    packages = ["grub-common", "efibootmgr"] if use_efi else ["grub-pc", "grub-common"]
-    packages.append("initramfs-tools")
-    if filesystem == "btrfs":
-        packages.append("btrfs-progs")
-    elif filesystem in ("ext2", "ext4"):
-        packages.append("e2fsprogs")
-    if use_efi:
-        packages.append("dosfstools")
-    if alongside:
-        packages.append("os-prober")
-    return list(dict.fromkeys(packages))
+    return native_package_requirements(
+        use_efi, filesystem, root=root, alongside=alongside
+    )
 
 
 def native_requires_standard_bootloader(use_efi: bool, placement: str) -> bool:
-    """EFI and preserve-layout installs cannot use the single-system EXTLINUX fallback."""
-    return use_efi or placement != "erase_all"
+    """Preserve-layout installs need standard GRUB/os-prober integration.
+
+    Single-system erase-all can boot offline in either firmware mode: BIOS uses
+    EXTLINUX, while UEFI uses the verified EFI chain shipped on the live medium.
+    """
+    return placement != "erase_all"
 
 
 def native_kernel_architecture_preflight(

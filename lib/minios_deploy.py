@@ -53,6 +53,23 @@ _USER_CONFIG_CLI = (
     ("export_logs", "export_logs"),
 )
 
+# Options whose semantics exist only for the modular live installation.
+# argparse defaults are None where presence itself must be distinguishable.
+_LIVE_ONLY_NATIVE_REJECTIONS = (
+    ("boot_menu", "--boot-menu"),
+    ("persistence_mode", "--persistence-mode"),
+    ("persistence_size", "--persistence-size"),
+    ("config_file", "--config-file"),
+    ("link_user_dirs", "--link-user-dirs"),
+    ("bind_user_dirs", "--bind-user-dirs"),
+    ("user_dirs_path", "--user-dirs-path"),
+    ("noroot", "--noroot"),
+    ("module_mode", "--module-mode"),
+    ("config_cmdline", "--live-config-cmdline"),
+    ("config_debug", "--config-debug"),
+    ("export_logs", "--export-logs"),
+)
+
 
 def _bool_config_value(value: str) -> str:
     """Normalize CLI boolean tokens to 'true'/'false' (configurator format)."""
@@ -120,9 +137,19 @@ def _nonnegative_int(value: str) -> int:
 
 
 def _validate_cli_inputs(args) -> None:
-    """Reject unsafe or malformed textual CLI values before planning a disk write."""
-    if getattr(args, "mode", "live") == "native" and not native_install_supported():
+    """Reject unsafe, malformed, or mode-inapplicable CLI values."""
+    install_mode = getattr(args, "mode", "live") or "live"
+    if install_mode == "native" and not native_install_supported():
         raise ValueError("This live image supports only live installation; use --mode live")
+    if install_mode == "native":
+        for dest, option in _LIVE_ONLY_NATIVE_REJECTIONS:
+            if getattr(args, dest, None) is not None:
+                raise ValueError("{0} is available only with --mode live".format(option))
+    else:
+        if getattr(args, "swap_size", None) is not None:
+            raise ValueError("--swap-size is available only with --mode native")
+        if bool(getattr(args, "download_packages", False)):
+            raise ValueError("--download-packages is available only with --mode native")
     user, _customized = user_config_from_args(args)
     checks = (
         ("username", user.username, r"[a-z_][a-z0-9_-]{0,31}"),
@@ -138,7 +165,7 @@ def _validate_cli_inputs(args) -> None:
         value = getattr(user, name, "")
         if value and (len(value) > 512 or any(ord(char) < 32 or ord(char) == 127 for char in value)):
             raise ValueError("invalid --{0} value".format(name.replace("_", "-")))
-    persistence_mode = getattr(args, "persistence_mode", "none")
+    persistence_mode = getattr(args, "persistence_mode", None) or "none"
     if persistence_mode != "none":
         if getattr(args, "mode", "live") != "live":
             raise ValueError("--persistence-mode is available only with --mode live")
@@ -154,9 +181,10 @@ def _validate_cli_inputs(args) -> None:
 
 
 def _effective_persistence_size(args) -> int:
-    if getattr(args, "persistence_mode", "none") not in ("dynfilefs", "raw", "luks"):
+    persistence_mode = getattr(args, "persistence_mode", None) or "none"
+    if persistence_mode not in ("dynfilefs", "raw", "luks"):
         return 0
-    return int(getattr(args, "persistence_size", 0) or 4000)
+    return int(getattr(args, "persistence_size", None) or 4000)
 
 
 def cmd_list_disks(args):
@@ -181,7 +209,7 @@ def cmd_plan(args):
         args.placement,
         args.filesystem,
         install_mode=install_mode,
-        swap_size_mib=getattr(args, "swap_size", 0),
+        swap_size_mib=getattr(args, "swap_size", None) or 0,
         boot_layout=getattr(args, "boot_layout", "auto"),
         alongside_size_mib=getattr(args, "alongside_size", 0),
         required_root_mib=root_mib,
@@ -213,7 +241,7 @@ def cmd_install(args):
             return 2
 
     target_device = ensure_safe_target_device(args.device)
-    persistence_mode = getattr(args, "persistence_mode", "none")
+    persistence_mode = getattr(args, "persistence_mode", None) or "none"
     persistence_size = _effective_persistence_size(args)
     selected_modules, root_mib = _module_space_requirement(args.mode, getattr(args, "modules", ""), persistence_size)
     state = InstallState(
@@ -228,7 +256,7 @@ def cmd_install(args):
         alongside_size_mib=max(0, int(getattr(args, "alongside_size", 0) or 0)),
         required_root_mib=root_mib,
         boot_layout=getattr(args, "boot_layout", "auto"),
-        boot_config_type=args.boot_menu,
+        boot_config_type=getattr(args, "boot_menu", None) or "multilang",
         security_profile=args.security_profile or default_security_profile(args.mode),
         selected_modules=selected_modules,
         download_missing_packages=bool(getattr(args, "download_packages", False)),
@@ -251,13 +279,13 @@ def cmd_install(args):
 
 
 def _add_user_config_arguments(parser):
-    """All live-config settings exposed by minios-configurator."""
+    """Installed-system settings shared with minios-configurator where applicable."""
     g = parser.add_argument_group(
-        "live configuration",
-        "Overrides written to minios/config.conf (same keys as minios-configurator)",
+        "system configuration",
+        "Account/system settings; live mode writes matching minios-configurator keys to minios/config.conf",
     )
     g.add_argument("--config-file", metavar="PATH",
-                   help="base live config.conf to copy/merge (default: /etc/live/config.conf when overrides are set)")
+                   help="live only: base config.conf to copy/merge (default: /etc/live/config.conf when overrides are set)")
     # User
     g.add_argument("--username", help="LIVE_USERNAME")
     g.add_argument("--full-name", dest="full_name", help="LIVE_USER_FULLNAME")
@@ -267,14 +295,14 @@ def _add_user_config_arguments(parser):
     g.add_argument("--root-password", dest="root_password",
                    help="root password (stored as LIVE_ROOT_PASSWORD_CRYPTED)")
     g.add_argument("--link-user-dirs", type=_bool_config_value, metavar="BOOL",
-                   help="LIVE_LINK_USER_DIRS (true/false)")
+                   help="live only: LIVE_LINK_USER_DIRS (true/false)")
     g.add_argument("--bind-user-dirs", type=_bool_config_value, metavar="BOOL",
-                   help="LIVE_BIND_USER_DIRS (true/false)")
+                   help="live only: LIVE_BIND_USER_DIRS (true/false)")
     g.add_argument("--user-dirs-path", dest="user_dirs_path",
-                   help="LIVE_USER_DIRS_PATH")
+                   help="live only: LIVE_USER_DIRS_PATH")
     # System
     g.add_argument("--noroot", type=_bool_config_value, metavar="BOOL",
-                   help="LIVE_CONFIG_NOROOT (true/false)")
+                   help="live only: LIVE_CONFIG_NOROOT (true/false)")
     g.add_argument("--hostname", help="LIVE_HOSTNAME")
     g.add_argument("--locale", "--locales", dest="locale",
                    help="LIVE_LOCALES (comma-separated, first is default)")
@@ -296,13 +324,13 @@ def _add_user_config_arguments(parser):
                    help="LIVE_KEYBOARD_VARIANTS")
     # Advanced
     g.add_argument("--module-mode", dest="module_mode", choices=["simple", "merged"],
-                   help="LIVE_MODULE_MODE")
+                   help="live only: LIVE_MODULE_MODE")
     g.add_argument("--live-config-cmdline", dest="config_cmdline",
-                   help="LIVE_CONFIG_CMDLINE (extra live-config boot params)")
+                   help="live only: LIVE_CONFIG_CMDLINE (extra live-config boot params)")
     g.add_argument("--config-debug", type=_bool_config_value, metavar="BOOL",
-                   help="LIVE_CONFIG_DEBUG (true/false)")
+                   help="live only: LIVE_CONFIG_DEBUG (true/false)")
     g.add_argument("--export-logs", type=_bool_config_value, metavar="BOOL",
-                   help="EXPORT_LOGS (true/false)")
+                   help="live only: EXPORT_LOGS (true/false)")
 
 
 def build_parser(luks_available=None):
@@ -328,9 +356,10 @@ def build_parser(luks_available=None):
     p.add_argument("--placement", default="erase_all", choices=["erase_all", "free_space", "alongside_os"])
     p.add_argument("--alongside-size", type=_nonnegative_int, default=0, help="space to create for MiniOS when resizing, in MiB (default: calculated requirement)")
     p.add_argument("--mode", default="live", choices=install_modes)
+    p.add_argument("--swap-size", type=_nonnegative_int, default=None, help="native only: swap size in MiB")
     p.add_argument("--modules", default="", help="comma-separated .sb modules used for the space calculation")
-    p.add_argument("--persistence-mode", default="none", choices=persistence_modes, help="live session persistence mode")
-    p.add_argument("--persistence-size", type=_nonnegative_int, default=0, metavar="MIB", help="container persistence size in MiB (default: 4000)")
+    p.add_argument("--persistence-mode", default=None, choices=persistence_modes, help="live session persistence mode")
+    p.add_argument("--persistence-size", type=_nonnegative_int, default=None, metavar="MIB", help="container persistence size in MiB (default: 4000)")
     p.add_argument("--boot-layout", default="auto", choices=["auto", "bios_mbr", "uefi_mbr", "uefi_gpt"])
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_plan)
@@ -344,19 +373,19 @@ def build_parser(luks_available=None):
     p.add_argument("--filesystem", default="ext4")
     p.add_argument("--placement", default="erase_all", choices=["erase_all", "free_space", "alongside_os"])
     p.add_argument("--alongside-size", type=_nonnegative_int, default=0, help="space to create for MiniOS when resizing, in MiB (default: calculated requirement)")
-    p.add_argument("--swap-size", type=_nonnegative_int, default=0, help="native swap size in MiB")
+    p.add_argument("--swap-size", type=_nonnegative_int, default=None, help="native only: swap size in MiB")
     p.add_argument("--boot-layout", default="auto", choices=["auto", "bios_mbr", "uefi_mbr", "uefi_gpt"],
                    help="native boot layout: auto, bios_mbr, uefi_mbr, or uefi_gpt")
-    p.add_argument("--boot-menu", default="multilang",
-                   help="boot menu language code or 'multilang'")
+    p.add_argument("--boot-menu", default=None,
+                   help="live boot menu language code or 'multilang' (default: multilang)")
     p.add_argument("--modules", default="",
                     help="comma-separated .sb modules to install; selecting a higher module includes lower modules")
-    p.add_argument("--persistence-mode", default="none", choices=persistence_modes,
+    p.add_argument("--persistence-mode", default=None, choices=persistence_modes,
                     help="live session persistence mode (storage is created by initrd)")
-    p.add_argument("--persistence-size", type=_nonnegative_int, default=0, metavar="MIB",
-                    help="container persistence size in MiB (default: 4000)")
+    p.add_argument("--persistence-size", type=_nonnegative_int, default=None, metavar="MIB",
+                    help="live container persistence size in MiB (default: 4000)")
     p.add_argument("--download-packages", action="store_true",
-                   help="download missing packages for standard native installation")
+                   help="native only: download missing packages for standard installation")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--yes", action="store_true",
                    help="confirm destructive install (required unless --dry-run)")

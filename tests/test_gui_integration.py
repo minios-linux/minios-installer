@@ -5,6 +5,33 @@ from unittest.mock import Mock, patch
 from main_installer import InstallerWindow, TokenCompletionPopover
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_split_packages_have_disjoint_payloads_and_exact_backend_dependency():
+    backend = set((ROOT / "debian/minios-deploy.install").read_text(
+        encoding="utf-8").splitlines())
+    frontend = set((ROOT / "debian/minios-installer.install").read_text(
+        encoding="utf-8").splitlines())
+    provider = set((ROOT / "debian/minios-native-dracut.install").read_text(
+        encoding="utf-8").splitlines())
+    control = (ROOT / "debian/control").read_text(encoding="utf-8")
+
+    assert backend.isdisjoint(frontend)
+    assert backend.isdisjoint(provider)
+    assert frontend.isdisjoint(provider)
+    assert "usr/bin/minios-deploy" in backend
+    assert "usr/bin/minios-installer" in frontend
+    assert "etc/kernel/postinst.d/minios-dracut" in provider
+    assert "etc/kernel/postrm.d/minios-dracut" in provider
+    assert "minios-deploy (= ${binary:Version})" in control
+    assert "minios-native-dracut (= ${binary:Version}) | linux-initramfs-tool" in control
+    assert "Provides: linux-initramfs-tool" in control
+    assert "Depends: ${misc:Depends}, dracut-core" in control
+    assert "Breaks: minios-installer (<< 3.1.0)" in control
+    assert "Replaces: minios-installer (<< 3.1.0)" in control
+
+
 def test_content_buttons_use_shared_height_contract():
     source = Path(__file__).resolve().parents[1].joinpath(
         "lib/main_installer.py").read_text(encoding="utf-8")
@@ -171,6 +198,18 @@ def test_location_detection_uses_background_task_outcome():
 
     assert captured['owner'] is window
     window._apply_detect_location_result.assert_called_once_with(result, button)
+
+
+def test_mounted_disk_warning_is_width_bounded_and_wrappable():
+    source = (ROOT / "lib/main_installer.py").read_text(encoding="utf-8")
+    start = source.index("mount_label = Gtk.Label(xalign=0)")
+    end = source.index("texts.pack_start(mount_label, False, False, 0)", start)
+    block = source[start:end]
+
+    assert "mount_label.set_line_wrap(True)" in block
+    assert "mount_label.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)" in block
+    assert "mount_label.set_max_width_chars(64)" in block
+    assert "mount_label.set_hexpand(True)" in block
 
 
 def test_disk_refresh_shows_only_empty_state_when_no_disks_are_available():

@@ -15,6 +15,12 @@ than from its release number. If the image does not provide the required format-
 kernel metadata and EFI architecture contract, compatibility mode is enabled
 automatically and only **Live** installation is available.
 
+`minios-deploy` depends on `minios-native-dracut`, which supplies `dracut-core`
+and guarded kernel hooks for a conventional native initramfs. The hooks remain
+inactive in the live system and are enabled only in a completed native target,
+so native installation works the same whether the live image uses dracut-mos or
+livekit-mos.
+
 Placement choices are erase-all, existing free space, alongside a supported
 final partition, and GUI manual partitioning for native installations.
 

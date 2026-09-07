@@ -1,3 +1,12 @@
+minios-installer (3.1.0) unstable; urgency=medium
+
+  * Split the command-line deployment backend into the minios-deploy package.
+  * Keep the GTK installer in minios-installer with an exact backend dependency.
+  * Purge the new MiniOS backend packages during native installation cleanup.
+  * Preserve seamless upgrades from the previous monolithic package.
+
+ -- crims0n <crims0n@minios.dev>  Mon, 07 Sep 2026 22:23:14 +0300
+
 minios-installer (3.0.11) unstable; urgency=medium
 
   * Reuse minios-gui 1.4 task, completion, password, log, dialog and operation

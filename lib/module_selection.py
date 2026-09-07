@@ -97,11 +97,16 @@ def payload_size_bytes(selected_modules: Iterable[str], install_mode: str = "liv
             continue
         total = 0
         try:
-            for root, _, files in os.walk(source):
+            for root, dirs, files in os.walk(source):
+                # Live installation copies modules and boot assets, not the
+                # running session. In toram the session lives inside source
+                # and can contain dangling links, sockets and changing files.
+                if root == source:
+                    dirs[:] = [name for name in dirs if name != "changes"]
                 for name in files:
                     path = os.path.join(root, name)
                     rel = os.path.relpath(path, source)
-                    if os.path.dirname(rel) == "." and name.endswith(".sb") and name not in selected:
+                    if not os.path.dirname(rel) and name.endswith(".sb") and name not in selected:
                         continue
                     total += os.path.getsize(path)
         except OSError:
