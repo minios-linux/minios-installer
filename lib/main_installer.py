@@ -58,7 +58,8 @@ from partition_scanner import scan_disk
 from user_config_writer import load_config_values
 from minios_security.capabilities import load_capabilities, support_class
 from minios_security.security_profiles import SECURITY_PROFILE_IDS, profile_required_capabilities
-from minios_gui import (HelpPopoverButton, LogView, StatusBanner,
+from minios_gui import (BackgroundTask, HelpPopoverButton, LogView,
+                        PasswordEntry, StatusBanner, TokenCompletionPopover,
                         apply_minios_css, ask_confirmation, classify_module,
                         format_bytes, new_header_bar, resolve_icon,
                         show_error_dialog)
@@ -75,8 +76,6 @@ LOCALE_DIRECTORY = "/usr/share/locale"
 CSS_SYSTEM_PATH = "/usr/share/minios-installer/style.css"
 _SHARE_STYLES = os.path.normpath(os.path.join(_LIB_DIR, "..", "share", "styles", "style.css"))
 ICON_WINDOW = "usb-creator-gtk"
-ICON_EYE_OPEN = "eye-open-negative-filled-symbolic"
-ICON_EYE_CLOSED = "eye-not-looking-symbolic"
 INSTALL_LOG_DIR = "/var/log/minios"
 INSTALL_LOG_PATH = os.path.join(INSTALL_LOG_DIR, "installer.log")
 
@@ -838,45 +837,6 @@ def read_available_keyboard_layouts() -> List[Tuple[str, str]]:
     return sorted(layouts, key=lambda item: item[0])
 
 
-def match_completion_by_token(completion, _key, tree_iter, entry):
-    text = entry.get_text()
-    cursor_pos = entry.get_position()
-    segment = text[:cursor_pos].rpartition(",")[2].lstrip().lower()
-    if not segment:
-        return True
-    candidate = completion.get_model()[tree_iter][0]
-    return candidate.lower().startswith(segment)
-
-
-def on_completion_selected(_completion, model, tree_iter, entry):
-    full_text = entry.get_text()
-    cursor_pos = entry.get_position()
-    comma_index = full_text[:cursor_pos].rfind(",") + 1
-    prefix = full_text[:comma_index]
-    if prefix and not prefix.endswith(" "):
-        prefix += " "
-    suffix = full_text[cursor_pos:]
-    candidate = model[tree_iter][0]
-    entry.set_text(prefix + candidate + suffix)
-    entry.set_position(len(prefix) + len(candidate))
-    return True
-
-
-def create_completion(items, entry):
-    completion = Gtk.EntryCompletion()
-    store = Gtk.ListStore(str)
-    for item in items:
-        store.append([item])
-    completion.set_model(store)
-    completion.set_text_column(0)
-    completion.set_inline_completion(True)
-    completion.set_popup_completion(True)
-    completion.set_popup_single_match(False)
-    completion.set_match_func(match_completion_by_token, entry)
-    completion.connect("match-selected", on_completion_selected, entry)
-    return completion
-
-
 def describe_module_name(name):
     role_id, icons = classify_module(name)
     role = {
@@ -1008,10 +968,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.sidebar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.sidebar.get_style_context().add_class("minios-sidebar")
         self.sidebar.set_size_request(180, -1)
-        self.sidebar.set_margin_top(8)
-        self.sidebar.set_margin_bottom(8)
-        self.sidebar.set_margin_start(6)
-        self.sidebar.set_margin_end(4)
         self.root.pack_start(self.sidebar, False, False, 0)
 
         self.content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -1060,7 +1016,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         """Precompute both modes before the user reaches the Modules step."""
         module_names = list(self.available_modules)
 
-        def work():
+        def work(_token):
             sizes = {
                 "live": calculate_module_sizes(module_names, install_mode="live"),
                 "native": calculate_module_sizes(module_names, install_mode="native"),
@@ -1069,9 +1025,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 "live": payload_overhead_bytes(module_names, install_mode="live"),
                 "native": payload_overhead_bytes(module_names, install_mode="native"),
             }
-            GLib.idle_add(self._finish_module_size_calculation, sizes, overhead)
+            return sizes, overhead
 
-        threading.Thread(target=work, daemon=True).start()
+        def finished(outcome):
+            if outcome.succeeded:
+                self._finish_module_size_calculation(*outcome.value)
+
+        self._module_size_task = BackgroundTask(
+            work, finished_callback=finished, owner=self).start()
 
     def _finish_module_size_calculation(self, sizes, overhead):
         self.module_sizes_by_mode = sizes
@@ -1210,7 +1171,16 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
     def _attach_completion(self, entry, items):
         if items:
-            entry.set_completion(create_completion(items, entry))
+            values = tuple(items)
+
+            def provider(prefix):
+                prefix = prefix.lower()
+                return tuple(value for value in values
+                             if value.lower().startswith(prefix))
+
+            TokenCompletionPopover(
+                entry, provider=provider, delimiters=",", min_chars=1,
+                max_results=12)
 
     def _create_combo_with_entry(self, items, current_value, placeholder, on_changed):
         combo = Gtk.ComboBoxText.new_with_entry()
@@ -1233,47 +1203,19 @@ class InstallerWindow(Gtk.ApplicationWindow):
         """
         Password field + hold-to-show eye button.
 
-        - Password is visible only while the eye is pressed; release/leave hides it.
+        - The shared widget owns hold-to-reveal behavior, icons and accessibility.
         """
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        box.set_hexpand(True)
-        entry = Gtk.Entry()
-        entry.set_visibility(False)
-        entry.set_hexpand(True)
-        entry.set_placeholder_text(placeholder)
+        password = PasswordEntry(
+            reveal_mode="hold", placeholder_text=placeholder,
+            show_label=_("Show password"), hide_label=_("Hide password"))
+        password.set_spacing(6)
+        password.set_hexpand(True)
+        entry = password.entry
         if initial:
-            entry.set_text(initial)
+            password.set_text(initial)
 
-        button = Gtk.Button()
-        button.set_size_request(34, 30)
-        button.set_image(Gtk.Image.new_from_icon_name(ICON_EYE_OPEN, Gtk.IconSize.BUTTON))
-        button.set_always_show_image(True)
-        button.set_tooltip_text(_("Hold to show password"))
-        button.get_accessible().set_name(_("Hold to show password"))
-
-        def set_visible(visible):
-            entry.set_visibility(bool(visible))
-            icon_name = ICON_EYE_CLOSED if visible else ICON_EYE_OPEN
-            button.set_image(Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.BUTTON))
-
-        def on_pressed(_btn):
-            set_visible(True)
-
-        def on_released(_btn):
-            set_visible(False)
-
-        def on_leave(_btn, _event):
-            # Mouse left the button while held — hide immediately.
-            set_visible(False)
-            return False
-
-        button.connect("pressed", on_pressed)
-        button.connect("released", on_released)
-        button.connect("leave-notify-event", on_leave)
         entry.connect("changed", lambda widget: on_changed(widget.get_text()))
-        box.pack_start(entry, True, True, 0)
-        box.pack_start(button, False, False, 0)
-        return box, entry
+        return password, entry
 
     def _on_delete_event(self, *_args):
         if not self.install_running:
@@ -1386,7 +1328,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.content_body.pack_start(box, False, False, 0)
 
     def _style_button(self, button, suggested=False, destructive=False):
-        button.set_size_request(104, 32)
+        button.set_size_request(104, -1)
         ctx = button.get_style_context()
         ctx.add_class("installer-button")
         if suggested:
@@ -1418,9 +1360,6 @@ class InstallerWindow(Gtk.ApplicationWindow):
             destructive=destructive_next,
         )
         nxt.set_sensitive(can_next)
-        if next_label and len(next_label) > 12:
-            nxt.set_size_request(-1, 32)
-
         def go_next(button):
             if self.install_running:
                 return
@@ -1934,12 +1873,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         grid.set_margin_end(4)
 
         # Locale: entry + completion (ComboBox entry does not filter/autocomplete well).
-        # Model columns: 0=code, 1=label (with real language names when iso-codes present).
-        self._locale_store = Gtk.ListStore(str, str)
         self._locale_by_code = {}
         for code in self.available_locales:
             label = format_locale_label(code)
-            self._locale_store.append([code, label])
             self._locale_by_code[code] = label
 
         self.locale_entry = Gtk.Entry()
@@ -1949,31 +1885,18 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if current_locale:
             self.locale_entry.set_text(self._locale_by_code.get(current_locale, current_locale))
 
-        completion = Gtk.EntryCompletion()
-        completion.set_model(self._locale_store)
-        completion.set_text_column(1)
-        completion.set_inline_completion(False)
-        completion.set_popup_completion(True)
-        completion.set_popup_single_match(True)
-        completion.set_minimum_key_length(1)
+        locale_rows = tuple(self._locale_by_code.items())
 
-        def locale_match(_completion, key, tree_iter):
-            code = self._locale_store[tree_iter][0] or ""
-            label = self._locale_store[tree_iter][1] or ""
-            key = (key or "").lower()
-            return key in code.lower() or key in label.lower()
+        def locale_provider(prefix):
+            prefix = prefix.lower()
+            return tuple(
+                label for code, label in locale_rows
+                if prefix in code.lower() or prefix in label.lower()
+            )
 
-        completion.set_match_func(locale_match)
-
-        def on_locale_match_selected(_completion, model, tree_iter):
-            code = model[tree_iter][0]
-            label = model[tree_iter][1]
-            self.locale_entry.set_text(label)
-            self._set_user_config("locale", code)
-            return True
-
-        completion.connect("match-selected", on_locale_match_selected)
-        self.locale_entry.set_completion(completion)
+        TokenCompletionPopover(
+            self.locale_entry, provider=locale_provider, delimiters=(),
+            min_chars=1, max_results=12)
 
         def on_locale_entry_changed(entry):
             code = locale_code_from_label(entry.get_text())
@@ -2008,7 +1931,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             )
         )
         # Keep a stable size so the control does not jump when state changes.
-        self.detect_location_btn.set_size_request(120, 34)
+        self.detect_location_btn.set_size_request(120, -1)
         self.detect_location_btn.set_halign(Gtk.Align.START)
         self.detect_location_btn.connect("clicked", self._on_detect_location)
         detect_col.pack_start(self.detect_location_btn, False, False, 0)
@@ -2065,25 +1988,29 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         kb_codes = [code for code, _desc in self.available_keyboard_layouts]
 
-        def work():
-            try:
-                result = detect_location_best_effort(
-                    available_locales=self.available_locales,
-                    available_timezones=self.available_timezones,
-                    available_keyboard_codes=kb_codes,
-                )
-            except Exception as exc:
+        def work(_token):
+            return detect_location_best_effort(
+                available_locales=self.available_locales,
+                available_timezones=self.available_timezones,
+                available_keyboard_codes=kb_codes,
+            )
+
+        def finished(outcome):
+            if outcome.succeeded:
+                result = outcome.value
+            else:
                 result = {
                     "locale": "",
                     "timezone": "",
                     "keyboard": "",
                     "keyboard_options": "",
                     "source": "none",
-                    "error": str(exc),
+                    "error": str(outcome.error),
                 }
-            GLib.idle_add(self._apply_detect_location_result, result, button)
+            self._apply_detect_location_result(result, button)
 
-        threading.Thread(target=work, daemon=True).start()
+        self._location_task = BackgroundTask(
+            work, finished_callback=finished, owner=self).start()
 
     def _apply_detect_location_result(self, result, button):
         button.set_sensitive(True)
@@ -2862,11 +2789,32 @@ class InstallerWindow(Gtk.ApplicationWindow):
             _("Target Disk"),
             _("Select the disk MiniOS will be installed to and choose how the target filesystem should be created."),
         )
+        self.partition_state_stack = Gtk.Stack()
+        self.partition_state_stack.set_transition_type(Gtk.StackTransitionType.NONE)
+        self.partition_state_stack.set_hhomogeneous(False)
+        self.partition_state_stack.set_vhomogeneous(False)
+        self.content_body.pack_start(self.partition_state_stack, False, False, 0)
+
+        no_disks = StatusBanner(intent="warning")
+        no_disks.set_margin_top(8)
+        no_disks.label.set_markup(
+            "<b>{}</b>\n{}".format(
+                GLib.markup_escape_text(_("No installation disks were found.")),
+                GLib.markup_escape_text(
+                    _("Connect a disk. This page will update automatically when it becomes available.")
+                ),
+            )
+        )
+        self.partition_state_stack.add_named(no_disks, "no-disks")
+
+        partition_controls = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.partition_state_stack.add_named(partition_controls, "disk-controls")
+
         self.disk_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.SINGLE)
         self.disk_list.connect("row-selected", self._on_disk_selected)
         self.disk_list.set_hexpand(True)
         # Prefer natural list height; outer content_scroll handles overflow.
-        self.content_body.pack_start(self.disk_list, False, False, 0)
+        partition_controls.pack_start(self.disk_list, False, False, 0)
 
         # Bar + color legend in one card. DrawingArea paints stable proportions
         # (widget boxes + size-request fought the layout on re-select).
@@ -2914,7 +2862,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.partition_preview_box.pack_start(self.partition_geometry_hint, False, False, 0)
         self.partition_preview_box.pack_start(self.partition_legend, False, False, 0)
         preview_frame.add(self.partition_preview_box)
-        self.content_body.pack_start(preview_frame, False, False, 0)
+        partition_controls.pack_start(preview_frame, False, False, 0)
 
         settings = Gtk.Frame(label=_("Disk Setup"))
         settings.get_style_context().add_class("content-card")
@@ -3155,7 +3103,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         settings_box.pack_start(advanced, False, False, 0)
         settings.add(settings_box)
         settings.set_margin_top(10)
-        self.content_body.pack_start(settings, False, False, 0)
+        partition_controls.pack_start(settings, False, False, 0)
         self._refresh_disks()
         self._refresh_alongside_placement()
         self._refresh_free_space_placement()
@@ -4123,25 +4071,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
         packages = list(getattr(self, "_resize_missing_packages", []))
         if not packages:
             return
-        dialog = Gtk.MessageDialog(
-            transient_for=self,
-            modal=True,
-            message_type=Gtk.MessageType.QUESTION,
-            buttons=Gtk.ButtonsType.NONE,
-            text=_("Install required resize tools?"),
-        )
-        dialog.format_secondary_text(
-            _("The following packages will be downloaded and installed in the live session: {packages}").format(
-                packages=", ".join(packages)
-            )
-        )
-        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
-        install_button = dialog.add_button(_("Install"), Gtk.ResponseType.OK)
-        install_button.get_style_context().add_class("suggested-action")
-        dialog.set_default_response(Gtk.ResponseType.CANCEL)
-        accepted = dialog.run() == Gtk.ResponseType.OK
-        dialog.destroy()
-        if not accepted:
+        if not ask_confirmation(
+                self,
+                _("Install required resize tools?"),
+                _("The following packages will be downloaded and installed in the live session: {packages}").format(
+                    packages=", ".join(packages)
+                ),
+                confirm_label=_("Install")):
             return
         button.set_sensitive(False)
         try:
@@ -4161,7 +4097,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
         for child in self.disk_list.get_children():
             self.disk_list.remove(child)
         self.disk_rows = {}
-        for dev in find_available_disks():
+        disks = find_available_disks()
+        self.partition_state_stack.set_visible_child_name(
+            "disk-controls" if disks else "no-disks"
+        )
+        for dev in disks:
             path = "/dev/{}".format(dev["name"])
             row = Gtk.ListBoxRow()
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
@@ -4894,12 +4834,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         if success:
             reboot_btn = self._style_button(Gtk.Button(label=_("Restart Now")), suggested=True)
-            reboot_btn.set_size_request(130, 34)
+            reboot_btn.set_size_request(130, -1)
             reboot_btn.connect("clicked", self._on_reboot_clicked)
             self.finish_box.pack_start(reboot_btn, False, False, 0)
         else:
             back_btn = self._style_button(Gtk.Button(label=_("Back to Summary")), suggested=True)
-            back_btn.set_size_request(150, 34)
+            back_btn.set_size_request(150, -1)
             back_btn.connect("clicked", self._on_retry_from_summary)
             self.finish_box.pack_start(back_btn, False, False, 0)
 
@@ -4919,21 +4859,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._show_step(max(0, len(self.STEPS) - 2))
 
     def _on_reboot_clicked(self, _button):
-        dlg = Gtk.MessageDialog(
-            transient_for=self,
-            modal=True,
-            message_type=Gtk.MessageType.QUESTION,
-            buttons=Gtk.ButtonsType.NONE,
-            text=_("Restart now?"),
-        )
-        dlg.format_secondary_text(_("Save any open work before restarting."))
-        dlg.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
-        restart_button = dlg.add_button(_("Restart"), Gtk.ResponseType.OK)
-        restart_button.get_style_context().add_class("suggested-action")
-        dlg.set_default_response(Gtk.ResponseType.CANCEL)
-        response = dlg.run()
-        dlg.destroy()
-        if response != Gtk.ResponseType.OK:
+        if not ask_confirmation(
+                self,
+                _("Restart now?"),
+                _("Save any open work before restarting."),
+                confirm_label=_("Restart")):
             return
         try:
             subprocess.call(["sync"])
@@ -4949,14 +4879,11 @@ class MiniOSInstallerApp(Gtk.Application):
 
     def do_activate(self):
         if os.geteuid() != 0:
-            dlg = Gtk.MessageDialog(
-                message_type=Gtk.MessageType.ERROR,
-                buttons=Gtk.ButtonsType.OK,
-                text=_("Root Privileges Required"),
+            show_error_dialog(
+                None,
+                _("Root Privileges Required"),
+                _("This installer must be run as root."),
             )
-            dlg.format_secondary_text(_("This installer must be run as root."))
-            dlg.run()
-            dlg.destroy()
             sys.exit(1)
         if self.window:
             self.window.present()

@@ -1,3 +1,14 @@
+minios-installer (3.0.11) unstable; urgency=medium
+
+  * Reuse minios-gui 1.4 task, completion, password, log, dialog and operation
+    presentation helpers instead of maintaining application-local variants.
+  * Keep password reveal icons and accessibility state under the shared
+    PasswordEntry widget's authoritative hold-to-reveal behavior.
+  * Show a clear empty state when no installation disks are available.
+  * Align sidebar, navigation and action sizing with the shared MiniOS styles.
+
+ -- crims0n <crims0n@minios.dev>  Mon, 07 Sep 2026 03:09:59 +0300
+
 minios-installer (3.0.10) unstable; urgency=medium
 
   * Recognize current kernel metadata layouts during installation
