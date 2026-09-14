@@ -90,6 +90,20 @@ _ = gettext.gettext
 def can_navigate_to_viewed_step(step, current_step, viewed_steps, install_running=False):
     return not install_running and step != current_step and step in viewed_steps
 
+
+def _show_stack_child(stack, name):
+    """Make a Gtk.Stack child eligible before selecting it.
+
+    Gtk.Stack ignores selection of a child that is still invisible.  Installer
+    pages are populated before the toplevel window calls show_all(), so dynamic
+    state switches must show the target child first.
+    """
+    child = stack.get_child_by_name(name)
+    if child is not None:
+        child.show()
+    stack.set_visible_child_name(name)
+
+
 NETWORK_VALIDATION_MESSAGES = {
     "IPv4 address is not valid.": _("IPv4 address is not valid."),
     "Network prefix must be between 0 and 32.": _("Network prefix must be between 0 and 32."),
@@ -4120,8 +4134,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.disk_list.remove(child)
         self.disk_rows = {}
         disks = find_available_disks()
-        self.partition_state_stack.set_visible_child_name(
-            "disk-controls" if disks else "no-disks"
+        _show_stack_child(
+            self.partition_state_stack, "disk-controls" if disks else "no-disks"
         )
         for dev in disks:
             path = "/dev/{}".format(dev["name"])

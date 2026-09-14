@@ -2,7 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from main_installer import InstallerWindow, TokenCompletionPopover
+from main_installer import InstallerWindow, TokenCompletionPopover, _show_stack_child
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -212,6 +212,20 @@ def test_mounted_disk_warning_is_width_bounded_and_wrappable():
     assert "mount_label.set_hexpand(True)" in block
 
 
+def test_stack_child_is_shown_before_selection():
+    events = []
+    child = Mock()
+    stack = Mock()
+    stack.get_child_by_name.return_value = child
+    child.show.side_effect = lambda: events.append("show")
+    stack.set_visible_child_name.side_effect = lambda name: events.append(("select", name))
+
+    _show_stack_child(stack, "disk-controls")
+
+    assert events == ["show", ("select", "disk-controls")]
+    stack.get_child_by_name.assert_called_once_with("disk-controls")
+
+
 def test_disk_refresh_shows_only_empty_state_when_no_disks_are_available():
     disk_list = Mock()
     disk_list.get_parent.return_value = object()
@@ -227,12 +241,12 @@ def test_disk_refresh_shows_only_empty_state_when_no_disks_are_available():
         _update_partition_preview=Mock(),
     )
 
-    with patch('main_installer.find_available_disks', return_value=[]):
+    with patch('main_installer.find_available_disks', return_value=[]), \
+            patch('main_installer._show_stack_child') as show_stack_child:
         result = InstallerWindow._refresh_disks(window)
 
     assert result is False
-    window.partition_state_stack.set_visible_child_name.assert_called_once_with(
-        'no-disks')
+    show_stack_child.assert_called_once_with(window.partition_state_stack, 'no-disks')
     assert window.disk_rows == {}
     assert window.state.target_device is None
     assert window.state.target_device_identity is None
