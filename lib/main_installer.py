@@ -32,7 +32,10 @@ from disk_utils import (
 )
 from format_utils import filesystems_for_boot_mode
 from install_state import InstallCanceled, InstallState, available_remote_access_services, set_service_enabled
-from live_deploy import run_live_install, runtime_supports_luks_persistence
+from live_deploy import (
+    run_live_install, runtime_supports_dynblk_persistence,
+    runtime_supports_luks_persistence,
+)
 from module_selection import (
     calculate_module_sizes,
     discover_module_names,
@@ -130,6 +133,8 @@ def backend_command_for_state(state):
     command.extend(["--modules", ",".join(state.selected_modules)])
     if state.install_mode == "live" and state.persistence_mode != "none":
         command.extend(["--persistence-mode", state.persistence_mode])
+        if state.persistence_encryption != "none":
+            command.extend(["--persistence-encryption", state.persistence_encryption])
         if state.persistence_size_mib:
             command.extend(["--persistence-size", str(state.persistence_size_mib)])
     if state.install_mode == "native" and state.download_missing_packages:
@@ -1074,10 +1079,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if total is None:
             self.state.required_root_mib = 0
             return None
-        persistence_mib = self.state.persistence_size_mib if (
-            self.state.install_mode == "live" and
-            self.state.persistence_mode in ("dynfilefs", "raw", "luks")
-        ) else 0
+        persistence_mib = 0
+        if self.state.install_mode == "live":
+            if self.state.persistence_mode == "raw":
+                persistence_mib = self.state.persistence_size_mib
+            elif self.state.persistence_mode in ("dynfilefs", "dynblk"):
+                persistence_mib = min(self.state.persistence_size_mib, 100)
         self.state.required_root_mib = required_root_mib(total) + persistence_mib
         return total
 
@@ -1692,6 +1699,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             # Persistence is a live-only concept; do not carry a stale live
             # choice into review, logs, or the native backend request.
             self.state.persistence_mode = "none"
+            self.state.persistence_encryption = "none"
             self.state.persistence_size_mib = 0
             # Prefer empty credentials so user must choose a real account.
             if self.state.user_config.username == self._live_username_default:
@@ -3099,8 +3107,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
         def on_persistence_changed(combo):
             if getattr(self, "_updating_persistence_choices", False):
                 return
+            previous_mode = self.state.persistence_mode
             self.state.persistence_mode = combo.get_active_id() or "none"
-            if self.state.persistence_mode in ("dynfilefs", "raw", "luks"):
+            if self.state.persistence_mode == "dynblk" and previous_mode != "dynblk":
+                self.persistence_size_spin.set_value(16384)
+            if self.state.persistence_mode in ("dynfilefs", "dynblk", "raw"):
                 self.state.persistence_size_mib = int(self.persistence_size_spin.get_value())
             else:
                 self.state.persistence_size_mib = 0
@@ -3111,7 +3122,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self._update_partition_preview()
 
         def on_persistence_size_changed(spin):
-            if self.state.persistence_mode in ("dynfilefs", "raw", "luks"):
+            if self.state.persistence_mode in ("dynfilefs", "dynblk", "raw"):
                 self.state.persistence_size_mib = int(spin.get_value())
                 self._update_required_root_size()
                 self._refresh_free_space_placement()
@@ -3124,12 +3135,23 @@ class InstallerWindow(Gtk.ApplicationWindow):
         persistence_box.pack_start(self.persistence_size_spin, False, False, 0)
         persistence_box.pack_start(Gtk.Label(label=_("MiB"), xalign=0), False, False, 0)
         adv_grid.attach(persistence_box, 1, 3, 1, 1)
+        encryption_label = Gtk.Label(label=_("Session encryption:"), xalign=0)
+        self.persistence_encryption_combo = Gtk.ComboBoxText()
+
+        def on_persistence_encryption_changed(combo):
+            self.state.persistence_encryption = combo.get_active_id() or "none"
+
+        self.persistence_encryption_combo.connect(
+            "changed", on_persistence_encryption_changed)
+        adv_grid.attach(encryption_label, 0, 4, 1, 1)
+        adv_grid.attach(self.persistence_encryption_combo, 1, 4, 1, 1)
         self.persistence_note = Gtk.Label(xalign=0)
         self.persistence_note.set_line_wrap(True)
         self.persistence_note.get_style_context().add_class("dim-label")
-        adv_grid.attach(self.persistence_note, 0, 4, 2, 1)
+        adv_grid.attach(self.persistence_note, 0, 5, 2, 1)
         live_mode = self.state.install_mode == "live"
-        for widget in (persistence_label, persistence_box, self.persistence_note):
+        for widget in (persistence_label, persistence_box, encryption_label,
+                       self.persistence_encryption_combo, self.persistence_note):
             widget.set_no_show_all(not live_mode)
             widget.set_visible(live_mode)
         self._refresh_persistence_choices()
@@ -3159,12 +3181,16 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _update_persistence_size_limit(self):
         if not hasattr(self, "persistence_size_spin"):
             return
-        fixed_file = self.state.persistence_mode in ("raw", "luks")
-        maximum = 4000 if self.state.filesystem == "fat32" and fixed_file else 1000000
+        if self.state.persistence_mode == "dynblk":
+            maximum = 524288
+        elif self.state.filesystem == "fat32" and self.state.persistence_mode == "raw":
+            maximum = 4000
+        else:
+            maximum = 1000000
         self.persistence_size_spin.set_range(1, maximum)
         if self.persistence_size_spin.get_value() > maximum:
             self.persistence_size_spin.set_value(maximum)
-        if self.state.persistence_mode in ("dynfilefs", "raw", "luks"):
+        if self.state.persistence_mode in ("dynfilefs", "dynblk", "raw"):
             self.state.persistence_size_mib = int(self.persistence_size_spin.get_value())
 
     def _refresh_persistence_choices(self):
@@ -3176,10 +3202,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 choices.append(("native", _("Save directly on the MiniOS partition")))
             choices.extend((
                 ("dynfilefs", _("Expandable storage (DynFileFS)")),
-                ("raw", _("Fixed-size storage (ext4 image)")),
             ))
-            if runtime_supports_luks_persistence():
-                choices.append(("luks", _("Encrypted storage (LUKS)")))
+            if runtime_supports_dynblk_persistence():
+                choices.append(("dynblk", _("Thin block storage (DynBlk)")))
+            choices.append(("raw", _("Fixed-size storage (ext4 image)")))
         valid = {value for value, _label in choices}
         selected = self.state.persistence_mode
         if selected not in valid:
@@ -3199,24 +3225,40 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if not hasattr(self, "persistence_size_spin"):
             return
         mode = self.state.persistence_mode
-        uses_size = mode in ("dynfilefs", "raw", "luks")
+        uses_size = mode in ("dynfilefs", "dynblk", "raw")
         self._update_persistence_size_limit()
         self.persistence_size_spin.set_sensitive(self.state.install_mode == "live" and uses_size)
         if uses_size:
             self.state.persistence_size_mib = int(self.persistence_size_spin.get_value())
         else:
             self.state.persistence_size_mib = 0
+        if hasattr(self, "persistence_encryption_combo"):
+            encryption_available = runtime_supports_luks_persistence(mode)
+            selected_encryption = self.state.persistence_encryption
+            if not encryption_available:
+                selected_encryption = "none"
+            self.persistence_encryption_combo.remove_all()
+            self.persistence_encryption_combo.append("none", _("None"))
+            if encryption_available:
+                self.persistence_encryption_combo.append("luks", _("LUKS2"))
+            self.persistence_encryption_combo.set_active_id(selected_encryption)
+            self.persistence_encryption_combo.set_sensitive(
+                self.state.install_mode == "live" and encryption_available)
+            self.state.persistence_encryption = selected_encryption
         if not hasattr(self, "persistence_note"):
             return
         notes = {
             "none": _("Changes made during this session will be lost after restart."),
             "native": _("Changes are saved directly on the MiniOS partition and remain available after restart."),
             "dynfilefs": _("Changes are saved in an expandable container that grows as needed up to the selected size."),
+            "dynblk": _("Changes are saved in thin block storage that grows as needed up to the selected size."),
             "raw": _("Changes are saved in a fixed-size container; the selected amount of disk space is reserved for it."),
-            "luks": _("Changes are saved in an encrypted container. On first boot you create a password; later boots require it to access the saved changes."),
         }
         note = notes.get(mode, "")
-        if self.state.install_mode == "live" and not runtime_supports_luks_persistence():
+        if self.state.persistence_encryption == "luks":
+            encrypted = _("On first boot you create a LUKS password; later boots require it to access saved changes.")
+            note = "{}\n{}".format(note, encrypted) if note else encrypted
+        elif self.state.install_mode == "live" and mode in ("raw", "dynfilefs", "dynblk") and not runtime_supports_luks_persistence(mode):
             unavailable = _("Encrypted session storage is not available in this MiniOS image. The other storage modes save changes without encryption.")
             note = "{}\n{}".format(note, unavailable) if note else unavailable
         self.persistence_note.set_text(note)
@@ -4516,10 +4558,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
             labels = {
                 "native": _("Changes will be saved directly on the MiniOS partition."),
                 "dynfilefs": _("Expandable saved changes: up to {size} MiB.").format(size=self.state.persistence_size_mib),
+                "dynblk": _("Thin block saved changes: up to {size} MiB.").format(size=self.state.persistence_size_mib),
                 "raw": _("Fixed-size saved changes: {size} MiB reserved.").format(size=self.state.persistence_size_mib),
-                "luks": _("Encrypted saved changes: {size} MiB. You will create a password on first boot and use it on later boots.").format(size=self.state.persistence_size_mib),
             }
-            persistence_label = Gtk.Label(label=labels.get(mode, mode), xalign=0)
+            text = labels.get(mode, mode)
+            if self.state.persistence_encryption == "luks":
+                text += " " + _("Encrypted with LUKS2; the password is created on first boot.")
+            persistence_label = Gtk.Label(label=text, xalign=0)
             persistence_label.set_line_wrap(True)
             box.pack_start(self._summary_card(_("Session storage"), persistence_label), False, False, 0)
 

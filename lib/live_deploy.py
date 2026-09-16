@@ -5,6 +5,7 @@ import gettext
 import os
 import shutil
 import subprocess
+import tempfile
 from typing import Callable, Optional
 
 from bootloader_utils import install_bootloader
@@ -26,6 +27,8 @@ gettext.textdomain("minios-installer")
 _ = gettext.gettext
 
 INITRD_CRYPTO_MARKER = "/run/initramfs/etc/minios-initramfs-crypt"
+INITRD_DYNBLK_MARKER = "/run/initramfs/etc/minios-initramfs-dynblk"
+LUKS_LAYER_CAPABILITY = "luks-layer-v1"
 
 
 class _ProgressAdapter:
@@ -42,9 +45,45 @@ class _ProgressAdapter:
         self._progress_cb(max(percent, self._minimum_percent), message)
 
 
-def runtime_supports_luks_persistence() -> bool:
-    """Return whether the running initrd advertises LUKS persistence."""
-    return os.path.isfile(INITRD_CRYPTO_MARKER)
+def _marker_has_capability(path: str, capability: str) -> bool:
+    try:
+        with open(path, "r", encoding="utf-8") as marker:
+            return capability in {line.strip() for line in marker if line.strip()}
+    except OSError:
+        return False
+
+
+def runtime_supports_dynblk_persistence() -> bool:
+    if not shutil.which("dynblk") or not os.path.isfile(INITRD_DYNBLK_MARKER):
+        return False
+    if os.path.isdir("/sys/module/dynblk"):
+        return True
+    if not shutil.which("modinfo"):
+        return False
+    try:
+        return subprocess.run(
+            ["modinfo", "dynblk"], stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, check=False,
+        ).returncode == 0
+    except OSError:
+        return False
+
+
+def runtime_supports_luks_persistence(backend: str = "raw") -> bool:
+    """Return whether layered LUKS is usable with one running backend."""
+    if backend not in ("raw", "dynfilefs", "dynblk"):
+        return False
+    if not shutil.which("cryptsetup") or not _marker_has_capability(
+        INITRD_CRYPTO_MARKER, LUKS_LAYER_CAPABILITY
+    ):
+        return False
+    if backend in ("raw", "dynfilefs") and not shutil.which("losetup"):
+        return False
+    if backend == "dynfilefs" and not (
+        shutil.which("dynfilefs") or shutil.which("mount.dynfilefs")
+    ):
+        return False
+    return backend != "dynblk" or runtime_supports_dynblk_persistence()
 
 
 def _cleanup_temp_config(path: Optional[str]) -> None:
@@ -95,43 +134,109 @@ def _source_initrd_paths(source: str) -> tuple:
     return tuple(initrds)
 
 
-def source_supports_luks_persistence(source: str) -> bool:
-    """Read source initrd file lists and require the MiniOS crypto hook in each."""
-    initrds = _source_initrd_paths(source)
-    tool = shutil.which("lsinitramfs") or shutil.which("lsinitrd")
-    if not initrds or not tool:
+def _unpack_source_initrd(initrd: str, destination: str) -> bool:
+    tool = shutil.which("unmkinitramfs")
+    if not tool:
         return False
-    for initrd in initrds:
+    try:
+        result = subprocess.run(
+            [tool, initrd, destination], stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, check=False, timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0
+
+
+def _unpacked_marker_paths(root: str, name: str) -> tuple:
+    relative = os.path.join("etc", name)
+    return tuple(os.path.join(root, prefix, relative) for prefix in ("", "main", "early"))
+
+
+def _source_marker_content(initrd: str, name: str):
+    lsinitrd = shutil.which("lsinitrd")
+    if lsinitrd:
         try:
             result = subprocess.run(
-                [tool, initrd], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                universal_newlines=True, check=False, timeout=30,
+                [lsinitrd, "-f", "etc/{}".format(name), initrd],
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                check=False, timeout=30,
             )
+            if result.returncode == 0:
+                return result.stdout
         except (OSError, subprocess.SubprocessError):
+            return None
+    with tempfile.TemporaryDirectory(prefix="minios-initrd-check-") as extracted:
+        if not _unpack_source_initrd(initrd, extracted):
+            return None
+        for marker in _unpacked_marker_paths(extracted, name):
+            try:
+                with open(marker, "rb") as stream:
+                    return stream.read(4096)
+            except OSError:
+                continue
+    return None
+
+
+def source_supports_luks_persistence(source: str, backend: str = "raw") -> bool:
+    """Require the layered-LUKS contract in every copied source initrd."""
+    if backend not in ("raw", "dynfilefs", "dynblk"):
+        return False
+    initrds = _source_initrd_paths(source)
+    if not initrds:
+        return False
+    for initrd in initrds:
+        content = _source_marker_content(initrd, "minios-initramfs-crypt")
+        if content is None or LUKS_LAYER_CAPABILITY not in {
+            line.strip() for line in content.decode("utf-8", "replace").splitlines()
+        }:
             return False
-        if result.returncode != 0 or not any(
-            line.strip().lstrip("./").endswith("etc/minios-initramfs-crypt")
-            for line in result.stdout.splitlines()
-        ):
+        if (backend == "dynblk" and
+                _source_marker_content(initrd, "minios-initramfs-dynblk") is None):
+            return False
+    return True
+
+
+def source_supports_dynblk_persistence(source: str) -> bool:
+    """Require the DynBlk resume marker in every copied source initrd."""
+    initrds = _source_initrd_paths(source)
+    if not initrds:
+        return False
+    for initrd in initrds:
+        if _source_marker_content(initrd, "minios-initramfs-dynblk") is None:
             return False
     return True
 
 
 def _persistence_boot_options(state: InstallState, source: str) -> tuple:
     mode = state.persistence_mode
+    encryption = state.persistence_encryption
+    if encryption not in ("none", "luks"):
+        raise RuntimeError(_("Unknown session persistence encryption: {encryption}").format(
+            encryption=encryption))
     if mode == "none":
+        if encryption != "none":
+            raise RuntimeError(_("Session encryption requires a persistence storage mode."))
         return ()
     if state.install_mode != "live":
         raise RuntimeError(_("Session persistence is available only for live installations."))
-    if mode not in ("native", "dynfilefs", "raw", "luks"):
+    if mode not in ("native", "dynfilefs", "dynblk", "raw"):
         raise RuntimeError(_("Unknown session persistence mode: {mode}").format(mode=mode))
+    if encryption == "luks" and mode not in ("raw", "dynfilefs", "dynblk"):
+        raise RuntimeError(_("LUKS encryption is unavailable for this session storage mode."))
     if mode == "native":
         return ("perchmode=native",)
     if state.persistence_size_mib <= 0:
         raise RuntimeError(_("Container persistence requires a size greater than zero."))
-    if mode == "luks" and not source_supports_luks_persistence(source):
+    if (mode == "dynblk" and encryption != "luks" and
+            not source_supports_dynblk_persistence(source)):
+        raise RuntimeError(_("DynBlk session storage is not supported by this MiniOS image. Choose another session storage mode."))
+    if encryption == "luks" and not source_supports_luks_persistence(source, mode):
         raise RuntimeError(_("Encrypted session storage is not supported by this MiniOS image. Choose another session storage mode."))
-    return ("perchmode={}".format(mode), "perchsize={}".format(state.persistence_size_mib))
+    options = ["perchmode={}".format(mode), "perchsize={}".format(state.persistence_size_mib)]
+    if encryption == "luks":
+        options.append("perchencrypt=luks")
+    return tuple(options)
 
 
 def run_live_install(

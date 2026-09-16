@@ -66,15 +66,17 @@ Unsupported, mounted, nested, dirty, ambiguous, or unsafe layouts are refused.
 ## Session Persistence
 
 Live installations support native directories, expandable DynFileFS storage,
-fixed-size raw images, and encrypted LUKS images. The initrd creates the selected
-storage on first boot. Container modes default to 4000 MiB. Raw and LUKS are
-limited to 4000 MiB on FAT32; DynFileFS is not subject to that single-file
-limit. Native persistence is offered only on POSIX-compatible target filesystems.
+thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk may
+optionally use LUKS2 encryption. The initrd creates the selected storage on first
+boot. Raw and DynFileFS default to 4000 MiB; DynBlk defaults to 16 GiB. Only Raw
+is limited to 4000 MiB on FAT32. Native persistence is offered only on
+POSIX-compatible target filesystems.
 
-LUKS is offered only when the running initrd advertises
-`/run/initramfs/etc/minios-initramfs-crypt`; every copied source initrd is
-verified again before disk changes. The initrd creates `changes.luks` and asks
-for the passphrase on boot; the installer never receives or stores it.
+LUKS is offered only when the running initrd marker contains
+`luks-layer-v1` and the selected backend is available. Every copied source
+initrd is unpacked and verified again before disk changes. The installer writes
+`perchencrypt=luks`; the initrd asks for the passphrase on first boot, and the
+installer never receives or stores it.
 
 ## Usage
 

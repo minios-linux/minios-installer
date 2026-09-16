@@ -10,7 +10,10 @@ import sys
 from disk_utils import ensure_safe_target_device, get_device_identity
 from disk_utils import find_available_disks, native_install_supported
 from install_state import InstallState, UserConfig
-from live_deploy import run_live_install, runtime_supports_luks_persistence
+from live_deploy import (
+    run_live_install, runtime_supports_dynblk_persistence,
+    runtime_supports_luks_persistence,
+)
 from module_selection import (
     discover_module_names,
     normalize_selected_modules,
@@ -58,6 +61,7 @@ _USER_CONFIG_CLI = (
 _LIVE_ONLY_NATIVE_REJECTIONS = (
     ("boot_menu", "--boot-menu"),
     ("persistence_mode", "--persistence-mode"),
+    ("persistence_encryption", "--persistence-encryption"),
     ("persistence_size", "--persistence-size"),
     ("config_file", "--config-file"),
     ("link_user_dirs", "--link-user-dirs"),
@@ -166,25 +170,45 @@ def _validate_cli_inputs(args) -> None:
         if value and (len(value) > 512 or any(ord(char) < 32 or ord(char) == 127 for char in value)):
             raise ValueError("invalid --{0} value".format(name.replace("_", "-")))
     persistence_mode = getattr(args, "persistence_mode", None) or "none"
+    persistence_encryption = getattr(args, "persistence_encryption", None) or "none"
     if persistence_mode != "none":
         if getattr(args, "mode", "live") != "live":
             raise ValueError("--persistence-mode is available only with --mode live")
         size = int(getattr(args, "persistence_size", 0) or 0)
         if persistence_mode == "native" and size:
-            raise ValueError("--persistence-size applies only to dynfilefs, raw, and luks modes")
+            raise ValueError("--persistence-size applies only to dynfilefs, dynblk, and raw modes")
+        if persistence_encryption == "luks":
+            if persistence_mode not in ("dynfilefs", "dynblk", "raw"):
+                raise ValueError("--persistence-encryption luks requires dynfilefs, dynblk, or raw mode")
+            if not runtime_supports_luks_persistence(persistence_mode):
+                raise ValueError("LUKS encryption is unavailable for the selected persistence mode")
         if persistence_mode == "native" and getattr(args, "filesystem", "ext4") in ("fat32", "ntfs"):
             raise ValueError("--persistence-mode native requires a POSIX-compatible target filesystem")
         if size < 0 or size > 1000000:
             raise ValueError("--persistence-size must be 0 (default) or at most 1000000 MiB")
-        if persistence_mode in ("raw", "luks") and getattr(args, "filesystem", "ext4") == "fat32" and size > 4000:
+        if persistence_mode == "dynblk":
+            if not runtime_supports_dynblk_persistence():
+                raise ValueError("dynblk persistence is unavailable in this MiniOS image")
+            if size > 524288:
+                raise ValueError("--persistence-size must not exceed 524288 MiB for dynblk")
+        if persistence_mode == "raw" and getattr(args, "filesystem", "ext4") == "fat32" and size > 4000:
             raise ValueError("--persistence-size must not exceed 4000 MiB on FAT32")
+    elif persistence_encryption != "none":
+        raise ValueError("--persistence-encryption requires --persistence-mode")
 
 
 def _effective_persistence_size(args) -> int:
     persistence_mode = getattr(args, "persistence_mode", None) or "none"
-    if persistence_mode not in ("dynfilefs", "raw", "luks"):
+    if persistence_mode not in ("dynfilefs", "dynblk", "raw"):
         return 0
-    return int(getattr(args, "persistence_size", None) or 4000)
+    default_size = 16384 if persistence_mode == "dynblk" else 4000
+    return int(getattr(args, "persistence_size", None) or default_size)
+
+
+def _persistence_space_requirement(args) -> int:
+    size = _effective_persistence_size(args)
+    mode = getattr(args, "persistence_mode", None) or "none"
+    return size if mode == "raw" else min(size, 100)
 
 
 def cmd_list_disks(args):
@@ -202,7 +226,7 @@ def cmd_plan(args):
     layout = scan_disk(ensure_safe_target_device(args.device))
     install_mode = getattr(args, "mode", "live") or "live"
     _selected, root_mib = _module_space_requirement(
-        install_mode, getattr(args, "modules", ""), _effective_persistence_size(args)
+        install_mode, getattr(args, "modules", ""), _persistence_space_requirement(args)
     )
     plan = build_plan(
         layout,
@@ -243,10 +267,12 @@ def cmd_install(args):
     target_device = ensure_safe_target_device(args.device)
     persistence_mode = getattr(args, "persistence_mode", None) or "none"
     persistence_size = _effective_persistence_size(args)
-    selected_modules, root_mib = _module_space_requirement(args.mode, getattr(args, "modules", ""), persistence_size)
+    selected_modules, root_mib = _module_space_requirement(
+        args.mode, getattr(args, "modules", ""), _persistence_space_requirement(args))
     state = InstallState(
         install_mode=args.mode,
         persistence_mode=persistence_mode,
+        persistence_encryption=getattr(args, "persistence_encryption", None) or "none",
         persistence_size_mib=persistence_size,
         placement=args.placement,
         target_device=target_device,
@@ -333,12 +359,17 @@ def _add_user_config_arguments(parser):
                    help="live only: EXPORT_LOGS (true/false)")
 
 
-def build_parser(luks_available=None):
+def build_parser(luks_available=None, dynblk_available=None):
     if luks_available is None:
-        luks_available = runtime_supports_luks_persistence()
-    persistence_modes = ["none", "native", "dynfilefs", "raw"]
-    if luks_available:
-        persistence_modes.append("luks")
+        luks_available = any(runtime_supports_luks_persistence(mode) for mode in
+                             ("raw", "dynfilefs", "dynblk"))
+    if dynblk_available is None:
+        dynblk_available = runtime_supports_dynblk_persistence()
+    persistence_modes = ["none", "native", "dynfilefs"]
+    if dynblk_available:
+        persistence_modes.append("dynblk")
+    persistence_modes.append("raw")
+    persistence_encryptions = ["none", "luks"] if luks_available else ["none"]
     install_modes = ["live", "native"] if native_install_supported() else ["live"]
     parser = argparse.ArgumentParser(
         prog="minios-deploy",
@@ -359,6 +390,8 @@ def build_parser(luks_available=None):
     p.add_argument("--swap-size", type=_nonnegative_int, default=None, help="native only: swap size in MiB")
     p.add_argument("--modules", default="", help="comma-separated .sb modules used for the space calculation")
     p.add_argument("--persistence-mode", default=None, choices=persistence_modes, help="live session persistence mode")
+    p.add_argument("--persistence-encryption", default=None, choices=persistence_encryptions,
+                   help="optional live session encryption layer")
     p.add_argument("--persistence-size", type=_nonnegative_int, default=None, metavar="MIB", help="container persistence size in MiB (default: 4000)")
     p.add_argument("--boot-layout", default="auto", choices=["auto", "bios_mbr", "uefi_mbr", "uefi_gpt"])
     p.add_argument("--json", action="store_true")
@@ -382,6 +415,8 @@ def build_parser(luks_available=None):
                     help="comma-separated .sb modules to install; selecting a higher module includes lower modules")
     p.add_argument("--persistence-mode", default=None, choices=persistence_modes,
                     help="live session persistence mode (storage is created by initrd)")
+    p.add_argument("--persistence-encryption", default=None, choices=persistence_encryptions,
+                   help="optional live session encryption layer")
     p.add_argument("--persistence-size", type=_nonnegative_int, default=None, metavar="MIB",
                     help="live container persistence size in MiB (default: 4000)")
     p.add_argument("--download-packages", action="store_true",

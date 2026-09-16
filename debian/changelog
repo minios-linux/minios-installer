@@ -1,3 +1,16 @@
+minios-installer (3.2.0) unstable; urgency=medium
+
+  * Add capability-gated persistence encryption as a separate choice over Raw,
+    DynFileFS, and DynBlk backends in the CLI and advanced GTK controls.
+  * Validate exact running and source-initrd capabilities before destructive
+    deployment work and write normalized backend-plus-encryption boot options.
+  * Apply full physical reservation only to Raw images while preserving thin
+    capacity semantics for DynFileFS and DynBlk.
+  * Write persistence options into the nested GRUB and SYSLINUX configs used by
+    multilingual installed-media boot menus.
+
+ -- crims0n <crims0n@minios.dev>  Wed, 16 Sep 2026 14:17:07 +0300
+
 minios-installer (3.1.1) unstable; urgency=medium
 
   * Show the selected disk-state page before switching the GTK stack, so the

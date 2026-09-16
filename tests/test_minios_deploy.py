@@ -106,28 +106,34 @@ class TestMiniOSDeploy:
                 assert option[0] in str(exc)
                 assert "--mode native" in str(exc)
 
-    def test_luks_persistence_defaults_to_raw_compatible_4000_mib(self):
+    def test_encrypted_raw_persistence_defaults_to_4000_mib(self):
         import minios_deploy
 
         parser = minios_deploy.build_parser(luks_available=True)
-        args = parser.parse_args(['plan', '/dev/sdb', '--persistence-mode', 'luks'])
+        args = parser.parse_args([
+            'plan', '/dev/sdb', '--persistence-mode', 'raw',
+            '--persistence-encryption', 'luks'])
         assert minios_deploy._effective_persistence_size(args) == 4000
 
-    def test_luks_persistence_fat32_limit_is_4000_mib(self):
+    def test_encrypted_raw_persistence_fat32_limit_is_4000_mib(self):
         import minios_deploy
 
         parser = minios_deploy.build_parser(luks_available=True)
         accepted = parser.parse_args([
             'plan', '/dev/sdb', '--filesystem', 'fat32',
-            '--persistence-mode', 'luks', '--persistence-size', '4000',
+            '--persistence-mode', 'raw', '--persistence-encryption', 'luks',
+            '--persistence-size', '4000',
         ])
-        minios_deploy._validate_cli_inputs(accepted)
+        with patch('minios_deploy.runtime_supports_luks_persistence', return_value=True):
+            minios_deploy._validate_cli_inputs(accepted)
         rejected = parser.parse_args([
             'plan', '/dev/sdb', '--filesystem', 'fat32',
-            '--persistence-mode', 'luks', '--persistence-size', '4001',
+            '--persistence-mode', 'raw', '--persistence-encryption', 'luks',
+            '--persistence-size', '4001',
         ])
         try:
-            minios_deploy._validate_cli_inputs(rejected)
+            with patch('minios_deploy.runtime_supports_luks_persistence', return_value=True):
+                minios_deploy._validate_cli_inputs(rejected)
             assert False, 'expected FAT32 persistence limit failure'
         except ValueError as exc:
             assert '4000 MiB' in str(exc)
@@ -142,6 +148,20 @@ class TestMiniOSDeploy:
         ])
         minios_deploy._validate_cli_inputs(args)
         assert minios_deploy._effective_persistence_size(args) == 16000
+
+    def test_dynblk_uses_virtual_capacity_and_16_gib_default(self):
+        import minios_deploy
+
+        parser = minios_deploy.build_parser(
+            luks_available=True, dynblk_available=True)
+        args = parser.parse_args([
+            'plan', '/dev/sdb', '--persistence-mode', 'dynblk'])
+        with patch('minios_deploy.runtime_supports_dynblk_persistence',
+                   return_value=True):
+            minios_deploy._validate_cli_inputs(args)
+
+        assert minios_deploy._effective_persistence_size(args) == 16384
+        assert minios_deploy._persistence_space_requirement(args) == 100
 
     def test_native_persistence_has_no_container_size(self):
         import minios_deploy
@@ -159,8 +179,10 @@ class TestMiniOSDeploy:
 
         parser = minios_deploy.build_parser(luks_available=False)
         try:
-            parser.parse_args(['plan', '/dev/sdb', '--persistence-mode', 'luks'])
-            assert False, 'expected hidden LUKS mode to be rejected'
+            parser.parse_args([
+                'plan', '/dev/sdb', '--persistence-mode', 'raw',
+                '--persistence-encryption', 'luks'])
+            assert False, 'expected hidden LUKS encryption to be rejected'
         except SystemExit as exc:
             assert exc.code == 2
 
@@ -209,29 +231,33 @@ class TestMiniOSDeploy:
         assert build.call_args[1]['alongside_size_mib'] == 0
         assert build.call_args[1]['swap_size_mib'] == 2048
 
-    def test_luks_persistence_reserves_root_space_and_rejects_native_mode(self):
+    def test_encrypted_raw_reserves_root_space_and_rejects_native_mode(self):
         import minios_deploy
 
         parser = minios_deploy.build_parser(luks_available=True)
         args = parser.parse_args([
             'install', '/dev/sdb', '--yes', '--dry-run',
-            '--persistence-mode', 'luks', '--persistence-size', '2048',
+            '--persistence-mode', 'raw', '--persistence-encryption', 'luks',
+            '--persistence-size', '2048',
         ])
         with patch('os.geteuid', return_value=0), \
              patch('minios_deploy.ensure_safe_target_device', return_value='/dev/sdb'), \
              patch('minios_deploy.get_device_identity', return_value={'path': '/dev/sdb'}), \
+             patch('minios_deploy.runtime_supports_luks_persistence', return_value=True), \
              patch('minios_deploy._module_space_requirement', return_value=(['00-core.sb'], 4096)) as requirement, \
              patch('minios_deploy.run_live_install') as run:
             assert minios_deploy.cmd_install(args) == 0
         assert requirement.call_args[0] == ('live', '', 2048)
         state = run.call_args[0][0]
-        assert state.persistence_mode == 'luks'
+        assert state.persistence_mode == 'raw'
+        assert state.persistence_encryption == 'luks'
         assert state.persistence_size_mib == 2048
         assert state.required_root_mib == 4096
 
         native = parser.parse_args([
             'install', '/dev/sdb', '--mode', 'native', '--yes', '--dry-run',
-            '--persistence-mode', 'luks', '--persistence-size', '2048',
+            '--persistence-mode', 'raw', '--persistence-encryption', 'luks',
+            '--persistence-size', '2048',
         ])
         with patch('os.geteuid', return_value=0):
             try:

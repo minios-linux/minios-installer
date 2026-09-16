@@ -8,12 +8,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
 
 class TestLiveDeploySafety:
-    def test_runtime_luks_option_requires_initrd_marker(self):
+    def test_runtime_luks_option_requires_versioned_initrd_marker(self, tmp_path):
+        import live_deploy
         from live_deploy import runtime_supports_luks_persistence
 
-        with patch('live_deploy.os.path.isfile', return_value=False):
+        marker = tmp_path / 'crypt-marker'
+        with patch.object(live_deploy, 'INITRD_CRYPTO_MARKER', str(marker)), \
+             patch('live_deploy.shutil.which', return_value='/usr/bin/tool'):
             assert runtime_supports_luks_persistence() is False
-        with patch('live_deploy.os.path.isfile', return_value=True):
+            marker.write_text('old-capability\n', encoding='utf-8')
+            assert runtime_supports_luks_persistence() is False
+            marker.write_text('luks-layer-v1\n', encoding='utf-8')
             assert runtime_supports_luks_persistence() is True
 
     def test_luks_support_inspects_every_source_initrd(self, tmp_path):
@@ -23,13 +28,19 @@ class TestLiveDeploySafety:
         boot.mkdir()
         (boot / 'initrfs-a.img').write_bytes(b'first')
         (boot / 'initrd-b.img').write_bytes(b'second')
-        result = MagicMock(returncode=0, stdout='etc/minios-initramfs-crypt\n')
-        with patch('live_deploy.shutil.which', return_value='/usr/bin/lsinitramfs'), \
-             patch('live_deploy.subprocess.run', return_value=result) as run:
+        unpacked = []
+        def unpack(initrd, destination):
+            unpacked.append(initrd)
+            marker = os.path.join(destination, 'main', 'etc')
+            os.makedirs(marker)
+            with open(os.path.join(marker, 'minios-initramfs-crypt'), 'w') as stream:
+                stream.write('luks-layer-v1\n')
+            return True
+
+        with patch('live_deploy._unpack_source_initrd', side_effect=unpack):
             assert source_supports_luks_persistence(str(tmp_path)) is True
 
-        assert run.call_count == 2
-        assert {mock_call[0][0][1] for mock_call in run.call_args_list} == {
+        assert set(unpacked) == {
             str(boot / 'initrfs-a.img'), str(boot / 'initrd-b.img'),
         }
 
@@ -39,10 +50,34 @@ class TestLiveDeploySafety:
         boot = tmp_path / 'boot'
         boot.mkdir()
         (boot / 'initrfs.img').write_bytes(b'initrd')
-        result = MagicMock(returncode=0, stdout='etc/other-hook\n')
-        with patch('live_deploy.shutil.which', return_value='/usr/bin/lsinitramfs'), \
-             patch('live_deploy.subprocess.run', return_value=result):
+        with patch('live_deploy._unpack_source_initrd', return_value=True):
             assert source_supports_luks_persistence(str(tmp_path)) is False
+
+    def test_source_rejects_old_unversioned_crypto_marker(self, tmp_path):
+        from live_deploy import source_supports_luks_persistence
+
+        boot = tmp_path / 'boot'
+        boot.mkdir()
+        (boot / 'initrfs.img').write_bytes(b'initrd')
+
+        def unpack(_initrd, destination):
+            marker = os.path.join(destination, 'etc')
+            os.makedirs(marker)
+            open(os.path.join(marker, 'minios-initramfs-crypt'), 'wb').close()
+            return True
+
+        with patch('live_deploy._unpack_source_initrd', side_effect=unpack):
+            assert source_supports_luks_persistence(str(tmp_path)) is False
+
+    def test_lsinitrd_reads_marker_content_instead_of_file_listing(self):
+        from live_deploy import _source_marker_content
+
+        result = MagicMock(returncode=0, stdout=b'luks-layer-v1\n')
+        with patch('live_deploy.shutil.which', return_value='/usr/bin/lsinitrd'), \
+             patch('live_deploy.subprocess.run', return_value=result) as run:
+            assert _source_marker_content('/boot/initrd.img', 'marker') == b'luks-layer-v1\n'
+        assert run.call_args[0][0] == [
+            '/usr/bin/lsinitrd', '-f', 'etc/marker', '/boot/initrd.img']
 
     def test_luks_source_resolves_generic_initrd_symlink_once(self, tmp_path):
         from live_deploy import source_supports_luks_persistence
@@ -52,23 +87,31 @@ class TestLiveDeploySafety:
         versioned = boot / 'initrfs-6.12.img'
         versioned.write_bytes(b'initrd')
         (boot / 'initrfs.img').symlink_to(versioned.name)
-        result = MagicMock(returncode=0, stdout='etc/minios-initramfs-crypt\n')
-        with patch('live_deploy.shutil.which', return_value='/usr/bin/lsinitrd'), \
-             patch('live_deploy.subprocess.run', return_value=result) as run:
+        unpacked = []
+        def unpack(initrd, destination):
+            unpacked.append(initrd)
+            marker = os.path.join(destination, 'etc')
+            os.makedirs(marker)
+            with open(os.path.join(marker, 'minios-initramfs-crypt'), 'w') as stream:
+                stream.write('luks-layer-v1\n')
+            return True
+
+        with patch('live_deploy._unpack_source_initrd', side_effect=unpack):
             assert source_supports_luks_persistence(str(tmp_path)) is True
 
-        run.assert_called_once()
-        assert run.call_args[0][0][1] == str(versioned)
+        assert unpacked == [str(versioned)]
 
     def test_luks_boot_options_require_crypto_initrd_without_a_passphrase(self):
         from install_state import InstallState
         from live_deploy import _persistence_boot_options
 
         state = InstallState(
-            install_mode='live', persistence_mode='luks', persistence_size_mib=2048,
+            install_mode='live', persistence_mode='raw',
+            persistence_encryption='luks', persistence_size_mib=2048,
         )
         with patch('live_deploy.source_supports_luks_persistence', return_value=True):
-            assert _persistence_boot_options(state, '/media/minios') == ('perchmode=luks', 'perchsize=2048')
+            assert _persistence_boot_options(state, '/media/minios') == (
+                'perchmode=raw', 'perchsize=2048', 'perchencrypt=luks')
         with patch('live_deploy.source_supports_luks_persistence', return_value=False):
             try:
                 _persistence_boot_options(state, '/media/minios')
@@ -88,13 +131,42 @@ class TestLiveDeploySafety:
         assert _persistence_boot_options(dyn, '/media/minios') == ('perchmode=dynfilefs', 'perchsize=8000')
         assert _persistence_boot_options(raw, '/media/minios') == ('perchmode=raw', 'perchsize=4000')
 
+    def test_dynblk_boot_options_require_source_marker(self):
+        from install_state import InstallState
+        from live_deploy import _persistence_boot_options
+
+        state = InstallState(
+            install_mode='live', persistence_mode='dynblk',
+            persistence_size_mib=16384)
+        with patch('live_deploy.source_supports_dynblk_persistence', return_value=True):
+            assert _persistence_boot_options(state, '/media/minios') == (
+                'perchmode=dynblk', 'perchsize=16384')
+        with patch('live_deploy.source_supports_dynblk_persistence', return_value=False):
+            try:
+                _persistence_boot_options(state, '/media/minios')
+                assert False, 'expected DynBlk capability failure'
+            except RuntimeError as exc:
+                assert 'DynBlk session storage is not supported' in str(exc)
+
+    def test_encryption_without_storage_fails_closed(self):
+        from install_state import InstallState
+        from live_deploy import _persistence_boot_options
+
+        state = InstallState(persistence_mode='none', persistence_encryption='luks')
+        try:
+            _persistence_boot_options(state, '/media/minios')
+            assert False, 'expected invalid encryption failure'
+        except RuntimeError as exc:
+            assert 'requires a persistence storage mode' in str(exc)
+
     def test_luks_source_validation_happens_before_partitioning(self):
         from install_state import InstallState
         from live_deploy import run_live_install
 
         state = InstallState(
             install_mode='live', target_device='/dev/sdb',
-            persistence_mode='luks', persistence_size_mib=4000,
+            persistence_mode='raw', persistence_encryption='luks',
+            persistence_size_mib=4000,
         )
         with patch('live_deploy.resolve_install_device', return_value='/dev/sdb'), \
              patch('live_deploy.find_minios_source', return_value='/media/minios'), \

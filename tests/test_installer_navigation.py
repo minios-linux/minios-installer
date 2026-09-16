@@ -47,6 +47,7 @@ def test_switching_to_native_clears_live_persistence_state():
 
     assert state.install_mode == "native"
     assert state.persistence_mode == "none"
+    assert state.persistence_encryption == "none"
     assert state.persistence_size_mib == 0
     assert state.download_missing_packages is True
     window._refresh_mode_specific_visibility.assert_called_once_with()
@@ -115,6 +116,7 @@ def test_backend_command_keeps_live_boot_and_persistence_options():
         swap_size_mib=4096,
         boot_config_type="ru_RU",
         persistence_mode="dynfilefs",
+        persistence_encryption="luks",
         persistence_size_mib=8192,
         config_override_path="/tmp/live-config.conf",
         download_missing_packages=True,
@@ -124,6 +126,7 @@ def test_backend_command_keeps_live_boot_and_persistence_options():
 
     assert "--boot-menu ru_RU" in command
     assert "--persistence-mode dynfilefs" in command
+    assert "--persistence-encryption luks" in command
     assert "--persistence-size 8192" in command
     assert "--config-file /tmp/live-config.conf" in command
     assert "--swap-size" not in command

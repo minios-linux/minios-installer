@@ -1,4 +1,4 @@
-.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.1.1" "User Commands"
+.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.2.0" "User Commands"
 .SH NAME
 minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
@@ -69,16 +69,16 @@ not created or changed. Native static networking uses NetworkManager when
 available and falls back to ifupdown.
 .SH SESSION PERSISTENCE
 Live installations support native directories, expandable DynFileFS storage,
-fixed-size raw images, and encrypted LUKS images. Container modes use perchsize
-and default to 4000 MiB. Raw and LUKS are limited to 4000 MiB on FAT32;
-DynFileFS is not subject to that single-file limit.
+thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk may
+optionally use LUKS2 encryption. Raw and DynFileFS default to 4000 MiB; DynBlk
+defaults to 16 GiB. Only Raw is limited to 4000 MiB on FAT32.
 .PP
-LUKS is shown only when the running initrd advertises
+LUKS is shown only when the running initrd marker contains luks-layer-v1 at
 .IR /run/initramfs/etc/minios-initramfs-crypt .
-Before disk changes, every source initrd is checked for
-.IR etc/minios-initramfs-crypt .
-The initrd creates the per-session changes.luks file and prompts at boot; the
-installer never handles the passphrase. This does not encrypt a native root.
+Before disk changes, every source initrd is unpacked and checked for the same
+versioned capability and any selected DynBlk capability. The installer writes
+perchencrypt=luks and the initrd prompts at first boot; the installer never
+handles the passphrase. This does not encrypt a native root.
 .SH FILES
 .I /usr/share/applications/minios-installer.desktop
 .br

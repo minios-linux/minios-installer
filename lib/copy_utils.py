@@ -329,24 +329,30 @@ def _apply_boot_options(dst: str, options: Iterable[str]) -> None:
     options = tuple(options)
     if not options:
         return
-    for relative in ("minios/boot/grub/grub.cfg", "minios/boot/syslinux/syslinux.cfg"):
-        path = os.path.join(dst, relative)
-        if not os.path.isfile(path):
+    for relative in ("minios/boot/grub", "minios/boot/syslinux"):
+        config_root = os.path.join(dst, relative)
+        if not os.path.isdir(config_root):
             continue
-        with open(path, "rb") as fh:
-            content = fh.read()
-        # Replace stale values from the source menu so every session entry has
-        # the requested persistence policy exactly once.
-        content = re.sub(rb"\s+perchmode=[^\s]+", b"", content)
-        content = re.sub(rb"\s+perchsize=[^\s]+", b"", content)
-        tokens = b" " + b" ".join(option.encode("ascii") for option in options)
-        content = re.sub(
-            rb"(?m)^(\s*(?:APPEND|linux|linuxefi)\b[^\r\n]*)",
-            lambda match: match.group(1) + tokens,
-            content,
-        )
-        with open(path, "wb") as fh:
-            fh.write(content)
+        for root, _dirs, files in os.walk(config_root):
+            for filename in sorted(files):
+                if not filename.endswith(".cfg"):
+                    continue
+                path = os.path.join(root, filename)
+                with open(path, "rb") as fh:
+                    content = fh.read()
+                # Multilingual menus dispatch to nested configs, so update every
+                # copied config that contains a kernel command.
+                content = re.sub(rb"\s+perchmode=[^\s]+", b"", content)
+                content = re.sub(rb"\s+perchsize=[^\s]+", b"", content)
+                content = re.sub(rb"\s+perchencrypt=[^\s]+", b"", content)
+                tokens = b" " + b" ".join(option.encode("ascii") for option in options)
+                content = re.sub(
+                    rb"(?m)^(\s*(?:APPEND|linux|linuxefi)\b[^\r\n]*)",
+                    lambda match: match.group(1) + tokens,
+                    content,
+                )
+                with open(path, "wb") as fh:
+                    fh.write(content)
 
 
 def _parse_po_file(po_path: str) -> Dict[str, str]:

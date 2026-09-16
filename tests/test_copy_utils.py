@@ -164,36 +164,44 @@ class TestSyslinuxConfigProcessing:
 
 
 class TestCopyMiniosFiles:
-    def test_copy_minios_files_adds_luks_boot_options(self, tmp_path):
+    def test_copy_minios_files_adds_layered_luks_boot_options(self, tmp_path):
         from copy_utils import copy_minios_files
 
         src = tmp_path / "src"
         dst = tmp_path / "dst"
         (src / "boot" / "grub").mkdir(parents=True)
-        (src / "boot" / "syslinux").mkdir()
+        (src / "boot" / "syslinux" / "lang").mkdir(parents=True)
         (src / "boot" / "vmlinuz").write_text("kernel")
         (src / "boot" / "grub" / "grub.multilang.cfg").write_text(
-            "linux /minios/boot/vmlinuz perchmode=old perchsize=1 quiet\n"
+            "menuentry 'English' {\n    configfile /minios/boot/grub/main.cfg\n}\n"
+        )
+        (src / "boot" / "grub" / "main.cfg").write_text(
+            "linux /minios/boot/vmlinuz perchmode=old perchsize=1 perchencrypt=old quiet\n"
         )
         (src / "boot" / "syslinux" / "syslinux.multilang.cfg").write_text(
-            "APPEND boot=live perchmode=old perchsize=1\n"
+            "LABEL en_US\nCONFIG lang/en_US.cfg\n"
+        )
+        (src / "boot" / "syslinux" / "lang" / "en_US.cfg").write_text(
+            "APPEND boot=live perchmode=old perchsize=1 perchencrypt=old\n"
         )
         dst.mkdir()
 
         copy_minios_files(
             str(src), str(dst), lambda *_: None, lambda *_: None,
-            boot_options=("perchmode=luks", "perchsize=2048"),
+            boot_options=("perchmode=raw", "perchsize=2048", "perchencrypt=luks"),
         )
 
         for path in (
-            dst / "minios" / "boot" / "grub" / "grub.cfg",
-            dst / "minios" / "boot" / "syslinux" / "syslinux.cfg",
+            dst / "minios" / "boot" / "grub" / "main.cfg",
+            dst / "minios" / "boot" / "syslinux" / "lang" / "en_US.cfg",
         ):
             content = path.read_text()
-            assert content.count("perchmode=luks") == 1
+            assert content.count("perchmode=raw") == 1
             assert content.count("perchsize=2048") == 1
+            assert content.count("perchencrypt=luks") == 1
             assert "perchmode=old" not in content
             assert "perchsize=1" not in content
+            assert "perchencrypt=old" not in content
 
     def test_copy_minios_files_filters_unselected_top_level_modules(self, tmp_path):
         from copy_utils import copy_minios_files

@@ -1,4 +1,4 @@
-.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.1.1" "User Commands"
+.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.2.0" "User Commands"
 .SH NAME
 minios-deploy \- command-line interface for the MiniOS installer
 .SH SYNOPSIS
@@ -50,16 +50,23 @@ Comma-separated module names. Required lower layers are included automatically.
 Use convenient, balanced, or strict. Defaults to convenient for live and
 balanced for native installations.
 .TP
-.B --persistence-mode none|native|dynfilefs|raw|luks
+.B --persistence-mode none|native|dynfilefs|dynblk|raw
 Live installation only. The native persistence choice writes changes directly
 to a POSIX-compatible MiniOS partition; it is unrelated to
 .B --mode native .
-LUKS is listed only when the running initrd advertises crypto support and also
-requires a crypto-capable source initrd.
+DynBlk is listed only when its userspace, kernel, and initrd capability are
+available.
+.TP
+.B --persistence-encryption none|luks
+Live installation only. Optionally layer LUKS2 over Raw, DynFileFS, or DynBlk.
+LUKS is listed only when the running initrd marker contains luks-layer-v1 and
+the selected backend is available. Source initrds are revalidated before disk
+changes.
 .TP
 .B --persistence-size MIB
-Live installation only. Container persistence size. Default: 4000 MiB. Raw and
-LUKS are limited to 4000 MiB on FAT32; DynFileFS is not.
+Live installation only. Container persistence size. Raw and DynFileFS default
+to 4000 MiB; DynBlk defaults to 16 GiB. Raw is limited to 4000 MiB on FAT32;
+DynFileFS and DynBlk use thin virtual capacity.
 .TP
 .B --download-packages
 Native installation only. Allow required package downloads. The CLI default is disabled.

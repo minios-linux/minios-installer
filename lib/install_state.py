@@ -71,7 +71,8 @@ class InstallState:
     install_mode: str = "live"
     # The live initrd creates persistence storage; the installer only writes
     # boot parameters and never receives a LUKS passphrase.
-    persistence_mode: str = "none"  # none | native | dynfilefs | raw | luks
+    persistence_mode: str = "none"  # none | native | dynfilefs | dynblk | raw
+    persistence_encryption: str = "none"  # none | luks
     persistence_size_mib: int = 0
     security_profile: str = ""
     placement: str = "erase_all"
