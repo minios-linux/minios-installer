@@ -73,6 +73,7 @@ class InstallState:
     # boot parameters and never receives a LUKS passphrase.
     persistence_mode: str = "none"  # none | native | dynfilefs | dynblk | raw
     persistence_encryption: str = "none"  # none | luks
+    persistence_compression: str = "none"  # DynBlk only; disabled with LUKS
     persistence_size_mib: int = 0
     security_profile: str = ""
     placement: str = "erase_all"

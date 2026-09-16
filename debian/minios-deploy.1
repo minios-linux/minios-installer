@@ -1,4 +1,4 @@
-.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.2.0" "User Commands"
+.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.3.0" "User Commands"
 .SH NAME
 minios-deploy \- command-line interface for the MiniOS installer
 .SH SYNOPSIS
@@ -62,6 +62,13 @@ Live installation only. Optionally layer LUKS2 over Raw, DynFileFS, or DynBlk.
 LUKS is listed only when the running initrd marker contains luks-layer-v1 and
 the selected backend is available. Source initrds are revalidated before disk
 changes.
+.TP
+.B --persistence-compression none|lz4|lz4hc|lzo|lzo-rle|zstd|deflate|842
+Live installation only. Select the codec used when a new DynBlk persistence
+container is created. This option applies only to DynBlk and is unavailable
+when LUKS encryption is selected. The installer writes the selection as
+.B perchcomp=
+for the initrd.
 .TP
 .B --persistence-size MIB
 Live installation only. Container persistence size. Raw and DynFileFS default

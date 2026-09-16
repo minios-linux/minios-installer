@@ -100,8 +100,18 @@ _minios_deploy() {
                 return 0
             fi
             local persistence_modes="none native dynfilefs raw"
-            [[ -e /run/initramfs/etc/minios-initramfs-crypt ]] && persistence_modes+=" luks"
+            [[ -e /run/initramfs/etc/minios-initramfs-dynblk ]] && persistence_modes+=" dynblk"
             COMPREPLY=( $(compgen -W "$persistence_modes" -- "$cur") )
+            return 0
+            ;;
+        --persistence-encryption)
+            $native_mode && return 0
+            COMPREPLY=( $(compgen -W "none luks" -- "$cur") )
+            return 0
+            ;;
+        --persistence-compression)
+            $native_mode && return 0
+            COMPREPLY=( $(compgen -W "none lz4 lz4hc lzo lzo-rle zstd deflate 842" -- "$cur") )
             return 0
             ;;
         --security-profile)
@@ -150,12 +160,12 @@ _minios_deploy() {
     fi
 
     local common_opts="-h --help"
-    local live_plan_opts="--persistence-mode --persistence-size"
+    local live_plan_opts="--persistence-mode --persistence-encryption --persistence-compression --persistence-size"
     local native_plan_opts="--swap-size"
     local plan_opts="--filesystem --placement --alongside-size --mode --modules --boot-layout --json"
     local install_opts="--mode --security-profile --filesystem --placement --alongside-size --boot-layout --modules --dry-run --yes"
     local native_install_opts="--swap-size --download-packages"
-    local live_install_opts="--boot-menu --persistence-mode --persistence-size --config-file --link-user-dirs --bind-user-dirs --user-dirs-path --noroot --module-mode --live-config-cmdline --config-debug --export-logs"
+    local live_install_opts="--boot-menu --persistence-mode --persistence-encryption --persistence-compression --persistence-size --config-file --link-user-dirs --bind-user-dirs --user-dirs-path --noroot --module-mode --live-config-cmdline --config-debug --export-logs"
     local config_opts="--username --full-name --user-groups --password --root-password --hostname --locale --locales --timezone --default-target --enable-services --disable-services --keyboard-model --keyboard --keyboard-layouts --keyboard-options --keyboard-variants"
     case "$subcommand" in
         list-disks)

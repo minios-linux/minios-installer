@@ -33,8 +33,8 @@ from disk_utils import (
 from format_utils import filesystems_for_boot_mode
 from install_state import InstallCanceled, InstallState, available_remote_access_services, set_service_enabled
 from live_deploy import (
-    run_live_install, runtime_supports_dynblk_persistence,
-    runtime_supports_luks_persistence,
+    DYNBLK_COMPRESSION_CODECS, run_live_install,
+    runtime_supports_dynblk_persistence, runtime_supports_luks_persistence,
 )
 from module_selection import (
     calculate_module_sizes,
@@ -135,6 +135,8 @@ def backend_command_for_state(state):
         command.extend(["--persistence-mode", state.persistence_mode])
         if state.persistence_encryption != "none":
             command.extend(["--persistence-encryption", state.persistence_encryption])
+        if state.persistence_mode == "dynblk" and state.persistence_compression != "none":
+            command.extend(["--persistence-compression", state.persistence_compression])
         if state.persistence_size_mib:
             command.extend(["--persistence-size", str(state.persistence_size_mib)])
     if state.install_mode == "native" and state.download_missing_packages:
@@ -3140,18 +3142,44 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         def on_persistence_encryption_changed(combo):
             self.state.persistence_encryption = combo.get_active_id() or "none"
+            if self.state.persistence_encryption == "luks":
+                self.state.persistence_compression = "none"
+            if hasattr(self, "persistence_compression_combo"):
+                self.persistence_compression_combo.set_active_id(
+                    self.state.persistence_compression)
+                self.persistence_compression_combo.set_sensitive(
+                    self.state.install_mode == "live" and
+                    self.state.persistence_mode == "dynblk" and
+                    self.state.persistence_encryption == "none")
 
         self.persistence_encryption_combo.connect(
             "changed", on_persistence_encryption_changed)
         adv_grid.attach(encryption_label, 0, 4, 1, 1)
         adv_grid.attach(self.persistence_encryption_combo, 1, 4, 1, 1)
+
+        compression_label = Gtk.Label(label=_("DynBlk compression:"), xalign=0)
+        self.persistence_compression_combo = Gtk.ComboBoxText()
+        for codec in DYNBLK_COMPRESSION_CODECS:
+            self.persistence_compression_combo.append(codec, codec)
+        self.persistence_compression_combo.set_active_id(
+            self.state.persistence_compression)
+
+        def on_persistence_compression_changed(combo):
+            self.state.persistence_compression = combo.get_active_id() or "none"
+
+        self.persistence_compression_combo.connect(
+            "changed", on_persistence_compression_changed)
+        adv_grid.attach(compression_label, 0, 5, 1, 1)
+        adv_grid.attach(self.persistence_compression_combo, 1, 5, 1, 1)
+
         self.persistence_note = Gtk.Label(xalign=0)
         self.persistence_note.set_line_wrap(True)
         self.persistence_note.get_style_context().add_class("dim-label")
-        adv_grid.attach(self.persistence_note, 0, 5, 2, 1)
+        adv_grid.attach(self.persistence_note, 0, 6, 2, 1)
         live_mode = self.state.install_mode == "live"
         for widget in (persistence_label, persistence_box, encryption_label,
-                       self.persistence_encryption_combo, self.persistence_note):
+                       self.persistence_encryption_combo, compression_label,
+                       self.persistence_compression_combo, self.persistence_note):
             widget.set_no_show_all(not live_mode)
             widget.set_visible(live_mode)
         self._refresh_persistence_choices()
@@ -3245,6 +3273,17 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.persistence_encryption_combo.set_sensitive(
                 self.state.install_mode == "live" and encryption_available)
             self.state.persistence_encryption = selected_encryption
+        if hasattr(self, "persistence_compression_combo"):
+            compression_enabled = (
+                self.state.install_mode == "live" and mode == "dynblk" and
+                self.state.persistence_encryption == "none")
+            selected_compression = self.state.persistence_compression
+            if (not compression_enabled or
+                    selected_compression not in DYNBLK_COMPRESSION_CODECS):
+                selected_compression = "none"
+            self.persistence_compression_combo.set_active_id(selected_compression)
+            self.persistence_compression_combo.set_sensitive(compression_enabled)
+            self.state.persistence_compression = selected_compression
         if not hasattr(self, "persistence_note"):
             return
         notes = {
@@ -4562,6 +4601,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 "raw": _("Fixed-size saved changes: {size} MiB reserved.").format(size=self.state.persistence_size_mib),
             }
             text = labels.get(mode, mode)
+            if mode == "dynblk" and self.state.persistence_compression != "none":
+                text += " " + _("DynBlk compression: {compression}.").format(
+                    compression=self.state.persistence_compression)
             if self.state.persistence_encryption == "luks":
                 text += " " + _("Encrypted with LUKS2; the password is created on first boot.")
             persistence_label = Gtk.Label(label=text, xalign=0)

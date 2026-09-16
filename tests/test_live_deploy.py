@@ -148,6 +148,31 @@ class TestLiveDeploySafety:
             except RuntimeError as exc:
                 assert 'DynBlk session storage is not supported' in str(exc)
 
+    def test_dynblk_compression_is_written_as_boot_option(self):
+        from install_state import InstallState
+        from live_deploy import _persistence_boot_options
+
+        state = InstallState(
+            install_mode='live', persistence_mode='dynblk',
+            persistence_size_mib=16384, persistence_compression='zstd')
+        with patch('live_deploy.source_supports_dynblk_persistence', return_value=True):
+            assert _persistence_boot_options(state, '/media/minios') == (
+                'perchmode=dynblk', 'perchsize=16384', 'perchcomp=zstd')
+
+    def test_dynblk_compression_is_rejected_with_luks(self):
+        from install_state import InstallState
+        from live_deploy import _persistence_boot_options
+
+        state = InstallState(
+            install_mode='live', persistence_mode='dynblk',
+            persistence_encryption='luks', persistence_compression='zstd',
+            persistence_size_mib=16384)
+        try:
+            _persistence_boot_options(state, '/media/minios')
+            assert False, 'expected DynBlk compression/LUKS conflict'
+        except RuntimeError as exc:
+            assert 'unavailable with LUKS' in str(exc)
+
     def test_encryption_without_storage_fails_closed(self):
         from install_state import InstallState
         from live_deploy import _persistence_boot_options

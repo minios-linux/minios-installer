@@ -8,6 +8,17 @@ from main_installer import InstallerWindow, TokenCompletionPopover, _show_stack_
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_launcher_elevates_only_non_root_callers():
+    launcher = (ROOT / "bin/minios-installer").read_text(encoding="utf-8")
+    desktop = (ROOT / "share/applications/minios-installer.desktop").read_text(
+        encoding="utf-8")
+
+    assert 'if [ "$(id -u)" -ne 0 ]; then' in launcher
+    assert 'exec pkexec "$SCRIPT_PATH" "$@"' in launcher
+    assert "Exec=/usr/bin/minios-installer\n" in desktop
+    assert "Exec=pkexec" not in desktop
+
+
 def test_split_packages_have_disjoint_payloads_and_exact_backend_dependency():
     backend = set((ROOT / "debian/minios-deploy.install").read_text(
         encoding="utf-8").splitlines())

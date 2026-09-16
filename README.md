@@ -35,7 +35,7 @@ final partition, and GUI manual partitioning for native installations.
 - Hostname and wired DHCP or static IPv4 configuration; Wi-Fi profiles are left
   unchanged
 - Locale, timezone, keyboard, user, password, service, and boot-menu setup
-- Native, DynFileFS, raw-image, or LUKS live-session persistence
+- Native, DynFileFS, DynBlk, raw-image, or LUKS live-session persistence
 - Stable device identity, exact geometry previews, package preflight, and final
   destructive confirmation
 
@@ -71,6 +71,11 @@ optionally use LUKS2 encryption. The initrd creates the selected storage on firs
 boot. Raw and DynFileFS default to 4000 MiB; DynBlk defaults to 16 GiB. Only Raw
 is limited to 4000 MiB on FAT32. Native persistence is offered only on
 POSIX-compatible target filesystems.
+
+For non-encrypted DynBlk storage, the installer can select `none`, `lz4`,
+`lz4hc`, `lzo`, `lzo-rle`, `zstd`, `deflate`, or `842` compression. It writes
+that choice as `perchcomp=` for the initrd. DynBlk compression is not offered
+when LUKS is selected.
 
 LUKS is offered only when the running initrd marker contains
 `luks-layer-v1` and the selected backend is available. Every copied source

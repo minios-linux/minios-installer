@@ -130,8 +130,7 @@ Keywords[id]=instal;
 Keywords[fr]=installer ;
 Keywords[es]=instalar;
 Keywords[de]=installieren;
-#Exec=sudo --preserve-env=DBUS_SESSION_BUS_ADDRESS,XDG_RUNTIME_DIR sh -c 'minios-installer'
-Exec=pkexec /usr/bin/minios-installer
+Exec=/usr/bin/minios-installer
 Icon=usb-creator-gtk
 Terminal=false
 Categories=GTK;System;

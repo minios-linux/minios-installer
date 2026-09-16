@@ -29,6 +29,9 @@ _ = gettext.gettext
 INITRD_CRYPTO_MARKER = "/run/initramfs/etc/minios-initramfs-crypt"
 INITRD_DYNBLK_MARKER = "/run/initramfs/etc/minios-initramfs-dynblk"
 LUKS_LAYER_CAPABILITY = "luks-layer-v1"
+DYNBLK_COMPRESSION_CODECS = (
+    "none", "lz4", "lz4hc", "lzo", "lzo-rle", "zstd", "deflate", "842",
+)
 
 
 class _ProgressAdapter:
@@ -211,12 +214,18 @@ def source_supports_dynblk_persistence(source: str) -> bool:
 def _persistence_boot_options(state: InstallState, source: str) -> tuple:
     mode = state.persistence_mode
     encryption = state.persistence_encryption
+    compression = state.persistence_compression
     if encryption not in ("none", "luks"):
         raise RuntimeError(_("Unknown session persistence encryption: {encryption}").format(
             encryption=encryption))
+    if compression not in DYNBLK_COMPRESSION_CODECS:
+        raise RuntimeError(_("Unknown compression codec for DynBlk: {compression}").format(
+            compression=compression))
     if mode == "none":
         if encryption != "none":
             raise RuntimeError(_("Session encryption requires a persistence storage mode."))
+        if compression != "none":
+            raise RuntimeError(_("DynBlk compression requires DynBlk session storage."))
         return ()
     if state.install_mode != "live":
         raise RuntimeError(_("Session persistence is available only for live installations."))
@@ -224,6 +233,10 @@ def _persistence_boot_options(state: InstallState, source: str) -> tuple:
         raise RuntimeError(_("Unknown session persistence mode: {mode}").format(mode=mode))
     if encryption == "luks" and mode not in ("raw", "dynfilefs", "dynblk"):
         raise RuntimeError(_("LUKS encryption is unavailable for this session storage mode."))
+    if compression != "none" and mode != "dynblk":
+        raise RuntimeError(_("DynBlk compression requires DynBlk session storage."))
+    if encryption == "luks" and compression != "none":
+        raise RuntimeError(_("DynBlk compression is unavailable with LUKS encryption."))
     if mode == "native":
         return ("perchmode=native",)
     if state.persistence_size_mib <= 0:
@@ -234,6 +247,8 @@ def _persistence_boot_options(state: InstallState, source: str) -> tuple:
     if encryption == "luks" and not source_supports_luks_persistence(source, mode):
         raise RuntimeError(_("Encrypted session storage is not supported by this MiniOS image. Choose another session storage mode."))
     options = ["perchmode={}".format(mode), "perchsize={}".format(state.persistence_size_mib)]
+    if mode == "dynblk" and compression != "none":
+        options.append("perchcomp={}".format(compression))
     if encryption == "luks":
         options.append("perchencrypt=luks")
     return tuple(options)

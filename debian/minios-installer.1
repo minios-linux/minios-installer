@@ -1,4 +1,4 @@
-.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.2.0" "User Commands"
+.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.3.0" "User Commands"
 .SH NAME
 minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
@@ -72,6 +72,8 @@ Live installations support native directories, expandable DynFileFS storage,
 thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk may
 optionally use LUKS2 encryption. Raw and DynFileFS default to 4000 MiB; DynBlk
 defaults to 16 GiB. Only Raw is limited to 4000 MiB on FAT32.
+For non-encrypted DynBlk storage the wizard can select none, lz4, lz4hc, lzo,
+lzo-rle, zstd, deflate, or 842 compression.
 .PP
 LUKS is shown only when the running initrd marker contains luks-layer-v1 at
 .IR /run/initramfs/etc/minios-initramfs-crypt .

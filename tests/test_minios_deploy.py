@@ -163,6 +163,36 @@ class TestMiniOSDeploy:
         assert minios_deploy._effective_persistence_size(args) == 16384
         assert minios_deploy._persistence_space_requirement(args) == 100
 
+    def test_dynblk_compression_cli_is_accepted_without_luks(self):
+        import minios_deploy
+
+        parser = minios_deploy.build_parser(
+            luks_available=True, dynblk_available=True)
+        args = parser.parse_args([
+            'plan', '/dev/sdb', '--persistence-mode', 'dynblk',
+            '--persistence-compression', 'zstd'])
+        with patch('minios_deploy.runtime_supports_dynblk_persistence',
+                   return_value=True):
+            minios_deploy._validate_cli_inputs(args)
+        assert args.persistence_compression == 'zstd'
+
+    def test_dynblk_compression_cli_rejects_luks(self):
+        import minios_deploy
+
+        parser = minios_deploy.build_parser(
+            luks_available=True, dynblk_available=True)
+        args = parser.parse_args([
+            'plan', '/dev/sdb', '--persistence-mode', 'dynblk',
+            '--persistence-encryption', 'luks',
+            '--persistence-compression', 'zstd'])
+        try:
+            with patch('minios_deploy.runtime_supports_dynblk_persistence', return_value=True), \
+                 patch('minios_deploy.runtime_supports_luks_persistence', return_value=True):
+                minios_deploy._validate_cli_inputs(args)
+            assert False, 'expected compression/LUKS conflict'
+        except ValueError as exc:
+            assert 'unavailable with LUKS' in str(exc)
+
     def test_native_persistence_has_no_container_size(self):
         import minios_deploy
 

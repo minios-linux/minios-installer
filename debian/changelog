@@ -1,3 +1,12 @@
+minios-installer (3.3.0) unstable; urgency=medium
+
+  * Add DynBlk compression selection to the CLI, GTK installer, shell
+    completion, and generated persistence boot options.
+  * Let the launcher elevate unprivileged invocations while avoiding a nested
+    pkexec call when it is already running as root.
+
+ -- crims0n <crims0n@minios.dev>  Wed, 16 Sep 2026 20:40:22 +0300
+
 minios-installer (3.2.0) unstable; urgency=medium
 
   * Add capability-gated persistence encryption as a separate choice over Raw,
