@@ -25,8 +25,7 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
                        config_override: Optional[str] = None, boot_config_type: str = "multilang",
                        selected_modules: Optional[Iterable[str]] = None,
                        cancel_cb: Optional[Callable[[], bool]] = None,
-                       config_hooks: Optional[Dict[str, str]] = None,
-                       boot_options: Optional[Iterable[str]] = None) -> None:
+                       config_hooks: Optional[Dict[str, str]] = None) -> None:
     """
     Copy MiniOS files from src to dst with progress reporting.
     """
@@ -108,7 +107,6 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
 
     # Handle SYSLINUX configuration selection
     _process_syslinux_config(dst, boot_config_type, log_cb)
-    _apply_boot_options(dst, boot_options or ())
 
 
 def copy_efi_files(src: str, dst: str, log_cb: Callable) -> None:
@@ -322,37 +320,6 @@ def _remove_live_config_params_bytes(content: bytes) -> bytes:
     content = re.sub(rb'\s+timezone=[^\s]+', b'', content)
     content = re.sub(rb'\s+keyboard-layouts=[^\s]+', b'', content)
     return content
-
-
-def _apply_boot_options(dst: str, options: Iterable[str]) -> None:
-    """Add installer-owned live boot parameters to selected GRUB/SYSLINUX menus."""
-    options = tuple(options)
-    if not options:
-        return
-    for relative in ("minios/boot/grub", "minios/boot/syslinux"):
-        config_root = os.path.join(dst, relative)
-        if not os.path.isdir(config_root):
-            continue
-        for root, _dirs, files in os.walk(config_root):
-            for filename in sorted(files):
-                if not filename.endswith(".cfg"):
-                    continue
-                path = os.path.join(root, filename)
-                with open(path, "rb") as fh:
-                    content = fh.read()
-                # Multilingual menus dispatch to nested configs, so update every
-                # copied config that contains a kernel command.
-                content = re.sub(rb"\s+perchmode=[^\s]+", b"", content)
-                content = re.sub(rb"\s+perchsize=[^\s]+", b"", content)
-                content = re.sub(rb"\s+perchencrypt=[^\s]+", b"", content)
-                tokens = b" " + b" ".join(option.encode("ascii") for option in options)
-                content = re.sub(
-                    rb"(?m)^(\s*(?:APPEND|linux|linuxefi)\b[^\r\n]*)",
-                    lambda match: match.group(1) + tokens,
-                    content,
-                )
-                with open(path, "wb") as fh:
-                    fh.write(content)
 
 
 def _parse_po_file(po_path: str) -> Dict[str, str]:

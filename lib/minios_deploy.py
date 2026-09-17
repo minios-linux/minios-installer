@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import getpass
 import json
 import os
 import re
@@ -9,6 +10,7 @@ import sys
 
 from disk_utils import ensure_safe_target_device, get_device_identity
 from disk_utils import find_available_disks, native_install_supported
+from session_storage import session_creation_available, validate_persistence_password
 from install_state import InstallState, UserConfig
 from live_deploy import (
     DYNBLK_COMPRESSION_CODECS, run_live_install,
@@ -64,6 +66,7 @@ _LIVE_ONLY_NATIVE_REJECTIONS = (
     ("persistence_encryption", "--persistence-encryption"),
     ("persistence_compression", "--persistence-compression"),
     ("persistence_size", "--persistence-size"),
+    ("persistence_password_stdin", "--persistence-password-stdin"),
     ("config_file", "--config-file"),
     ("link_user_dirs", "--link-user-dirs"),
     ("bind_user_dirs", "--bind-user-dirs"),
@@ -173,6 +176,8 @@ def _validate_cli_inputs(args) -> None:
     persistence_mode = getattr(args, "persistence_mode", None) or "none"
     persistence_encryption = getattr(args, "persistence_encryption", None) or "none"
     persistence_compression = getattr(args, "persistence_compression", None) or "none"
+    if getattr(args, "persistence_password_stdin", False) and persistence_encryption != "luks":
+        raise ValueError("--persistence-password-stdin requires --persistence-encryption luks")
     if persistence_mode != "none":
         if getattr(args, "mode", "live") != "live":
             raise ValueError("--persistence-mode is available only with --mode live")
@@ -204,6 +209,8 @@ def _validate_cli_inputs(args) -> None:
             raise ValueError("--persistence-encryption requires --persistence-mode")
         if persistence_compression != "none":
             raise ValueError("--persistence-compression requires --persistence-mode dynblk")
+    if persistence_mode != "none" and not session_creation_available():
+        raise ValueError("Install minios-session to create session storage.")
 
 
 def _effective_persistence_size(args) -> int:
@@ -255,6 +262,24 @@ def cmd_plan(args):
     return 0
 
 
+
+def _read_persistence_password(args) -> str:
+    if getattr(args, "persistence_encryption", None) != "luks" or args.dry_run:
+        return ""
+    if getattr(args, "persistence_password_stdin", False):
+        password = sys.stdin.buffer.readline().rstrip(b"\r\n").decode("utf-8")
+        confirmation = sys.stdin.buffer.readline().rstrip(b"\r\n").decode("utf-8")
+    else:
+        if not sys.stdin.isatty():
+            raise ValueError("Use --persistence-password-stdin for unattended encrypted installation")
+        password = getpass.getpass("Session LUKS password: ")
+        confirmation = getpass.getpass("Confirm session LUKS password: ")
+    validate_persistence_password(password)
+    if password != confirmation:
+        raise ValueError("Session LUKS passwords do not match")
+    return password
+
+
 def cmd_install(args):
     if not args.yes and not args.dry_run:
         print("Refusing to install without --yes. Use --dry-run to preview commands.", file=sys.stderr)
@@ -284,6 +309,7 @@ def cmd_install(args):
         persistence_encryption=getattr(args, "persistence_encryption", None) or "none",
         persistence_compression=getattr(args, "persistence_compression", None) or "none",
         persistence_size_mib=persistence_size,
+        persistence_password=_read_persistence_password(args),
         placement=args.placement,
         target_device=target_device,
         target_device_identity=get_device_identity(target_device),
@@ -369,7 +395,17 @@ def _add_user_config_arguments(parser):
                    help="live only: EXPORT_LOGS (true/false)")
 
 
-def build_parser(luks_available=None, dynblk_available=None):
+def build_parser(luks_available=None, dynblk_available=None, session_available=None):
+    if session_available is None:
+        session_available = session_creation_available()
+
+    def add_persistence_argument(parser, *args, **kwargs):
+        # Parse explicit requests for useful validation errors, but do not
+        # advertise unavailable optional features in help or usage.
+        if not session_available:
+            kwargs["help"] = argparse.SUPPRESS
+        parser.add_argument(*args, **kwargs)
+
     if luks_available is None:
         luks_available = any(runtime_supports_luks_persistence(mode) for mode in
                              ("raw", "dynfilefs", "dynblk"))
@@ -399,12 +435,12 @@ def build_parser(luks_available=None, dynblk_available=None):
     p.add_argument("--mode", default="live", choices=install_modes)
     p.add_argument("--swap-size", type=_nonnegative_int, default=None, help="native only: swap size in MiB")
     p.add_argument("--modules", default="", help="comma-separated .sb modules used for the space calculation")
-    p.add_argument("--persistence-mode", default=None, choices=persistence_modes, help="live session persistence mode")
-    p.add_argument("--persistence-encryption", default=None, choices=persistence_encryptions,
+    add_persistence_argument(p, "--persistence-mode", default=None, choices=persistence_modes, help="live session persistence mode")
+    add_persistence_argument(p, "--persistence-encryption", default=None, choices=persistence_encryptions,
                    help="optional live session encryption layer")
-    p.add_argument("--persistence-compression", default=None, choices=DYNBLK_COMPRESSION_CODECS,
+    add_persistence_argument(p, "--persistence-compression", default=None, choices=DYNBLK_COMPRESSION_CODECS,
                    help="DynBlk compression codec (non-LUKS DynBlk only; default: none)")
-    p.add_argument("--persistence-size", type=_nonnegative_int, default=None, metavar="MIB", help="container persistence size in MiB (default: 4000)")
+    add_persistence_argument(p, "--persistence-size", type=_nonnegative_int, default=None, metavar="MIB", help="container persistence size in MiB (default: 4000)")
     p.add_argument("--boot-layout", default="auto", choices=["auto", "bios_mbr", "uefi_mbr", "uefi_gpt"])
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_plan)
@@ -425,14 +461,16 @@ def build_parser(luks_available=None, dynblk_available=None):
                    help="live boot menu language code or 'multilang' (default: multilang)")
     p.add_argument("--modules", default="",
                     help="comma-separated .sb modules to install; selecting a higher module includes lower modules")
-    p.add_argument("--persistence-mode", default=None, choices=persistence_modes,
-                    help="live session persistence mode (storage is created by initrd)")
-    p.add_argument("--persistence-encryption", default=None, choices=persistence_encryptions,
+    add_persistence_argument(p, "--persistence-mode", default=None, choices=persistence_modes,
+                    help="create and activate session storage on the installation target")
+    add_persistence_argument(p, "--persistence-encryption", default=None, choices=persistence_encryptions,
                    help="optional live session encryption layer")
-    p.add_argument("--persistence-compression", default=None, choices=DYNBLK_COMPRESSION_CODECS,
+    add_persistence_argument(p, "--persistence-compression", default=None, choices=DYNBLK_COMPRESSION_CODECS,
                    help="DynBlk compression codec (non-LUKS DynBlk only; default: none)")
-    p.add_argument("--persistence-size", type=_nonnegative_int, default=None, metavar="MIB",
+    add_persistence_argument(p, "--persistence-size", type=_nonnegative_int, default=None, metavar="MIB",
                     help="live container persistence size in MiB (default: 4000)")
+    add_persistence_argument(p, "--persistence-password-stdin", action="store_true", default=None,
+                   help="read the LUKS password and confirmation from two stdin lines")
     p.add_argument("--download-packages", action="store_true",
                    help="native only: download missing packages for standard installation")
     p.add_argument("--dry-run", action="store_true")

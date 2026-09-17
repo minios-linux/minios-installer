@@ -69,12 +69,13 @@ class UserConfig:
 @dataclass
 class InstallState:
     install_mode: str = "live"
-    # The live initrd creates persistence storage; the installer only writes
-    # boot parameters and never receives a LUKS passphrase.
+    # A real session is created on the target by minios-session. The LUKS
+    # passphrase is transient: never put it in argv, logs, or config files.
     persistence_mode: str = "none"  # none | native | dynfilefs | dynblk | raw
     persistence_encryption: str = "none"  # none | luks
     persistence_compression: str = "none"  # DynBlk only; disabled with LUKS
     persistence_size_mib: int = 0
+    persistence_password: str = field(default="", repr=False)
     security_profile: str = ""
     placement: str = "erase_all"
     target_device: Optional[str] = None

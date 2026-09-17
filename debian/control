@@ -10,6 +10,7 @@ Package: minios-deploy
 Architecture: all
 Depends: ${misc:Depends}, python3 (>= 3.6), python3-dataclasses (>= 0.8-1minios2) | python3 (>= 3.7), parted, e2fsprogs, dosfstools, btrfs-progs, fdisk, mount, ntfs-3g, minios-native-dracut (= ${binary:Version}) | linux-initramfs-tool, openssl | whois, python3-minios-security (>= 1.0.1), udev | eudev, util-linux (>= 2.31)
 Recommends: minios-live-config (>= 11.0.5.15), user-setup
+Suggests: minios-session (>= 2.2.0)
 Breaks: minios-installer (<< 3.1.0)
 Replaces: minios-installer (<< 3.1.0)
 Description: command-line MiniOS deployment backend

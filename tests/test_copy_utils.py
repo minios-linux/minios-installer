@@ -164,7 +164,7 @@ class TestSyslinuxConfigProcessing:
 
 
 class TestCopyMiniosFiles:
-    def test_copy_minios_files_adds_layered_luks_boot_options(self, tmp_path):
+    def test_copy_minios_files_does_not_rewrite_session_boot_options(self, tmp_path):
         from copy_utils import copy_minios_files
 
         src = tmp_path / "src"
@@ -188,7 +188,6 @@ class TestCopyMiniosFiles:
 
         copy_minios_files(
             str(src), str(dst), lambda *_: None, lambda *_: None,
-            boot_options=("perchmode=raw", "perchsize=2048", "perchencrypt=luks"),
         )
 
         for path in (
@@ -196,12 +195,11 @@ class TestCopyMiniosFiles:
             dst / "minios" / "boot" / "syslinux" / "lang" / "en_US.cfg",
         ):
             content = path.read_text()
-            assert content.count("perchmode=raw") == 1
-            assert content.count("perchsize=2048") == 1
-            assert content.count("perchencrypt=luks") == 1
-            assert "perchmode=old" not in content
-            assert "perchsize=1" not in content
-            assert "perchencrypt=old" not in content
+            relative = path.relative_to(dst / "minios")
+            assert content == (src / relative).read_text()
+            assert "perchmode=raw" not in content
+            assert "perchsize=2048" not in content
+            assert "perchencrypt=luks" not in content
 
     def test_copy_minios_files_filters_unselected_top_level_modules(self, tmp_path):
         from copy_utils import copy_minios_files

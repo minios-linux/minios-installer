@@ -10,6 +10,7 @@ usr/lib/minios-installer/format_utils.py
 usr/lib/minios-installer/install_state.py
 usr/lib/minios-installer/kernel_metadata.py
 usr/lib/minios-installer/live_deploy.py
+usr/lib/minios-installer/session_storage.py
 usr/lib/minios-installer/manual_executor.py
 usr/lib/minios-installer/manual_partition_controller.py
 usr/lib/minios-installer/manual_partitioning.py

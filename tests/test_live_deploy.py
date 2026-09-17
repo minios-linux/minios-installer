@@ -101,85 +101,82 @@ class TestLiveDeploySafety:
 
         assert unpacked == [str(versioned)]
 
-    def test_luks_boot_options_require_crypto_initrd_without_a_passphrase(self):
+    def test_luks_source_validation_does_not_collect_a_passphrase(self):
         from install_state import InstallState
-        from live_deploy import _persistence_boot_options
+        from live_deploy import _validate_persistence_settings
 
         state = InstallState(
             install_mode='live', persistence_mode='raw',
             persistence_encryption='luks', persistence_size_mib=2048,
         )
         with patch('live_deploy.source_supports_luks_persistence', return_value=True):
-            assert _persistence_boot_options(state, '/media/minios') == (
-                'perchmode=raw', 'perchsize=2048', 'perchencrypt=luks')
+            assert _validate_persistence_settings(state, '/media/minios') is None
         with patch('live_deploy.source_supports_luks_persistence', return_value=False):
             try:
-                _persistence_boot_options(state, '/media/minios')
+                _validate_persistence_settings(state, '/media/minios')
                 assert False, 'expected cryptsetup capability failure'
             except RuntimeError as exc:
                 assert 'Encrypted session storage is not supported' in str(exc)
 
-    def test_non_encrypted_persistence_boot_options_do_not_require_crypto(self):
+    def test_non_encrypted_validate_persistence_settings_do_not_require_crypto(self):
         from install_state import InstallState
-        from live_deploy import _persistence_boot_options
+        from live_deploy import _validate_persistence_settings
 
         native = InstallState(install_mode='live', persistence_mode='native')
         dyn = InstallState(install_mode='live', persistence_mode='dynfilefs', persistence_size_mib=8000)
         raw = InstallState(install_mode='live', persistence_mode='raw', persistence_size_mib=4000)
 
-        assert _persistence_boot_options(native, '/media/minios') == ('perchmode=native',)
-        assert _persistence_boot_options(dyn, '/media/minios') == ('perchmode=dynfilefs', 'perchsize=8000')
-        assert _persistence_boot_options(raw, '/media/minios') == ('perchmode=raw', 'perchsize=4000')
+        assert _validate_persistence_settings(native, '/media/minios') is None
+        assert _validate_persistence_settings(dyn, '/media/minios') is None
+        assert _validate_persistence_settings(raw, '/media/minios') is None
 
-    def test_dynblk_boot_options_require_source_marker(self):
+    def test_dynblk_settings_require_source_marker(self):
         from install_state import InstallState
-        from live_deploy import _persistence_boot_options
+        from live_deploy import _validate_persistence_settings
 
         state = InstallState(
             install_mode='live', persistence_mode='dynblk',
             persistence_size_mib=16384)
         with patch('live_deploy.source_supports_dynblk_persistence', return_value=True):
-            assert _persistence_boot_options(state, '/media/minios') == (
-                'perchmode=dynblk', 'perchsize=16384')
+            assert _validate_persistence_settings(state, '/media/minios') is None
         with patch('live_deploy.source_supports_dynblk_persistence', return_value=False):
             try:
-                _persistence_boot_options(state, '/media/minios')
+                _validate_persistence_settings(state, '/media/minios')
                 assert False, 'expected DynBlk capability failure'
             except RuntimeError as exc:
                 assert 'DynBlk session storage is not supported' in str(exc)
 
-    def test_dynblk_compression_is_written_as_boot_option(self):
+    def test_dynblk_compression_is_validated_without_boot_options(self):
         from install_state import InstallState
-        from live_deploy import _persistence_boot_options
+        from live_deploy import _validate_persistence_settings
 
         state = InstallState(
             install_mode='live', persistence_mode='dynblk',
             persistence_size_mib=16384, persistence_compression='zstd')
         with patch('live_deploy.source_supports_dynblk_persistence', return_value=True):
-            assert _persistence_boot_options(state, '/media/minios') == (
-                'perchmode=dynblk', 'perchsize=16384', 'perchcomp=zstd')
+            assert _validate_persistence_settings(state, '/media/minios') is None
 
     def test_dynblk_compression_is_rejected_with_luks(self):
         from install_state import InstallState
-        from live_deploy import _persistence_boot_options
+        from live_deploy import _validate_persistence_settings
 
         state = InstallState(
             install_mode='live', persistence_mode='dynblk',
             persistence_encryption='luks', persistence_compression='zstd',
             persistence_size_mib=16384)
         try:
-            _persistence_boot_options(state, '/media/minios')
+            _validate_persistence_settings(state, '/media/minios')
             assert False, 'expected DynBlk compression/LUKS conflict'
         except RuntimeError as exc:
             assert 'unavailable with LUKS' in str(exc)
 
     def test_encryption_without_storage_fails_closed(self):
         from install_state import InstallState
-        from live_deploy import _persistence_boot_options
+        from live_deploy import _validate_persistence_settings
 
         state = InstallState(persistence_mode='none', persistence_encryption='luks')
         try:
-            _persistence_boot_options(state, '/media/minios')
+            _validate_persistence_settings(state, '/media/minios')
             assert False, 'expected invalid encryption failure'
         except RuntimeError as exc:
             assert 'requires a persistence storage mode' in str(exc)

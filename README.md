@@ -67,21 +67,37 @@ Unsupported, mounted, nested, dirty, ambiguous, or unsafe layouts are refused.
 
 Live installations support native directories, expandable DynFileFS storage,
 thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk may
-optionally use LUKS2 encryption. The initrd creates the selected storage on first
-boot. Raw and DynFileFS default to 4000 MiB; DynBlk defaults to 16 GiB. Only Raw
+optionally use LUKS2 encryption. During installation, `minios-deploy` calls the
+`minios-session` backend to create storage in the target partition's
+`minios/changes` directory and select it as the boot default. Both
+`session.json` and `session.conf` are published by the session backend. The
+running system's sessions are not copied or switched. No persistence kernel
+parameters are generated or rewritten.
+
+Raw and DynFileFS default to 4000 MiB; DynBlk defaults to 16 GiB. Only Raw
 is limited to 4000 MiB on FAT32. Native persistence is offered only on
 POSIX-compatible target filesystems.
 
 For non-encrypted DynBlk storage, the installer can select `none`, `lz4`,
-`lz4hc`, `lzo`, `lzo-rle`, `zstd`, `deflate`, or `842` compression. It writes
-that choice as `perchcomp=` for the initrd. DynBlk compression is not offered
-when LUKS is selected.
+`lz4hc`, `lzo`, `lzo-rle`, `zstd`, `deflate`, or `842` compression. It passes
+that choice through `minios-session create --compression` when creating the
+container. DynBlk compression is not offered when LUKS is selected.
 
 LUKS is offered only when the running initrd marker contains
 `luks-layer-v1` and the selected backend is available. Every copied source
-initrd is unpacked and verified again before disk changes. The installer writes
-`perchencrypt=luks`; the initrd asks for the passphrase on first boot, and the
-installer never receives or stores it.
+initrd is inspected and verified again before disk changes. The installer asks
+for and confirms the LUKS passphrase before changing the disk, then sends it to
+`minios-session` only over stdin. It is not written to arguments, logs, session
+metadata, or configuration files. Boot only unlocks the already-created session.
+For unattended CLI use, `--persistence-password-stdin` reads the passphrase and
+confirmation from two stdin lines. Plans and dry runs do not read passwords or
+create sessions. Session creation is optional: `minios-deploy` lists
+`minios-session >= 2.2.0` in `Suggests`, not `Depends`. Without the `minios-session`
+executable, the wizard hides all session-creation controls and clears their
+previous settings. The CLI hides persistence options from help and completion;
+an explicit session-creation request fails before disk changes with an instruction
+to install `minios-session`. Live installation without a session and native
+installation remain available.
 
 ## Usage
 

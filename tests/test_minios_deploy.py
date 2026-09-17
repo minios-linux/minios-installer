@@ -6,6 +6,14 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def available_session_backend(monkeypatch):
+    """CLI option tests must not depend on optional build-host packages."""
+    monkeypatch.setattr('minios_deploy.session_creation_available', lambda: True)
+
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 

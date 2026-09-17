@@ -12,6 +12,7 @@ from bootloader_utils import install_bootloader
 from copy_utils import copy_efi_files, copy_minios_files, efi_payload_bytes, find_minios_source, verify_efi_payload
 from disk_utils import resolve_install_device
 from install_state import InstallCanceled, InstallState
+from session_storage import create_live_session, preflight_session_storage
 from mount_utils import unmount_partitions
 from network_config import create_live_network_hook, source_supports_live_network
 from module_selection import discover_module_names
@@ -211,7 +212,7 @@ def source_supports_dynblk_persistence(source: str) -> bool:
     return True
 
 
-def _persistence_boot_options(state: InstallState, source: str) -> tuple:
+def _validate_persistence_settings(state: InstallState, source: str) -> None:
     mode = state.persistence_mode
     encryption = state.persistence_encryption
     compression = state.persistence_compression
@@ -226,7 +227,7 @@ def _persistence_boot_options(state: InstallState, source: str) -> tuple:
             raise RuntimeError(_("Session encryption requires a persistence storage mode."))
         if compression != "none":
             raise RuntimeError(_("DynBlk compression requires DynBlk session storage."))
-        return ()
+        return
     if state.install_mode != "live":
         raise RuntimeError(_("Session persistence is available only for live installations."))
     if mode not in ("native", "dynfilefs", "dynblk", "raw"):
@@ -238,7 +239,9 @@ def _persistence_boot_options(state: InstallState, source: str) -> tuple:
     if encryption == "luks" and compression != "none":
         raise RuntimeError(_("DynBlk compression is unavailable with LUKS encryption."))
     if mode == "native":
-        return ("perchmode=native",)
+        if state.filesystem in ("fat32", "ntfs"):
+            raise RuntimeError(_("Native session storage requires a POSIX-compatible filesystem."))
+        return
     if state.persistence_size_mib <= 0:
         raise RuntimeError(_("Container persistence requires a size greater than zero."))
     if (mode == "dynblk" and encryption != "luks" and
@@ -246,12 +249,7 @@ def _persistence_boot_options(state: InstallState, source: str) -> tuple:
         raise RuntimeError(_("DynBlk session storage is not supported by this MiniOS image. Choose another session storage mode."))
     if encryption == "luks" and not source_supports_luks_persistence(source, mode):
         raise RuntimeError(_("Encrypted session storage is not supported by this MiniOS image. Choose another session storage mode."))
-    options = ["perchmode={}".format(mode), "perchsize={}".format(state.persistence_size_mib)]
-    if mode == "dynblk" and compression != "none":
-        options.append("perchcomp={}".format(compression))
-    if encryption == "luks":
-        options.append("perchencrypt=luks")
-    return tuple(options)
+
 
 
 def run_live_install(
@@ -273,7 +271,8 @@ def run_live_install(
     src = find_minios_source()
     if not src:
         raise RuntimeError(_("Cannot find MiniOS image."))
-    boot_options = _persistence_boot_options(state, src)
+    _validate_persistence_settings(state, src)
+    session_command = preflight_session_storage(state, require_password=not dry_run)
     layout = scan_disk(state.target_device)
     # Always rebuild from current placement/filesystem; summary plan is preview-only.
     plan = build_plan(layout, state.placement, state.filesystem, install_mode=state.install_mode, swap_size_mib=0, boot_layout=state.boot_layout, alongside_size_mib=state.alongside_size_mib, required_root_mib=state.required_root_mib)
@@ -346,8 +345,10 @@ def run_live_install(
             state.selected_modules,
             cancel_cb=lambda: state.cancel_requested,
             config_hooks=network_hooks,
-            boot_options=boot_options,
         )
+        _raise_if_canceled(state)
+        create_live_session(state, root_mount, progress_cb, log_cb,
+                            command=session_command)
         _raise_if_canceled(state)
         if esp_mount:
             progress_cb(97, _("Copying EFI files to ESP..."))

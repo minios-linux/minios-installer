@@ -1,3 +1,15 @@
+minios-installer (3.4.0) unstable; urgency=medium
+
+  * Create and activate real target-media sessions using minios-session instead
+    of generating persistence kernel parameters.
+  * Add confirmed LUKS passphrases in the wizard and secure stdin input in the
+    CLI, with backend preflight checks before destructive disk work.
+  * Suggest optional minios-session 2.2.0 and cover target-only creation
+    with tests. Hide session creation controls, CLI help, and completion when
+    the backend is absent; keep installation without session creation available.
+
+ -- crims0n <crims0n@minios.dev>  Thu, 17 Sep 2026 16:24:37 +0300
+
 minios-installer (3.3.0) unstable; urgency=medium
 
   * Add DynBlk compression selection to the CLI, GTK installer, shell

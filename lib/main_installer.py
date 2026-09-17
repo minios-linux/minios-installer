@@ -31,6 +31,7 @@ from disk_utils import (
     stop_disk_monitoring,
 )
 from format_utils import filesystems_for_boot_mode
+from session_storage import session_creation_available, validate_persistence_password
 from install_state import InstallCanceled, InstallState, available_remote_access_services, set_service_enabled
 from live_deploy import (
     DYNBLK_COMPRESSION_CODECS, run_live_install,
@@ -983,6 +984,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.log_view = None
         self.native_allow_root = False
         self._users_password_confirm = ""
+        self._persistence_password_confirm = ""
         self._users_root_confirm = ""
 
         self.root = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -1702,6 +1704,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             # choice into review, logs, or the native backend request.
             self.state.persistence_mode = "none"
             self.state.persistence_encryption = "none"
+            self.state.persistence_password = ""
+            self._persistence_password_confirm = ""
             self.state.persistence_size_mib = 0
             # Prefer empty credentials so user must choose a real account.
             if self.state.user_config.username == self._live_username_default:
@@ -3141,6 +3145,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.persistence_encryption_combo = Gtk.ComboBoxText()
 
         def on_persistence_encryption_changed(combo):
+            if getattr(self, "_updating_persistence_encryption", False):
+                return
             self.state.persistence_encryption = combo.get_active_id() or "none"
             if self.state.persistence_encryption == "luks":
                 self.state.persistence_compression = "none"
@@ -3151,6 +3157,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
                     self.state.install_mode == "live" and
                     self.state.persistence_mode == "dynblk" and
                     self.state.persistence_encryption == "none")
+
+            self._update_persistence_password_controls()
 
         self.persistence_encryption_combo.connect(
             "changed", on_persistence_encryption_changed)
@@ -3176,12 +3184,32 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.persistence_note.set_line_wrap(True)
         self.persistence_note.get_style_context().add_class("dim-label")
         adv_grid.attach(self.persistence_note, 0, 6, 2, 1)
-        live_mode = self.state.install_mode == "live"
-        for widget in (persistence_label, persistence_box, encryption_label,
-                       self.persistence_encryption_combo, compression_label,
-                       self.persistence_compression_combo, self.persistence_note):
-            widget.set_no_show_all(not live_mode)
-            widget.set_visible(live_mode)
+        self._persistence_password_widgets = []
+        for row, label, confirmation in ((7, _("Session password:"), False),
+                                         (8, _("Confirm session password:"), True)):
+            field_label = Gtk.Label(label=label, xalign=0)
+            initial = (self._persistence_password_confirm if confirmation
+                       else self.state.persistence_password)
+            box, entry = self._create_password_entry(
+                label, lambda value, confirm=confirmation:
+                self._on_persistence_password_changed(value, confirm), initial=initial)
+            adv_grid.attach(field_label, 0, row, 1, 1)
+            adv_grid.attach(box, 1, row, 1, 1)
+            self._persistence_password_widgets.extend((field_label, box))
+            if confirmation:
+                self.persistence_password_confirm_entry = entry
+            else:
+                self.persistence_password_entry = entry
+        self.persistence_password_error = Gtk.Label(xalign=0)
+        self.persistence_password_error.set_line_wrap(True)
+        self.persistence_password_error.get_style_context().add_class("error")
+        self.persistence_password_error.set_no_show_all(True)
+        adv_grid.attach(self.persistence_password_error, 1, 9, 1, 1)
+        self._persistence_widgets = (
+            persistence_label, persistence_box, encryption_label,
+            self.persistence_encryption_combo, compression_label,
+            self.persistence_compression_combo, self.persistence_note,
+        )
         self._refresh_persistence_choices()
         self._update_persistence_size_limit()
 
@@ -3196,6 +3224,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._refresh_manual_placement()
         self._update_partition_preview()
         self._nav(bool(self.state.target_device))
+        self._update_persistence_validation()
 
     def _refresh_filesystem_choices(self):
         filesystems = filesystems_for_boot_mode(install_mode=self.state.install_mode) or ["ext4"]
@@ -3224,8 +3253,24 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _refresh_persistence_choices(self):
         if not hasattr(self, "persistence_combo"):
             return
+        available = self.state.install_mode == "live" and session_creation_available()
+        for widget in getattr(self, "_persistence_widgets", ()):
+            widget.set_no_show_all(not available)
+            if available:
+                widget.show_all()
+            else:
+                widget.hide()
+        self.persistence_combo.set_sensitive(available)
+        if not available:
+            # Hidden controls must not retain a request or password from an
+            # earlier visit, nor reserve space for that request.
+            self.state.persistence_encryption = "none"
+            self.state.persistence_compression = "none"
+            self.state.persistence_size_mib = 0
+            self.state.persistence_password = ""
+            self._persistence_password_confirm = ""
         choices = [("none", _("Do not save changes"))]
-        if self.state.install_mode == "live":
+        if available:
             if self.state.filesystem not in ("fat32", "ntfs"):
                 choices.append(("native", _("Save directly on the MiniOS partition")))
             choices.extend((
@@ -3237,7 +3282,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         valid = {value for value, _label in choices}
         selected = self.state.persistence_mode
         if selected not in valid:
-            selected = "dynfilefs" if selected == "native" and self.state.install_mode == "live" else "none"
+            selected = "dynfilefs" if selected == "native" and "dynfilefs" in valid else "none"
         self._updating_persistence_choices = True
         try:
             self.persistence_combo.remove_all()
@@ -3248,6 +3293,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         finally:
             self._updating_persistence_choices = False
         self._update_persistence_controls()
+        self._update_required_root_size()
 
     def _update_persistence_controls(self):
         if not hasattr(self, "persistence_size_spin"):
@@ -3265,13 +3311,17 @@ class InstallerWindow(Gtk.ApplicationWindow):
             selected_encryption = self.state.persistence_encryption
             if not encryption_available:
                 selected_encryption = "none"
-            self.persistence_encryption_combo.remove_all()
-            self.persistence_encryption_combo.append("none", _("None"))
-            if encryption_available:
-                self.persistence_encryption_combo.append("luks", _("LUKS2"))
-            self.persistence_encryption_combo.set_active_id(selected_encryption)
-            self.persistence_encryption_combo.set_sensitive(
-                self.state.install_mode == "live" and encryption_available)
+            self._updating_persistence_encryption = True
+            try:
+                self.persistence_encryption_combo.remove_all()
+                self.persistence_encryption_combo.append("none", _("None"))
+                if encryption_available:
+                    self.persistence_encryption_combo.append("luks", _("LUKS2"))
+                self.persistence_encryption_combo.set_active_id(selected_encryption)
+                self.persistence_encryption_combo.set_sensitive(
+                    self.state.install_mode == "live" and encryption_available)
+            finally:
+                self._updating_persistence_encryption = False
             self.state.persistence_encryption = selected_encryption
         if hasattr(self, "persistence_compression_combo"):
             compression_enabled = (
@@ -3284,6 +3334,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.persistence_compression_combo.set_active_id(selected_compression)
             self.persistence_compression_combo.set_sensitive(compression_enabled)
             self.state.persistence_compression = selected_compression
+        self._update_persistence_password_controls()
         if not hasattr(self, "persistence_note"):
             return
         notes = {
@@ -3295,12 +3346,57 @@ class InstallerWindow(Gtk.ApplicationWindow):
         }
         note = notes.get(mode, "")
         if self.state.persistence_encryption == "luks":
-            encrypted = _("On first boot you create a LUKS password; later boots require it to access saved changes.")
+            encrypted = _("The encrypted session is created during installation. Enter its password below; it is required to unlock saved changes at boot.")
             note = "{}\n{}".format(note, encrypted) if note else encrypted
         elif self.state.install_mode == "live" and mode in ("raw", "dynfilefs", "dynblk") and not runtime_supports_luks_persistence(mode):
             unavailable = _("Encrypted session storage is not available in this MiniOS image. The other storage modes save changes without encryption.")
             note = "{}\n{}".format(note, unavailable) if note else unavailable
         self.persistence_note.set_text(note)
+
+    def _persistence_validation_message(self):
+        if self.state.install_mode != "live" or self.state.persistence_encryption != "luks":
+            return ""
+        try:
+            validate_persistence_password(self.state.persistence_password)
+        except ValueError as exc:
+            return str(exc)
+        if self.state.persistence_password != getattr(self, "_persistence_password_confirm", ""):
+            return _("Session passwords do not match.")
+        return ""
+
+    def _on_persistence_password_changed(self, value, confirmation=False):
+        if confirmation:
+            self._persistence_password_confirm = value
+        else:
+            self.state.persistence_password = value
+        self._update_persistence_validation()
+
+    def _update_persistence_validation(self):
+        message = self._persistence_validation_message()
+        if hasattr(self, "persistence_password_error"):
+            self.persistence_password_error.set_text(message)
+            self.persistence_password_error.set_visible(bool(message))
+        step = getattr(self, "current_step", -1)
+        if 0 <= step < len(self.STEPS) and self.STEPS[step][0] == "partitioning":
+            if hasattr(self, "next_button"):
+                self.next_button.set_sensitive(bool(self.state.target_device) and not message)
+
+    def _update_persistence_password_controls(self):
+        enabled = self.state.install_mode == "live" and self.state.persistence_encryption == "luks"
+        for widget in getattr(self, "_persistence_password_widgets", ()):
+            widget.set_no_show_all(not enabled)
+            if enabled:
+                widget.show_all()
+            else:
+                widget.hide()
+        if not enabled:
+            self.state.persistence_password = ""
+            self._persistence_password_confirm = ""
+            for name in ("persistence_password_entry", "persistence_password_confirm_entry"):
+                entry = getattr(self, name, None)
+                if entry is not None and entry.get_text():
+                    entry.set_text("")
+        self._update_persistence_validation()
 
     def _clear_partition_legend(self):
         if not hasattr(self, "partition_legend"):
@@ -4343,12 +4439,16 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._refresh_alongside_placement()
         self._refresh_manual_placement()
         self._update_partition_preview()
+        self._update_persistence_validation()
         GLib.idle_add(self._clamp_window_size)
 
     def _show_error(self, message):
         show_error_dialog(self, _("Installation Error"), message)
 
     def _build_plan_or_error(self):
+        persistence_error = self._persistence_validation_message()
+        if persistence_error:
+            raise RuntimeError(persistence_error)
         if not self.state.target_device:
             raise RuntimeError(_("No target disk selected."))
         self.state.target_device = resolve_install_device(
@@ -4605,7 +4705,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 text += " " + _("DynBlk compression: {compression}.").format(
                     compression=self.state.persistence_compression)
             if self.state.persistence_encryption == "luks":
-                text += " " + _("Encrypted with LUKS2; the password is created on first boot.")
+                text += " " + _("Encrypted with LUKS2 using the session password entered during installation.")
             persistence_label = Gtk.Label(label=text, xalign=0)
             persistence_label.set_line_wrap(True)
             box.pack_start(self._summary_card(_("Session storage"), persistence_label), False, False, 0)

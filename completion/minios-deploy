@@ -35,7 +35,8 @@ _minios_deploy_modes() {
 }
 
 _minios_deploy() {
-    local cur prev subcommand="" i native_mode=false
+    local cur prev subcommand="" i native_mode=false session_available=false
+    command -v minios-session >/dev/null 2>&1 && session_available=true
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD - 1]}"
@@ -63,6 +64,10 @@ _minios_deploy() {
         else
             COMPREPLY=( $(compgen -W "list-disks plan install" -- "$cur") )
         fi
+        return 0
+    fi
+
+    if ! $session_available && [[ "$prev" == --persistence-* ]]; then
         return 0
     fi
 
@@ -160,12 +165,18 @@ _minios_deploy() {
     fi
 
     local common_opts="-h --help"
-    local live_plan_opts="--persistence-mode --persistence-encryption --persistence-compression --persistence-size"
+    local live_plan_opts=""
+    if $session_available; then
+        live_plan_opts="--persistence-mode --persistence-encryption --persistence-compression --persistence-size"
+    fi
     local native_plan_opts="--swap-size"
     local plan_opts="--filesystem --placement --alongside-size --mode --modules --boot-layout --json"
     local install_opts="--mode --security-profile --filesystem --placement --alongside-size --boot-layout --modules --dry-run --yes"
     local native_install_opts="--swap-size --download-packages"
-    local live_install_opts="--boot-menu --persistence-mode --persistence-encryption --persistence-compression --persistence-size --config-file --link-user-dirs --bind-user-dirs --user-dirs-path --noroot --module-mode --live-config-cmdline --config-debug --export-logs"
+    local live_install_opts="$live_plan_opts --boot-menu --config-file --link-user-dirs --bind-user-dirs --user-dirs-path --noroot --module-mode --live-config-cmdline --config-debug --export-logs"
+    if $session_available; then
+        live_install_opts+=" --persistence-password-stdin"
+    fi
     local config_opts="--username --full-name --user-groups --password --root-password --hostname --locale --locales --timezone --default-target --enable-services --disable-services --keyboard-model --keyboard --keyboard-layouts --keyboard-options --keyboard-variants"
     case "$subcommand" in
         list-disks)

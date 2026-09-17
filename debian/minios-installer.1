@@ -1,4 +1,4 @@
-.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.3.0" "User Commands"
+.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.4.0" "User Commands"
 .SH NAME
 minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
@@ -68,6 +68,11 @@ Network setup covers hostname and wired DHCP or static IPv4. Wi-Fi profiles are
 not created or changed. Native static networking uses NetworkManager when
 available and falls back to ifupdown.
 .SH SESSION PERSISTENCE
+Session creation requires the optional minios-session package (>= 2.2.0).
+Without its executable, the wizard hides the session storage, encryption,
+compression, and password controls and clears any previous selections.
+Installation without creating a session remains available.
+.PP
 Live installations support native directories, expandable DynFileFS storage,
 thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk may
 optionally use LUKS2 encryption. Raw and DynFileFS default to 4000 MiB; DynBlk
@@ -78,9 +83,12 @@ lzo-rle, zstd, deflate, or 842 compression.
 LUKS is shown only when the running initrd marker contains luks-layer-v1 at
 .IR /run/initramfs/etc/minios-initramfs-crypt .
 Before disk changes, every source initrd is unpacked and checked for the same
-versioned capability and any selected DynBlk capability. The installer writes
-perchencrypt=luks and the initrd prompts at first boot; the installer never
-handles the passphrase. This does not encrypt a native root.
+versioned capability and any selected DynBlk capability. The installer creates
+and selects a real session in minios/changes on the target partition using the
+minios-session backend, without rewriting persistence kernel parameters.
+The passphrase is entered and confirmed in the wizard and passed only through
+stdin, never through command arguments, logs, or configuration. At boot it is
+used to unlock the already-created session. This does not encrypt a native root.
 .SH FILES
 .I /usr/share/applications/minios-installer.desktop
 .br
