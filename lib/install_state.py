@@ -71,7 +71,7 @@ class InstallState:
     install_mode: str = "live"
     # A real session is created on the target by minios-session. The LUKS
     # passphrase is transient: never put it in argv, logs, or config files.
-    persistence_mode: str = "none"  # none | native | dynfilefs | dynblk | raw
+    persistence_mode: str = "none"  # none | native | dynfilefs | dynblk | vmdk | raw
     persistence_encryption: str = "none"  # none | luks
     persistence_compression: str = "none"  # DynBlk only; disabled with LUKS
     persistence_size_mib: int = 0

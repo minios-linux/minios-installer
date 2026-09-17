@@ -30,6 +30,8 @@ def test_disabled_storage_never_calls_backend():
     ('raw', 1024, 'none', 'none'),
     ('dynfilefs', 8000, 'none', 'none'),
     ('dynblk', 16384, 'zstd', 'none'),
+    ('vmdk', 16384, 'none', 'none'),
+    ('vmdk', 16384, 'none', 'luks'),
     ('raw', 2048, 'none', 'luks'),
     ('dynfilefs', 8000, 'none', 'luks'),
     ('dynblk', 16384, 'none', 'luks'),

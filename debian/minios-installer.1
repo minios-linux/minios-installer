@@ -1,4 +1,4 @@
-.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.4.0" "User Commands"
+.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.5.0" "User Commands"
 .SH NAME
 minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
@@ -77,8 +77,13 @@ Live installations support native directories, expandable DynFileFS storage,
 thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk may
 optionally use LUKS2 encryption. Raw and DynFileFS default to 4000 MiB; DynBlk
 defaults to 16 GiB. Only Raw is limited to 4000 MiB on FAT32.
-For non-encrypted DynBlk storage the wizard can select none, lz4, lz4hc, lzo,
-lzo-rle, zstd, deflate, or 842 compression.
+For non-encrypted DynBlk storage the wizard offers only codecs usable by both
+the currently running kernel/initrd, which creates the container, and every
+kernel/initrd copied to the target, which must reopen it later. The installer
+checks kmod metadata for the required crypto_comp provider, including built-in
+providers and module dependencies; no codec capability marker is used. Known
+codecs are none, lz4, lz4hc, lzo, lzo-rle, zstd, deflate, and 842; unavailable
+codecs are hidden.
 .PP
 LUKS is shown only when the running initrd marker contains luks-layer-v1 at
 .IR /run/initramfs/etc/minios-initramfs-crypt .
@@ -116,3 +121,8 @@ Command-line frontend:
 crims0n <crims0n@minios.dev>
 .SH BUGS
 https://github.com/minios-linux/minios-installer/issues
+
+.SH DYNBLK CAPACITY
+The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB ceiling.
+Large thin containers also require space for the metadata of all declared parts.
+Raw and DynFileFS retain their separate capacity policies.

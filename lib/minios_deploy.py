@@ -10,11 +10,13 @@ import sys
 
 from disk_utils import ensure_safe_target_device, get_device_identity
 from disk_utils import find_available_disks, native_install_supported
-from session_storage import session_creation_available, validate_persistence_password
+from session_storage import (session_creation_available, validate_persistence_password,
+                             runtime_dynblk_max_size_mib, persistence_initial_mib)
 from install_state import InstallState, UserConfig
 from live_deploy import (
     DYNBLK_COMPRESSION_CODECS, run_live_install,
-    runtime_supports_dynblk_persistence, runtime_supports_luks_persistence,
+    runtime_dynblk_compression_codecs, runtime_supports_dynblk_persistence,
+    runtime_supports_luks_persistence, runtime_supports_vmdk_persistence,
 )
 from module_selection import (
     discover_module_names,
@@ -185,19 +187,22 @@ def _validate_cli_inputs(args) -> None:
         if persistence_mode == "native" and size:
             raise ValueError("--persistence-size applies only to dynfilefs, dynblk, and raw modes")
         if persistence_encryption == "luks":
-            if persistence_mode not in ("dynfilefs", "dynblk", "raw"):
+            if persistence_mode not in ("dynfilefs", "dynblk", "vmdk", "raw"):
                 raise ValueError("--persistence-encryption luks requires dynfilefs, dynblk, or raw mode")
             if not runtime_supports_luks_persistence(persistence_mode):
                 raise ValueError("LUKS encryption is unavailable for the selected persistence mode")
         if persistence_mode == "native" and getattr(args, "filesystem", "ext4") in ("fat32", "ntfs"):
             raise ValueError("--persistence-mode native requires a POSIX-compatible target filesystem")
-        if size < 0 or size > 1000000:
+        if size < 0 or (persistence_mode not in ("dynblk", "vmdk") and size > 1000000):
             raise ValueError("--persistence-size must be 0 (default) or at most 1000000 MiB")
-        if persistence_mode == "dynblk":
-            if not runtime_supports_dynblk_persistence():
+        if persistence_mode in ("dynblk", "vmdk"):
+            if not (runtime_supports_vmdk_persistence() if persistence_mode == "vmdk" else runtime_supports_dynblk_persistence()):
                 raise ValueError("DynBlk persistence is unavailable in this MiniOS image")
-            if size > 524288:
-                raise ValueError("--persistence-size must not exceed 524288 MiB for DynBlk")
+            if persistence_mode == "vmdk" and persistence_compression != "none":
+                raise ValueError("VMDK sessions do not support compression")
+            maximum = runtime_dynblk_max_size_mib(persistence_mode)
+            if size > maximum:
+                raise ValueError("--persistence-size must not exceed {} MiB for this DynBlk backend".format(maximum))
             if persistence_encryption == "luks" and persistence_compression != "none":
                 raise ValueError("--persistence-compression is unavailable with LUKS encryption")
         elif persistence_compression != "none":
@@ -215,16 +220,16 @@ def _validate_cli_inputs(args) -> None:
 
 def _effective_persistence_size(args) -> int:
     persistence_mode = getattr(args, "persistence_mode", None) or "none"
-    if persistence_mode not in ("dynfilefs", "dynblk", "raw"):
+    if persistence_mode not in ("dynfilefs", "dynblk", "vmdk", "raw"):
         return 0
-    default_size = 16384 if persistence_mode == "dynblk" else 4000
+    default_size = 16384 if persistence_mode in ("dynblk", "vmdk") else 4000
     return int(getattr(args, "persistence_size", None) or default_size)
 
 
 def _persistence_space_requirement(args) -> int:
     size = _effective_persistence_size(args)
     mode = getattr(args, "persistence_mode", None) or "none"
-    return size if mode == "raw" else min(size, 100)
+    return persistence_initial_mib(mode, size)
 
 
 def cmd_list_disks(args):
@@ -395,9 +400,12 @@ def _add_user_config_arguments(parser):
                    help="live only: EXPORT_LOGS (true/false)")
 
 
-def build_parser(luks_available=None, dynblk_available=None, session_available=None):
+def build_parser(luks_available=None, dynblk_available=None, session_available=None,
+                 dynblk_compression_codecs=None, vmdk_available=None):
     if session_available is None:
         session_available = session_creation_available()
+    if dynblk_compression_codecs is None:
+        dynblk_compression_codecs = DYNBLK_COMPRESSION_CODECS
 
     def add_persistence_argument(parser, *args, **kwargs):
         # Parse explicit requests for useful validation errors, but do not
@@ -408,12 +416,16 @@ def build_parser(luks_available=None, dynblk_available=None, session_available=N
 
     if luks_available is None:
         luks_available = any(runtime_supports_luks_persistence(mode) for mode in
-                             ("raw", "dynfilefs", "dynblk"))
+                             ("raw", "dynfilefs", "dynblk", "vmdk"))
     if dynblk_available is None:
         dynblk_available = runtime_supports_dynblk_persistence()
     persistence_modes = ["none", "native", "dynfilefs"]
     if dynblk_available:
         persistence_modes.append("dynblk")
+    if vmdk_available is None:
+        vmdk_available = runtime_supports_vmdk_persistence()
+    if vmdk_available:
+        persistence_modes.append("vmdk")
     persistence_modes.append("raw")
     persistence_encryptions = ["none", "luks"] if luks_available else ["none"]
     install_modes = ["live", "native"] if native_install_supported() else ["live"]
@@ -438,7 +450,7 @@ def build_parser(luks_available=None, dynblk_available=None, session_available=N
     add_persistence_argument(p, "--persistence-mode", default=None, choices=persistence_modes, help="live session persistence mode")
     add_persistence_argument(p, "--persistence-encryption", default=None, choices=persistence_encryptions,
                    help="optional live session encryption layer")
-    add_persistence_argument(p, "--persistence-compression", default=None, choices=DYNBLK_COMPRESSION_CODECS,
+    add_persistence_argument(p, "--persistence-compression", default=None, choices=dynblk_compression_codecs,
                    help="DynBlk compression codec (non-LUKS DynBlk only; default: none)")
     add_persistence_argument(p, "--persistence-size", type=_nonnegative_int, default=None, metavar="MIB", help="container persistence size in MiB (default: 4000)")
     p.add_argument("--boot-layout", default="auto", choices=["auto", "bios_mbr", "uefi_mbr", "uefi_gpt"])
@@ -465,7 +477,7 @@ def build_parser(luks_available=None, dynblk_available=None, session_available=N
                     help="create and activate session storage on the installation target")
     add_persistence_argument(p, "--persistence-encryption", default=None, choices=persistence_encryptions,
                    help="optional live session encryption layer")
-    add_persistence_argument(p, "--persistence-compression", default=None, choices=DYNBLK_COMPRESSION_CODECS,
+    add_persistence_argument(p, "--persistence-compression", default=None, choices=dynblk_compression_codecs,
                    help="DynBlk compression codec (non-LUKS DynBlk only; default: none)")
     add_persistence_argument(p, "--persistence-size", type=_nonnegative_int, default=None, metavar="MIB",
                     help="live container persistence size in MiB (default: 4000)")
@@ -482,8 +494,14 @@ def build_parser(luks_available=None, dynblk_available=None, session_available=N
 
 
 def main(argv=None):
-    parser = build_parser()
-    args = parser.parse_args(argv)
+    raw_argv = list(sys.argv[1:] if argv is None else argv)
+    compression_codecs = (
+        runtime_dynblk_compression_codecs()
+        if any(item in ("plan", "install") for item in raw_argv)
+        else DYNBLK_COMPRESSION_CODECS
+    )
+    parser = build_parser(dynblk_compression_codecs=compression_codecs)
+    args = parser.parse_args(raw_argv)
     if not getattr(args, "command", None):
         parser.print_help(sys.stderr)
         return 2

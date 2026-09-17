@@ -91,6 +91,34 @@ def test_completion_uses_shared_comma_token_popover_case_insensitively():
     assert kwargs['provider']('EUROPE/') == ('Europe/Berlin',)
 
 
+def test_dynblk_compression_choices_intersect_running_and_target_initrds():
+    window = SimpleNamespace()
+    with patch('main_installer.find_minios_source', return_value='/media/minios'), \
+         patch('main_installer.source_dynblk_compression_codecs',
+               return_value=('none', 'lz4', 'zstd')), \
+         patch('main_installer.runtime_dynblk_compression_codecs',
+               return_value=('none', 'zstd', 'deflate')):
+        assert InstallerWindow._available_dynblk_compression_codecs(window) == (
+            'none', 'zstd')
+
+
+def test_timezone_completion_matches_inside_zone_name():
+    entry = Mock()
+    combo = Mock()
+    combo.get_child.return_value = entry
+
+    with patch('main_installer.Gtk.ComboBoxText.new_with_entry', return_value=combo), \
+         patch('main_installer.TokenCompletionPopover') as completion:
+        InstallerWindow._create_combo_with_entry(
+            SimpleNamespace(), ['Europe/Helsinki', 'Europe/Moscow', 'Asia/Tokyo'],
+            '', 'UTC', Mock(), match_contains=True)
+
+    _args, kwargs = completion.call_args
+    assert kwargs['provider']('mos') == ('Europe/Moscow',)
+    assert kwargs['provider']('EUROPE') == ('Europe/Helsinki', 'Europe/Moscow')
+    assert kwargs['delimiters'] == ()
+
+
 def test_comma_completion_replaces_only_the_token_at_the_cursor():
     entry = FakeEntry('us, rux, de', len('us, ru'))
     completion = TokenCompletionPopover.__new__(TokenCompletionPopover)

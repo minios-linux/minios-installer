@@ -18,6 +18,33 @@ def session_creation_available() -> bool:
     return shutil.which("minios-session") is not None
 
 
+def runtime_dynblk_max_size_mib(storage_format='dynblk'):
+    """Read the installed backend limit; old CLIs retain their legacy ceiling."""
+    try:
+        result = subprocess.run(
+            ['dynblk', 'limits', '--format', storage_format, '--json'],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=5,
+            check=False)
+        if result.returncode == 0:
+            value = json.loads(result.stdout)['max_capacity_mib']
+            if type(value) is int and 0 < value <= ((1 << 63) - 1) // (1 << 20):
+                return value
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
+        pass
+    # Conservative fallback for backends without the limits query.
+    return 512 * 1024
+
+
+def persistence_initial_mib(mode: str, size_mib: int) -> int:
+    """Budget initial metadata, not the full payload of a thin container."""
+    if mode == "raw":
+        return size_mib
+    if mode in ("dynblk", "vmdk"):
+        # Headroom for metadata of every default 1-GiB logical extent.
+        return max(min(size_mib, 100), (size_mib + 1023) // 1024)
+    return min(size_mib, 100)
+
+
 def validate_persistence_password(password: str) -> None:
     """The backend reads a confirmed UTF-8 passphrase from two stdin lines."""
     if not password:
@@ -31,6 +58,8 @@ def preflight_session_storage(state: InstallState,
     """Check creation support before the installer changes the target disk."""
     if state.persistence_mode == "none":
         return None
+    if state.persistence_mode in ("dynblk", "vmdk") and state.persistence_size_mib > runtime_dynblk_max_size_mib(state.persistence_mode):
+        raise RuntimeError(_("DynBlk persistence size exceeds the installed backend limit."))
     if state.persistence_encryption == "luks" and require_password:
         validate_persistence_password(state.persistence_password)
     command = shutil.which("minios-session")
@@ -39,13 +68,13 @@ def preflight_session_storage(state: InstallState,
     tools = [] if state.persistence_mode == "native" else ["mke2fs"]
     if state.persistence_mode == "dynfilefs":
         tools.append("dynfilefs")
-    elif state.persistence_mode == "dynblk":
+    elif state.persistence_mode in ("dynblk", "vmdk"):
         tools.append("dynblk")
     elif state.persistence_mode == "raw":
         tools.append("fallocate")
     if state.persistence_encryption == "luks":
         tools.append("cryptsetup")
-        if state.persistence_mode != "dynblk":
+        if state.persistence_mode not in ("dynblk", "vmdk"):
             tools.append("losetup")
     missing = [tool for tool in tools if not shutil.which(tool)]
     if missing:
@@ -58,6 +87,8 @@ def preflight_session_storage(state: InstallState,
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise RuntimeError(_("Cannot check the session creation backend.")) from exc
     required = [b"--activate", b"--compression"]
+    if state.persistence_mode == "vmdk":
+        required.append(b"vmdk")
     if state.persistence_encryption == "luks":
         required.append(b"--password-stdin")
     if probe.returncode or any(flag not in probe.stdout for flag in required):
@@ -86,7 +117,7 @@ def create_live_session(state: InstallState, root_mount: str,
         raise RuntimeError(_("Session storage must be on the installation partition."))
     command = command or preflight_session_storage(state)
     args = [command, "create", state.persistence_mode]
-    if state.persistence_mode in ("raw", "dynfilefs", "dynblk"):
+    if state.persistence_mode in ("raw", "dynfilefs", "dynblk", "vmdk"):
         args.append(str(state.persistence_size_mib))
     args.extend(["--sessions-dir", sessions, "--activate", "--json"])
     if state.persistence_compression != "none":

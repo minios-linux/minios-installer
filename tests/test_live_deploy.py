@@ -4,6 +4,8 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
 
@@ -130,6 +132,38 @@ class TestLiveDeploySafety:
         assert _validate_persistence_settings(dyn, '/media/minios') is None
         assert _validate_persistence_settings(raw, '/media/minios') is None
 
+    def test_dynblk_codec_probe_uses_kernel_module_metadata(self, tmp_path):
+        from live_deploy import _dynblk_codecs_from_initramfs_tree
+
+        kernel = '6.12-test'
+        (tmp_path / 'lib' / 'modules' / kernel).mkdir(parents=True)
+
+        def probe(command, **_kwargs):
+            return MagicMock(
+                returncode=0 if command[-1] in ('crypto-lzo', 'crypto-zstd') else 1)
+
+        with patch('live_deploy.shutil.which', return_value='/usr/sbin/modprobe'), \
+             patch('live_deploy.subprocess.run', side_effect=probe) as run:
+            assert _dynblk_codecs_from_initramfs_tree(str(tmp_path)) == (
+                'none', 'lzo', 'zstd')
+
+        command = run.call_args_list[0][0][0]
+        assert command[1:5] == ['-d', str(tmp_path), '-S', kernel]
+        assert '--ignore-install' in command
+        assert '--show-depends' in command
+
+    def test_dynblk_codec_probe_intersects_every_source_initrd(self, tmp_path):
+        from live_deploy import source_dynblk_compression_codecs
+
+        boot = tmp_path / 'boot'
+        boot.mkdir()
+        (boot / 'initrfs-a.img').write_bytes(b'a')
+        (boot / 'initrd-b.img').write_bytes(b'b')
+        with patch('live_deploy._unpack_source_initrd', return_value=True), \
+             patch('live_deploy._dynblk_codecs_from_initramfs_tree', side_effect=[
+                 ('none', 'lz4', 'zstd'), ('none', 'zstd')]):
+            assert source_dynblk_compression_codecs(str(tmp_path)) == ('none', 'zstd')
+
     def test_dynblk_settings_require_source_marker(self):
         from install_state import InstallState
         from live_deploy import _validate_persistence_settings
@@ -153,8 +187,26 @@ class TestLiveDeploySafety:
         state = InstallState(
             install_mode='live', persistence_mode='dynblk',
             persistence_size_mib=16384, persistence_compression='zstd')
-        with patch('live_deploy.source_supports_dynblk_persistence', return_value=True):
+        with patch('live_deploy.source_supports_dynblk_persistence', return_value=True), \
+             patch('live_deploy.runtime_dynblk_compression_codecs',
+                   return_value=('none', 'zstd')), \
+             patch('live_deploy.source_dynblk_compression_codecs',
+                   return_value=('none', 'zstd')):
             assert _validate_persistence_settings(state, '/media/minios') is None
+
+    def test_dynblk_compression_requires_running_initrd_provider(self):
+        from install_state import InstallState
+        from live_deploy import _validate_persistence_settings
+
+        state = InstallState(
+            install_mode='live', persistence_mode='dynblk',
+            persistence_size_mib=16384, persistence_compression='zstd')
+        with patch('live_deploy.runtime_dynblk_compression_codecs',
+                   return_value=('none',)), \
+             patch('live_deploy.source_dynblk_compression_codecs',
+                   return_value=('none', 'zstd')):
+            with pytest.raises(RuntimeError, match='running kernel/initrd'):
+                _validate_persistence_settings(state, '/media/minios')
 
     def test_dynblk_compression_is_rejected_with_luks(self):
         from install_state import InstallState

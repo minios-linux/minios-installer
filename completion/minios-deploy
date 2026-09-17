@@ -1,3 +1,33 @@
+_minios_deploy_dynblk_compressions() {
+    local root=/run/initramfs kernel codec tmp probe_root values="none" modprobe=""
+    modprobe="$(command -v modprobe 2>/dev/null || true)"
+    if [[ -z "$modprobe" ]]; then
+        for codec in /usr/sbin/modprobe /sbin/modprobe; do
+            if [[ -x "$codec" ]]; then modprobe="$codec"; break; fi
+        done
+    fi
+    [[ -n "$modprobe" ]] || { printf '%s\n' "$values"; return; }
+    kernel="$(uname -r)"
+    tmp="$(mktemp -d 2>/dev/null)" || { printf '%s\n' "$values"; return; }
+    mkdir -p "$tmp/config"
+    probe_root="$root"
+    if [[ ! -d "$root/lib/modules/$kernel" && -d "$root/usr/lib/modules/$kernel" ]]; then
+        mkdir -p "$tmp/root/lib"
+        ln -s "$root/usr/lib/modules" "$tmp/root/lib/modules"
+        probe_root="$tmp/root"
+    fi
+    if [[ -d "$probe_root/lib/modules/$kernel" ]]; then
+        for codec in lz4 lz4hc lzo lzo-rle zstd deflate 842; do
+            if "$modprobe" -d "$probe_root" -S "$kernel" -C "$tmp/config" \
+                    --ignore-install --show-depends "crypto-$codec" >/dev/null 2>&1; then
+                values+=" $codec"
+            fi
+        done
+    fi
+    rm -rf "$tmp"
+    printf '%s\n' "$values"
+}
+
 _minios_deploy_modules() {
     local cur="$1" prefix="" fragment="$1" base names reply item
     local bases="/run/initramfs/memory/data/minios /run/initramfs/memory/iso/minios /lib/live/mount/medium/minios /lib/live/mount/iso/minios /run/initramfs/memory/bundles"
@@ -106,6 +136,10 @@ _minios_deploy() {
             fi
             local persistence_modes="none native dynfilefs raw"
             [[ -e /run/initramfs/etc/minios-initramfs-dynblk ]] && persistence_modes+=" dynblk"
+            if grep -Fqx 'vmdk-session-v1' /run/initramfs/etc/minios-initramfs-dynblk 2>/dev/null &&
+               dynblk limits --format vmdk >/dev/null 2>&1; then
+                persistence_modes+=" vmdk"
+            fi
             COMPREPLY=( $(compgen -W "$persistence_modes" -- "$cur") )
             return 0
             ;;
@@ -116,7 +150,9 @@ _minios_deploy() {
             ;;
         --persistence-compression)
             $native_mode && return 0
-            COMPREPLY=( $(compgen -W "none lz4 lz4hc lzo lzo-rle zstd deflate 842" -- "$cur") )
+            local compression_values
+            compression_values="$(_minios_deploy_dynblk_compressions)"
+            COMPREPLY=( $(compgen -W "$compression_values" -- "$cur") )
             return 0
             ;;
         --security-profile)

@@ -31,11 +31,15 @@ from disk_utils import (
     stop_disk_monitoring,
 )
 from format_utils import filesystems_for_boot_mode
-from session_storage import session_creation_available, validate_persistence_password
+from copy_utils import find_minios_source
+from session_storage import (session_creation_available, validate_persistence_password,
+                             runtime_dynblk_max_size_mib, persistence_initial_mib)
 from install_state import InstallCanceled, InstallState, available_remote_access_services, set_service_enabled
 from live_deploy import (
-    DYNBLK_COMPRESSION_CODECS, run_live_install,
+    run_live_install, runtime_dynblk_compression_codecs,
     runtime_supports_dynblk_persistence, runtime_supports_luks_persistence,
+    runtime_supports_vmdk_persistence,
+    source_dynblk_compression_codecs,
 )
 from module_selection import (
     calculate_module_sizes,
@@ -1087,8 +1091,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if self.state.install_mode == "live":
             if self.state.persistence_mode == "raw":
                 persistence_mib = self.state.persistence_size_mib
-            elif self.state.persistence_mode in ("dynfilefs", "dynblk"):
-                persistence_mib = min(self.state.persistence_size_mib, 100)
+            elif self.state.persistence_mode in ("dynfilefs", "dynblk", "vmdk"):
+                persistence_mib = persistence_initial_mib(
+                    self.state.persistence_mode, self.state.persistence_size_mib)
         self.state.required_root_mib = required_root_mib(total) + persistence_mib
         return total
 
@@ -1209,7 +1214,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 entry, provider=provider, delimiters=",", min_chars=1,
                 max_results=12)
 
-    def _create_combo_with_entry(self, items, current_value, placeholder, on_changed):
+    def _create_combo_with_entry(self, items, current_value, placeholder, on_changed,
+                                 match_contains=False):
         combo = Gtk.ComboBoxText.new_with_entry()
         combo.set_hexpand(True)
         for item in items:
@@ -1217,7 +1223,18 @@ class InstallerWindow(Gtk.ApplicationWindow):
         entry = combo.get_child()
         entry.set_placeholder_text(placeholder)
         if items:
-            self._attach_completion(entry, items)
+            if match_contains:
+                values = tuple(items)
+
+                def provider(fragment):
+                    fragment = fragment.lower()
+                    return tuple(value for value in values if fragment in value.lower())
+
+                TokenCompletionPopover(
+                    entry, provider=provider, delimiters=(), min_chars=1,
+                    max_results=12)
+            else:
+                self._attach_completion(entry, items)
         if current_value in items:
             combo.set_active(items.index(current_value))
         elif current_value:
@@ -1225,6 +1242,17 @@ class InstallerWindow(Gtk.ApplicationWindow):
         combo.connect("changed", lambda widget: on_changed(widget.get_active_text() or entry.get_text()))
         entry.connect("changed", lambda widget: on_changed(widget.get_text()))
         return combo
+
+    def _available_dynblk_compression_codecs(self):
+        cached = getattr(self, "_dynblk_compression_codecs_cache", None)
+        if cached is not None:
+            return cached
+        source = find_minios_source()
+        source_codecs = source_dynblk_compression_codecs(source) if source else ("none",)
+        runtime_codecs = set(runtime_dynblk_compression_codecs())
+        codecs = tuple(codec for codec in source_codecs if codec in runtime_codecs)
+        self._dynblk_compression_codecs_cache = codecs or ("none",)
+        return self._dynblk_compression_codecs_cache
 
     def _create_password_entry(self, placeholder, on_changed, initial=""):
         """
@@ -1958,6 +1986,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.state.user_config.timezone,
             "UTC",
             lambda value: self._set_user_config("timezone", value),
+            match_contains=True,
         )
 
         grid.attach(Gtk.Label(label=_("System language:"), xalign=0), 0, 0, 1, 1)
@@ -3107,7 +3136,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.persistence_combo.set_sensitive(self.state.install_mode == "live")
         self.persistence_size_spin = Gtk.SpinButton.new_with_range(1, 1000000, 256)
         self.persistence_size_spin.set_numeric(True)
-        self.persistence_size_spin.set_width_chars(7)
+        self.persistence_size_spin.set_width_chars(9)
         self.persistence_size_spin.set_value(max(1, self.state.persistence_size_mib or 4000))
 
         def on_persistence_changed(combo):
@@ -3115,9 +3144,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 return
             previous_mode = self.state.persistence_mode
             self.state.persistence_mode = combo.get_active_id() or "none"
-            if self.state.persistence_mode == "dynblk" and previous_mode != "dynblk":
+            if self.state.persistence_mode in ("dynblk", "vmdk") and previous_mode not in ("dynblk", "vmdk"):
                 self.persistence_size_spin.set_value(16384)
-            if self.state.persistence_mode in ("dynfilefs", "dynblk", "raw"):
+            if self.state.persistence_mode in ("dynfilefs", "dynblk", "vmdk", "raw"):
                 self.state.persistence_size_mib = int(self.persistence_size_spin.get_value())
             else:
                 self.state.persistence_size_mib = 0
@@ -3128,7 +3157,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self._update_partition_preview()
 
         def on_persistence_size_changed(spin):
-            if self.state.persistence_mode in ("dynfilefs", "dynblk", "raw"):
+            if self.state.persistence_mode in ("dynfilefs", "dynblk", "vmdk", "raw"):
                 self.state.persistence_size_mib = int(spin.get_value())
                 self._update_required_root_size()
                 self._refresh_free_space_placement()
@@ -3167,12 +3196,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         compression_label = Gtk.Label(label=_("DynBlk compression:"), xalign=0)
         self.persistence_compression_combo = Gtk.ComboBoxText()
-        for codec in DYNBLK_COMPRESSION_CODECS:
+        for codec in self._available_dynblk_compression_codecs():
             self.persistence_compression_combo.append(codec, codec)
         self.persistence_compression_combo.set_active_id(
             self.state.persistence_compression)
 
         def on_persistence_compression_changed(combo):
+            if getattr(self, "_updating_persistence_compression", False):
+                return
             self.state.persistence_compression = combo.get_active_id() or "none"
 
         self.persistence_compression_combo.connect(
@@ -3238,8 +3269,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _update_persistence_size_limit(self):
         if not hasattr(self, "persistence_size_spin"):
             return
-        if self.state.persistence_mode == "dynblk":
-            maximum = 524288
+        if self.state.persistence_mode in ("dynblk", "vmdk"):
+            maximum = runtime_dynblk_max_size_mib(self.state.persistence_mode)
         elif self.state.filesystem == "fat32" and self.state.persistence_mode == "raw":
             maximum = 4000
         else:
@@ -3247,7 +3278,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.persistence_size_spin.set_range(1, maximum)
         if self.persistence_size_spin.get_value() > maximum:
             self.persistence_size_spin.set_value(maximum)
-        if self.state.persistence_mode in ("dynfilefs", "dynblk", "raw"):
+        if self.state.persistence_mode in ("dynfilefs", "dynblk", "vmdk", "raw"):
             self.state.persistence_size_mib = int(self.persistence_size_spin.get_value())
 
     def _refresh_persistence_choices(self):
@@ -3278,6 +3309,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             ))
             if runtime_supports_dynblk_persistence():
                 choices.append(("dynblk", _("Thin block storage (DynBlk)")))
+            if runtime_supports_vmdk_persistence():
+                choices.append(("vmdk", _("Split VMDK storage (DynBlk driver)")))
             choices.append(("raw", _("Fixed-size storage (ext4 image)")))
         valid = {value for value, _label in choices}
         selected = self.state.persistence_mode
@@ -3299,7 +3332,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if not hasattr(self, "persistence_size_spin"):
             return
         mode = self.state.persistence_mode
-        uses_size = mode in ("dynfilefs", "dynblk", "raw")
+        uses_size = mode in ("dynfilefs", "dynblk", "vmdk", "raw")
         self._update_persistence_size_limit()
         self.persistence_size_spin.set_sensitive(self.state.install_mode == "live" and uses_size)
         if uses_size:
@@ -3327,11 +3360,18 @@ class InstallerWindow(Gtk.ApplicationWindow):
             compression_enabled = (
                 self.state.install_mode == "live" and mode == "dynblk" and
                 self.state.persistence_encryption == "none")
+            available_codecs = self._available_dynblk_compression_codecs()
             selected_compression = self.state.persistence_compression
-            if (not compression_enabled or
-                    selected_compression not in DYNBLK_COMPRESSION_CODECS):
+            if not compression_enabled or selected_compression not in available_codecs:
                 selected_compression = "none"
-            self.persistence_compression_combo.set_active_id(selected_compression)
+            self._updating_persistence_compression = True
+            try:
+                self.persistence_compression_combo.remove_all()
+                for codec in available_codecs:
+                    self.persistence_compression_combo.append(codec, codec)
+                self.persistence_compression_combo.set_active_id(selected_compression)
+            finally:
+                self._updating_persistence_compression = False
             self.persistence_compression_combo.set_sensitive(compression_enabled)
             self.state.persistence_compression = selected_compression
         self._update_persistence_password_controls()
@@ -3342,13 +3382,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
             "native": _("Changes are saved directly on the MiniOS partition and remain available after restart."),
             "dynfilefs": _("Changes are saved in an expandable container that grows as needed up to the selected size."),
             "dynblk": _("Changes are saved in thin block storage that grows as needed up to the selected size."),
+            "vmdk": _("Changes are saved in standard split sparse VMDK images without compression."),
             "raw": _("Changes are saved in a fixed-size container; the selected amount of disk space is reserved for it."),
         }
         note = notes.get(mode, "")
         if self.state.persistence_encryption == "luks":
             encrypted = _("The encrypted session is created during installation. Enter its password below; it is required to unlock saved changes at boot.")
             note = "{}\n{}".format(note, encrypted) if note else encrypted
-        elif self.state.install_mode == "live" and mode in ("raw", "dynfilefs", "dynblk") and not runtime_supports_luks_persistence(mode):
+        elif self.state.install_mode == "live" and mode in ("raw", "dynfilefs", "dynblk", "vmdk") and not runtime_supports_luks_persistence(mode):
             unavailable = _("Encrypted session storage is not available in this MiniOS image. The other storage modes save changes without encryption.")
             note = "{}\n{}".format(note, unavailable) if note else unavailable
         self.persistence_note.set_text(note)
@@ -4698,6 +4739,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 "native": _("Changes will be saved directly on the MiniOS partition."),
                 "dynfilefs": _("Expandable saved changes: up to {size} MiB.").format(size=self.state.persistence_size_mib),
                 "dynblk": _("Thin block saved changes: up to {size} MiB.").format(size=self.state.persistence_size_mib),
+                "vmdk": _("Split VMDK saved changes: up to {size} MiB.").format(size=self.state.persistence_size_mib),
                 "raw": _("Fixed-size saved changes: {size} MiB reserved.").format(size=self.state.persistence_size_mib),
             }
             text = labels.get(mode, mode)

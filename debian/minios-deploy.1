@@ -1,4 +1,4 @@
-.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.4.0" "User Commands"
+.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.5.0" "User Commands"
 .SH NAME
 minios-deploy \- command-line interface for the MiniOS installer
 .SH SYNOPSIS
@@ -50,7 +50,7 @@ Comma-separated module names. Required lower layers are included automatically.
 Use convenient, balanced, or strict. Defaults to convenient for live and
 balanced for native installations.
 .TP
-.B --persistence-mode none|native|dynfilefs|dynblk|raw
+.B --persistence-mode none|native|dynfilefs|dynblk|vmdk|raw
 Requires the optional minios-session package (>= 2.2.0) for modes other than none.
 Without its executable, persistence options are hidden from help and completion.
 Explicit creation requests are rejected before disk changes; installation
@@ -78,9 +78,12 @@ not written to arguments, logs, or configuration. Dry runs do not read stdin.
 .TP
 .B --persistence-compression none|lz4|lz4hc|lzo|lzo-rle|zstd|deflate|842
 Live installation only. Select the codec used when a new DynBlk persistence
-container is created. This option applies only to DynBlk and is unavailable
-when LUKS encryption is selected. The installer passes the selection to
-minios-session when creating the container.
+container is created. The selected codec must have a crypto_comp provider in the
+currently running kernel/initrd and in every source initrd copied to the target;
+the installer verifies built-in and modular providers from kmod metadata before
+disk changes. This option applies only to DynBlk and is unavailable when LUKS
+encryption is selected. The installer passes the selection to minios-session when
+creating the container.
 .TP
 .B --persistence-size MIB
 Live installation only. Container persistence size. Raw and DynFileFS default
@@ -243,3 +246,15 @@ minios-deploy install /dev/sdb --mode native --placement free_space --yes \\
 .BR live-config (7)
 .SH AUTHOR
 crims0n <crims0n@minios.dev>
+
+.SH DYNBLK CAPACITY
+The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB ceiling.
+Large thin containers also require space for the metadata of all declared parts.
+Raw and DynFileFS retain their separate capacity policies.
+
+.SH VMDK PERSISTENCE
+The vmdk storage mode creates standard split sparse VMDK using the DynBlk driver
+and shared minios-session backend. It has no compression and defaults to
+16384 MiB; limits are queried with dynblk limits --format vmdk. LUKS2 may be
+used as a separate layer. The running environment and every source initrd must
+support the versioned vmdk-session-v1 capability.

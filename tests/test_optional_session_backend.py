@@ -36,7 +36,9 @@ def window():
         persistence_compression_combo=Mock(), persistence_note=Mock(),
         persistence_password_entry=Mock(), persistence_password_confirm_entry=Mock())
     window.persistence_size_spin.get_value.return_value = 4096
-    for name in ('_update_persistence_controls', '_update_persistence_password_controls'):
+    window._dynblk_compression_codecs_cache = ('none', 'zstd')
+    for name in ('_update_persistence_controls', '_update_persistence_password_controls',
+                 '_available_dynblk_compression_codecs'):
         setattr(window, name, getattr(InstallerWindow, name).__get__(window))
     return window
 

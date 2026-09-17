@@ -171,6 +171,19 @@ class TestMiniOSDeploy:
         assert minios_deploy._effective_persistence_size(args) == 16384
         assert minios_deploy._persistence_space_requirement(args) == 100
 
+    def test_dynblk_size_above_one_tib_uses_backend_limit(self):
+        import minios_deploy
+        parser = minios_deploy.build_parser(luks_available=True, dynblk_available=True)
+        args = parser.parse_args(['plan', '/dev/sdb', '--persistence-mode', 'dynblk',
+                                  '--persistence-size', '4194304'])
+        with patch('minios_deploy.runtime_supports_dynblk_persistence', return_value=True), \
+                patch('minios_deploy.runtime_dynblk_max_size_mib', return_value=67108864):
+            minios_deploy._validate_cli_inputs(args)
+            assert minios_deploy._persistence_space_requirement(args) == 4096
+            args.persistence_size = 67108865
+            with pytest.raises(ValueError, match='DynBlk backend'):
+                minios_deploy._validate_cli_inputs(args)
+
     def test_dynblk_compression_cli_is_accepted_without_luks(self):
         import minios_deploy
 
@@ -183,6 +196,22 @@ class TestMiniOSDeploy:
                    return_value=True):
             minios_deploy._validate_cli_inputs(args)
         assert args.persistence_compression == 'zstd'
+
+    def test_dynblk_compression_cli_choices_are_runtime_filterable(self):
+        import minios_deploy
+
+        parser = minios_deploy.build_parser(
+            luks_available=True, dynblk_available=True,
+            dynblk_compression_codecs=('none', 'zstd'))
+        accepted = parser.parse_args([
+            'plan', '/dev/sdb', '--persistence-mode', 'dynblk',
+            '--persistence-compression', 'zstd'])
+        assert accepted.persistence_compression == 'zstd'
+        with pytest.raises(SystemExit) as exc:
+            parser.parse_args([
+                'plan', '/dev/sdb', '--persistence-mode', 'dynblk',
+                '--persistence-compression', '842'])
+        assert exc.value.code == 2
 
     def test_dynblk_compression_cli_rejects_luks(self):
         import minios_deploy

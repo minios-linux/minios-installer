@@ -3,6 +3,7 @@
 
 import gettext
 import os
+import json
 import shutil
 import subprocess
 import tempfile
@@ -33,6 +34,86 @@ LUKS_LAYER_CAPABILITY = "luks-layer-v1"
 DYNBLK_COMPRESSION_CODECS = (
     "none", "lz4", "lz4hc", "lzo", "lzo-rle", "zstd", "deflate", "842",
 )
+
+
+def _dynblk_codecs_from_initramfs_tree(root: str, kernel: str = None) -> tuple:
+    """Return crypto_comp codecs available from one unpacked kernel/initrd tree."""
+    modprobe = shutil.which("modprobe")
+    if not modprobe:
+        modprobe = next(
+            (path for path in ("/usr/sbin/modprobe", "/sbin/modprobe")
+             if os.access(path, os.X_OK)), None)
+    if not modprobe:
+        return ("none",)
+    module_dirs = []
+    seen_module_dirs = set()
+    for prefix in ("", "main", "early"):
+        base = os.path.normpath(os.path.join(root, prefix))
+        for relative in (os.path.join("lib", "modules"), os.path.join("usr", "lib", "modules")):
+            modules = os.path.join(base, relative)
+            real_modules = os.path.realpath(modules)
+            if os.path.isdir(modules) and real_modules not in seen_module_dirs:
+                seen_module_dirs.add(real_modules)
+                module_dirs.append((base, modules))
+    if not module_dirs:
+        return ("none",)
+
+    supported = set(DYNBLK_COMPRESSION_CODECS)
+    probed = False
+    with tempfile.TemporaryDirectory(prefix="minios-kmod-probe-") as scratch:
+        config_dir = os.path.join(scratch, "modprobe.d")
+        os.mkdir(config_dir)
+        for index, (base, modules) in enumerate(module_dirs):
+            probe_root = base
+            if os.path.realpath(modules) != os.path.realpath(os.path.join(base, "lib", "modules")):
+                probe_root = os.path.join(scratch, "root-{}".format(index))
+                os.makedirs(os.path.join(probe_root, "lib"))
+                os.symlink(modules, os.path.join(probe_root, "lib", "modules"))
+            versions = sorted(
+                name for name in os.listdir(modules)
+                if os.path.isdir(os.path.join(modules, name)) and
+                (kernel is None or name == kernel)
+            )
+            for version in versions:
+                probed = True
+                available = {"none"}
+                for codec in DYNBLK_COMPRESSION_CODECS[1:]:
+                    try:
+                        result = subprocess.run(
+                            [modprobe, "-d", probe_root, "-S", version,
+                             "-C", config_dir, "--ignore-install", "--show-depends",
+                             "crypto-{}".format(codec)],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                            check=False, timeout=5,
+                        )
+                    except (OSError, subprocess.SubprocessError):
+                        continue
+                    if result.returncode == 0:
+                        available.add(codec)
+                supported.intersection_update(available)
+    if not probed:
+        return ("none",)
+    return tuple(codec for codec in DYNBLK_COMPRESSION_CODECS if codec in supported)
+
+
+def runtime_dynblk_compression_codecs() -> tuple:
+    """Return codecs available to the currently running MiniOS initramfs."""
+    return _dynblk_codecs_from_initramfs_tree(
+        "/run/initramfs", kernel=os.uname().release)
+
+
+def source_dynblk_compression_codecs(source: str) -> tuple:
+    """Return codecs supported by every initrd that the installer will copy."""
+    initrds = _source_initrd_paths(source)
+    if not initrds:
+        return ("none",)
+    supported = set(DYNBLK_COMPRESSION_CODECS)
+    for initrd in initrds:
+        with tempfile.TemporaryDirectory(prefix="minios-initrd-codecs-") as extracted:
+            if not _unpack_source_initrd(initrd, extracted):
+                return ("none",)
+            supported.intersection_update(_dynblk_codecs_from_initramfs_tree(extracted))
+    return tuple(codec for codec in DYNBLK_COMPRESSION_CODECS if codec in supported)
 
 
 class _ProgressAdapter:
@@ -73,9 +154,35 @@ def runtime_supports_dynblk_persistence() -> bool:
         return False
 
 
+def runtime_supports_vmdk_persistence() -> bool:
+    """Require a driver and boot scripts which understand VMDK session metadata."""
+    if not runtime_supports_dynblk_persistence() or not _marker_has_capability(
+            INITRD_DYNBLK_MARKER, "vmdk-session-v1"):
+        return False
+    try:
+        result = subprocess.run(["dynblk", "limits", "--format", "vmdk", "--json"],
+                                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                timeout=5, check=False)
+        return result.returncode == 0 and json.loads(result.stdout).get("storage_format") == "vmdk"
+    except (OSError, subprocess.SubprocessError, ValueError, AttributeError):
+        return False
+
+
+def source_supports_vmdk_persistence(source: str) -> bool:
+    """All copied initrds must be able to resume the new session mode."""
+    initrds = _source_initrd_paths(source)
+    if not initrds:
+        return False
+    for initrd in initrds:
+        content = _source_marker_content(initrd, "minios-initramfs-dynblk")
+        if content is None or b"vmdk-session-v1" not in content.splitlines():
+            return False
+    return True
+
+
 def runtime_supports_luks_persistence(backend: str = "raw") -> bool:
     """Return whether layered LUKS is usable with one running backend."""
-    if backend not in ("raw", "dynfilefs", "dynblk"):
+    if backend not in ("raw", "dynfilefs", "dynblk", "vmdk"):
         return False
     if not shutil.which("cryptsetup") or not _marker_has_capability(
         INITRD_CRYPTO_MARKER, LUKS_LAYER_CAPABILITY
@@ -87,6 +194,8 @@ def runtime_supports_luks_persistence(backend: str = "raw") -> bool:
         shutil.which("dynfilefs") or shutil.which("mount.dynfilefs")
     ):
         return False
+    if backend == "vmdk":
+        return runtime_supports_vmdk_persistence()
     return backend != "dynblk" or runtime_supports_dynblk_persistence()
 
 
@@ -184,7 +293,7 @@ def _source_marker_content(initrd: str, name: str):
 
 def source_supports_luks_persistence(source: str, backend: str = "raw") -> bool:
     """Require the layered-LUKS contract in every copied source initrd."""
-    if backend not in ("raw", "dynfilefs", "dynblk"):
+    if backend not in ("raw", "dynfilefs", "dynblk", "vmdk"):
         return False
     initrds = _source_initrd_paths(source)
     if not initrds:
@@ -195,9 +304,10 @@ def source_supports_luks_persistence(source: str, backend: str = "raw") -> bool:
             line.strip() for line in content.decode("utf-8", "replace").splitlines()
         }:
             return False
-        if (backend == "dynblk" and
-                _source_marker_content(initrd, "minios-initramfs-dynblk") is None):
-            return False
+        if backend in ("dynblk", "vmdk"):
+            content = _source_marker_content(initrd, "minios-initramfs-dynblk")
+            if content is None or (backend == "vmdk" and b"vmdk-session-v1" not in content.splitlines()):
+                return False
     return True
 
 
@@ -230,14 +340,24 @@ def _validate_persistence_settings(state: InstallState, source: str) -> None:
         return
     if state.install_mode != "live":
         raise RuntimeError(_("Session persistence is available only for live installations."))
-    if mode not in ("native", "dynfilefs", "dynblk", "raw"):
+    if mode not in ("native", "dynfilefs", "dynblk", "vmdk", "raw"):
         raise RuntimeError(_("Unknown session persistence mode: {mode}").format(mode=mode))
-    if encryption == "luks" and mode not in ("raw", "dynfilefs", "dynblk"):
+    if encryption == "luks" and mode not in ("raw", "dynfilefs", "dynblk", "vmdk"):
         raise RuntimeError(_("LUKS encryption is unavailable for this session storage mode."))
     if compression != "none" and mode != "dynblk":
         raise RuntimeError(_("DynBlk compression requires DynBlk session storage."))
     if encryption == "luks" and compression != "none":
         raise RuntimeError(_("DynBlk compression is unavailable with LUKS encryption."))
+    if (mode == "dynblk" and compression != "none" and
+            compression not in runtime_dynblk_compression_codecs()):
+        raise RuntimeError(_(
+            "DynBlk compression {compression} is not supported by the running kernel/initrd."
+        ).format(compression=compression))
+    if (mode == "dynblk" and compression != "none" and
+            compression not in source_dynblk_compression_codecs(source)):
+        raise RuntimeError(_(
+            "DynBlk compression {compression} is not supported by the kernel/initrd in this MiniOS image."
+        ).format(compression=compression))
     if mode == "native":
         if state.filesystem in ("fat32", "ntfs"):
             raise RuntimeError(_("Native session storage requires a POSIX-compatible filesystem."))
@@ -247,6 +367,8 @@ def _validate_persistence_settings(state: InstallState, source: str) -> None:
     if (mode == "dynblk" and encryption != "luks" and
             not source_supports_dynblk_persistence(source)):
         raise RuntimeError(_("DynBlk session storage is not supported by this MiniOS image. Choose another session storage mode."))
+    if mode == "vmdk" and not source_supports_vmdk_persistence(source):
+        raise RuntimeError(_("VMDK sessions are not supported by the initrd in this MiniOS image."))
     if encryption == "luks" and not source_supports_luks_persistence(source, mode):
         raise RuntimeError(_("Encrypted session storage is not supported by this MiniOS image. Choose another session storage mode."))
 
