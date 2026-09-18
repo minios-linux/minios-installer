@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 from typing import Iterable, List, Optional
 
 
@@ -20,12 +21,42 @@ def module_basename(path: str) -> str:
     return os.path.basename(path.rstrip(os.sep))
 
 
+def _module_order(path):
+    name = module_basename(path)
+    number = re.match(r"[0-9]+", name)
+    return (int(number.group()) if number else 0, name, path)
+
+
+def is_module_image(relative: str) -> bool:
+    """Boot modules are at the media root or recursively below modules/."""
+    return relative.endswith('.sb') and (
+        os.path.dirname(relative) in ('', '.') or relative.startswith('modules/'))
+
+
+def module_image_paths(source: str) -> dict:
+    """Map unambiguous basenames to files, in the initrd's layer order."""
+    if not os.path.isdir(source):
+        return {}
+    paths = [os.path.join(source, name) for name in os.listdir(source)
+             if name.endswith('.sb') and os.path.isfile(os.path.join(source, name))]
+    extra = []
+    for root, _dirs, files in os.walk(os.path.join(source, 'modules')):
+        extra.extend(os.path.join(root, name) for name in files if name.endswith('.sb'))
+    result = {}
+    for path in sorted(paths, key=_module_order) + sorted(extra, key=_module_order):
+        name = module_basename(path)
+        if name in result:
+            raise ValueError('Duplicate module basename: ' + name)
+        result[name] = path
+    return result
+
+
 def list_live_module_names(minios_source: Optional[str] = None) -> List[str]:
     candidates = [minios_source] if minios_source else list(LIVE_MINIOS_CANDIDATES)
     for base in candidates:
         if not base or not os.path.isdir(base):
             continue
-        names = sorted(name for name in os.listdir(base) if name.endswith(".sb") and os.path.isfile(os.path.join(base, name)))
+        names = list(module_image_paths(base))
         if names:
             return names
     return []
@@ -54,7 +85,7 @@ def module_size_bytes(
     if install_mode == "live":
         candidates = [minios_source] if minios_source else list(LIVE_MINIOS_CANDIDATES)
         for base in candidates:
-            path = os.path.join(base, name) if base else ""
+            path = module_image_paths(base).get(module_basename(name), "") if base else ""
             if os.path.isfile(path):
                 return os.path.getsize(path)
         return None
@@ -106,7 +137,7 @@ def payload_size_bytes(selected_modules: Iterable[str], install_mode: str = "liv
                 for name in files:
                     path = os.path.join(root, name)
                     rel = os.path.relpath(path, source)
-                    if not os.path.dirname(rel) and name.endswith(".sb") and name not in selected:
+                    if is_module_image(rel) and name not in selected:
                         continue
                     total += os.path.getsize(path)
         except OSError:

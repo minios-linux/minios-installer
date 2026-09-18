@@ -97,9 +97,10 @@ def _dynblk_codecs_from_initramfs_tree(root: str, kernel: str = None) -> tuple:
 
 
 def runtime_dynblk_compression_codecs() -> tuple:
-    """Return codecs available to the currently running MiniOS initramfs."""
+    """Check the running kernel; source initrds are checked independently."""
+    # LiveKit retains shutdown tools, not its module tree, in /run/initramfs.
     return _dynblk_codecs_from_initramfs_tree(
-        "/run/initramfs", kernel=os.uname().release)
+        "/", kernel=os.uname().release)
 
 
 def source_dynblk_compression_codecs(source: str) -> tuple:
@@ -248,12 +249,26 @@ def _source_initrd_paths(source: str) -> tuple:
 
 
 def _unpack_source_initrd(initrd: str, destination: str) -> bool:
+    """Use the unpacker supplied by either initramfs-tools or Dracut."""
+    # zstd used by lsinitrd ignores symlink inputs unless resolved first.
+    initrd = os.path.realpath(initrd)
+    destination = os.path.abspath(destination)
     tool = shutil.which("unmkinitramfs")
-    if not tool:
-        return False
+    if tool:
+        command = [tool, initrd, destination]
+        workdir = destination
+    else:
+        # Dracut-based live images provide lsinitrd, not unmkinitramfs.
+        # Its unpack mode writes into cwd; never use the installer's cwd.
+        tool = shutil.which("lsinitrd")
+        if not tool:
+            return False
+        command = [tool, "--unpack", initrd]
+        workdir = destination
     try:
+        os.makedirs(destination, exist_ok=True)
         result = subprocess.run(
-            [tool, initrd, destination], stdout=subprocess.DEVNULL,
+            command, cwd=workdir, stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, check=False, timeout=30,
         )
     except (OSError, subprocess.SubprocessError):

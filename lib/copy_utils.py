@@ -13,7 +13,7 @@ import shutil
 import gettext
 import re
 from typing import Iterable, Optional, Callable, Dict
-from module_selection import normalize_selected_modules
+from module_selection import normalize_selected_modules, list_live_module_names, is_module_image
 
 # Set up gettext for localization
 gettext.bindtextdomain('minios-installer', '/usr/share/locale')
@@ -44,7 +44,7 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
             rel = os.path.relpath(os.path.join(root, fn), src)
             if rel.startswith('changes/'):
                 continue
-            if _is_top_level_module(rel) and fn not in selected_module_names:
+            if is_module_image(rel) and fn not in selected_module_names:
                 continue
             entries.append((os.path.join('minios', rel), os.path.join(root, fn)))
 
@@ -267,14 +267,7 @@ def find_minios_source() -> Optional[str]:
 
 
 def _module_names_in_source(src: str) -> list:
-    try:
-        return sorted(name for name in os.listdir(src) if name.endswith('.sb') and os.path.isfile(os.path.join(src, name)))
-    except OSError:
-        return []
-
-
-def _is_top_level_module(rel: str) -> bool:
-    return rel.endswith('.sb') and os.path.dirname(rel) in ('', '.')
+    return list_live_module_names(src)
 
 
 def _calculate_copy_size(src: str, selected_module_names: Optional[set] = None) -> int:
@@ -287,7 +280,7 @@ def _calculate_copy_size(src: str, selected_module_names: Optional[set] = None) 
             rel = os.path.relpath(os.path.join(root, fn), src)
             if rel.startswith('changes/'):
                 continue
-            if selected_module_names is not None and _is_top_level_module(rel) and fn not in selected_module_names:
+            if selected_module_names is not None and is_module_image(rel) and fn not in selected_module_names:
                 continue
             try:
                 total += os.path.getsize(os.path.join(root, fn))

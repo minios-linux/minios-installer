@@ -161,7 +161,7 @@ def test_reboot_uses_shared_confirmation():
     popen.assert_not_called()
 
 
-def test_password_entry_uses_shared_hold_widget_and_exposes_gtk_entry():
+def test_password_entry_uses_shared_toggle_mode_and_exposes_gtk_entry():
     password = Mock()
     password.entry = Mock()
 
@@ -171,7 +171,7 @@ def test_password_entry_uses_shared_hold_widget_and_exposes_gtk_entry():
             SimpleNamespace(), 'Password', on_changed, initial='secret')
 
     factory.assert_called_once_with(
-        reveal_mode='hold', placeholder_text='Password',
+        reveal_mode='toggle', placeholder_text='Password',
         show_label='Show password', hide_label='Hide password')
     assert widget is password
     assert entry is password.entry

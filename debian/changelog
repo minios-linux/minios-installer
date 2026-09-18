@@ -1,3 +1,16 @@
+minios-installer (3.5.1) unstable; urgency=medium
+
+  * Fix DynBlk codec detection after LiveKit cleanup and support Dracut
+    initrd extraction with resolved image symlinks.
+
+  * Hide inapplicable session encryption and compression controls.
+  * Include custom modules in discovery, size estimates and selected copies.
+  * Use the shared click-to-toggle password reveal behavior.
+  * Move session storage and encryption guidance into contextual help popovers.
+  * Reset page scrolling to the top when navigating between installer steps.
+
+ -- crims0n <crims0n@minios.dev>  Fri, 18 Sep 2026 15:39:06 +0300
+
 minios-installer (3.5.0) unstable; urgency=medium
 
   * Add capability-gated split sparse VMDK persistence with source and running

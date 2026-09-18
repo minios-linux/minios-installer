@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 from typing import Callable, Iterable, List, Optional
 
-from module_selection import module_basename, normalize_selected_modules
+from module_selection import module_basename, normalize_selected_modules, list_live_module_names
 
 
 gettext.bindtextdomain("minios-installer", "/usr/share/locale")
@@ -32,6 +32,12 @@ def find_bundle_dirs(base_dir: str = DEFAULT_BUNDLES_DIR, selected_modules: Opti
             bundles.append(path)
     if not bundles:
         raise RuntimeError(_("No MiniOS bundles found in {path}").format(path=base_dir))
+    # Root layers load first, followed by modules/ layers even if a custom
+    # filename has a lower numeric prefix. Match the live source when present.
+    order = {name: index for index, name in enumerate(list_live_module_names())}
+    if order:
+        bundles.sort(key=lambda path: (order.get(module_basename(path), len(order)),
+                                       module_basename(path)))
     if selected_modules:
         names = [module_basename(path) for path in bundles]
         selected = set(normalize_selected_modules(names, selected_modules))

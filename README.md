@@ -44,7 +44,7 @@ Live installations support native directories, expandable DynFileFS storage, thi
 
 Raw and DynFileFS default to 4000 MiB; DynBlk defaults to 16 GiB. Only Raw is limited to 4000 MiB on FAT32. Native persistence is offered only on POSIX-compatible target filesystems.
 
-For non-encrypted DynBlk storage, the installer offers only compression codecs that can be used both by the currently running kernel/initrd (which creates the container) and by every kernel/initrd copied to the target (which must reopen it later). Support is derived from kmod metadata and the Linux `crypto_comp` API, including built-in providers and module dependencies; no codec capability marker is used. Known codecs are `none`, `lz4`, `lz4hc`, `lzo`, `lzo-rle`, `zstd`, `deflate`, and `842`; unavailable codecs are hidden and rejected if explicitly requested. The selected codec is passed through `minios-session create --compression`. DynBlk compression is not offered when LUKS is selected.
+For non-encrypted DynBlk storage, the installer offers only compression codecs that can be used both by the currently running kernel/initrd (which creates the container) and by every kernel/initrd copied to the target (which must reopen it later). Support is derived from kmod metadata and the Linux `crypto_comp` API, including built-in providers and module dependencies; no codec capability marker is used. Runtime probing uses the running system module tree because LiveKit does not retain modules in `/run/initramfs` after boot. Source initrds are independently unpacked with `unmkinitramfs` or Dracut's `lsinitrd --unpack`, with symlinked image paths resolved first. Known codecs are `none`, `lz4`, `lz4hc`, `lzo`, `lzo-rle`, `zstd`, `deflate`, and `842`; unavailable codecs are hidden and rejected if explicitly requested. The selected codec is passed through `minios-session create --compression`. DynBlk compression is not offered when LUKS is selected.
 
 LUKS is offered only when the running initrd marker contains `luks-layer-v1` and the selected backend is available. Every copied source initrd is inspected and verified again before disk changes. The installer asks for and confirms the LUKS passphrase before changing the disk, then sends it to `minios-session` only over stdin. It is not written to arguments, logs, session metadata, or configuration files. Boot only unlocks the already-created session. For unattended CLI use, `--persistence-password-stdin` reads the passphrase and confirmation from two stdin lines. Plans and dry runs do not read passwords or create sessions. Session creation is optional: `minios-deploy` lists `minios-session >= 2.2.0` in `Suggests`, not `Depends`. Without the `minios-session` executable, the wizard hides all session-creation controls and clears their previous settings. The CLI hides persistence options from help and completion; an explicit session-creation request fails before disk changes with an instruction to install `minios-session`. Live installation without a session and native installation remain available.
 
@@ -80,3 +80,15 @@ Runtime dependencies and operation-specific recommendations are defined in `debi
 ## License
 
 GPL-3.0+
+
+### Session controls and additional modules
+
+Session encryption and compression rows are hidden when they do not apply to
+the selected backend; selecting LUKS hides DynBlk compression. Supported codecs
+are the intersection of the running kernel and the actual source initrds.
+The shutdown-only `/run/initramfs` tree is not a codec inventory.
+
+The Modules page includes `.sb` files from the media root followed by files
+recursively below `minios/modules/`, in boot layer order. Selection, space
+estimation and live copying use that same inventory. Unselected module files
+are not copied; selected custom modules keep their relative subdirectories.

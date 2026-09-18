@@ -67,6 +67,33 @@ def test_native_mode_hides_live_boot_menu_controls():
         widget.set_visible.assert_called_once_with(False)
 
 
+def test_scroll_content_to_top_resets_vertical_adjustment():
+    adjustment = Mock()
+    adjustment.get_lower.return_value = 0.0
+    window = SimpleNamespace(
+        content_scroll=Mock(get_vadjustment=Mock(return_value=adjustment)))
+
+    assert InstallerWindow._scroll_content_to_top(window) is False
+    adjustment.set_value.assert_called_once_with(0.0)
+
+
+def test_show_step_resets_scroll_before_and_after_layout():
+    window = SimpleNamespace(
+        STEPS=[("welcome", "Welcome"), ("users", "Users")],
+        current_step=0, viewed_steps=set(), install_running=False,
+        _clear_content=Mock(), _update_sidebar=Mock(),
+        _step_users=Mock(), _scroll_content_to_top=Mock(return_value=False),
+        show_all=Mock(), _clamp_window_size=Mock(return_value=False),
+    )
+    with patch("main_installer.GLib.idle_add") as idle_add:
+        InstallerWindow._show_step(window, 1)
+
+    assert window.current_step == 1
+    window._scroll_content_to_top.assert_called_once_with()
+    idle_add.assert_any_call(window._scroll_content_to_top)
+    idle_add.assert_any_call(window._clamp_window_size)
+
+
 def test_only_viewed_non_current_steps_are_clickable():
     viewed = {0, 1, 3}
     assert can_navigate_to_viewed_step(0, 1, viewed)

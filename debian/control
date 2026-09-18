@@ -30,7 +30,7 @@ Description: native initramfs integration for MiniOS
 
 Package: minios-installer
 Architecture: all
-Depends: ${misc:Depends}, minios-deploy (= ${binary:Version}), polkitd | policykit-1, pkexec | policykit-1, python3 (>= 3.6), python3-gi, gir1.2-gtk-3.0, gir1.2-glib-2.0, gir1.2-pango-1.0, gir1.2-udisks-2.0, python3-minios-gui (>= 1.4.0), python3-minios-security (>= 1.0.1)
+Depends: ${misc:Depends}, minios-deploy (= ${binary:Version}), polkitd | policykit-1, pkexec | policykit-1, python3 (>= 3.6), python3-gi, gir1.2-gtk-3.0, gir1.2-glib-2.0, gir1.2-pango-1.0, gir1.2-udisks-2.0, python3-minios-gui (>= 1.4.1), python3-minios-security (>= 1.0.1)
 Description: graphical MiniOS installation utility
  MiniOS Installer is the GTK frontend for minios-deploy. It provides guided
  live and native installation workflows while the deployment engine remains

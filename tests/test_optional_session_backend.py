@@ -28,12 +28,12 @@ def window():
                          persistence_size_mib=4096, persistence_password='test-only')
     window = SimpleNamespace(
         state=state, _persistence_password_confirm='test-only',
-        _persistence_widgets=[Mock() for _ in range(7)],
+        _persistence_widgets=[Mock() for _ in range(6)],
         _persistence_password_widgets=[Mock() for _ in range(4)],
         _update_required_root_size=Mock(), _update_persistence_validation=Mock(),
         _update_persistence_size_limit=Mock(), persistence_combo=Mock(),
         persistence_size_spin=Mock(), persistence_encryption_combo=Mock(),
-        persistence_compression_combo=Mock(), persistence_note=Mock(),
+        persistence_compression_combo=Mock(),
         persistence_password_entry=Mock(), persistence_password_confirm_entry=Mock())
     window.persistence_size_spin.get_value.return_value = 4096
     window._dynblk_compression_codecs_cache = ('none', 'zstd')
@@ -141,3 +141,30 @@ def test_native_fallback_requires_backend(window, available, filesystem, expecte
         for widget in window._persistence_widgets:
             widget.set_no_show_all.assert_called_with(False)
             widget.show_all.assert_called_once_with()
+
+
+@pytest.mark.parametrize('mode,encryption,can_encrypt,show_encryption,show_compression', [
+    ('none', 'none', False, False, False),
+    ('native', 'none', False, False, False),
+    ('raw', 'none', True, True, False),
+    ('dynfilefs', 'none', True, True, False),
+    ('vmdk', 'none', True, True, False),
+    ('dynblk', 'none', True, True, True),
+    ('dynblk', 'luks', True, True, False),
+    ('dynblk', 'none', False, False, True),
+])
+def test_irrelevant_settings_are_hidden(window, mode, encryption, can_encrypt,
+                                       show_encryption, show_compression):
+    window.state.persistence_mode = mode
+    window.state.persistence_encryption = encryption
+    window._persistence_encryption_widgets = [Mock(), Mock()]
+    window._persistence_compression_widgets = [Mock(), Mock()]
+    with patch('main_installer.session_creation_available', return_value=True), \
+         patch('main_installer.runtime_supports_luks_persistence', return_value=can_encrypt):
+        window._update_persistence_controls()
+    for widget in window._persistence_encryption_widgets:
+        widget.set_visible.assert_called_with(show_encryption)
+        widget.set_no_show_all.assert_called_with(not show_encryption)
+    for widget in window._persistence_compression_widgets:
+        widget.set_visible.assert_called_with(show_compression)
+        widget.set_no_show_all.assert_called_with(not show_compression)
