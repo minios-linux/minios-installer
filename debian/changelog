@@ -1,3 +1,9 @@
+minios-installer (3.5.3) unstable; urgency=medium
+
+  * Remove bracketed F2 language hints from single-language installed media.
+
+ -- crims0n <crims0n@minios.dev>  Sat, 19 Sep 2026 02:41:12 +0300
+
 minios-installer (3.5.2) unstable; urgency=medium
 
   * Preserve F1 boot help while removing unavailable F2 language navigation

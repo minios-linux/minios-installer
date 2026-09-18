@@ -93,7 +93,8 @@ class TestGrubConfigProcessing:
             assert f'menuentry "{source}"' not in result
 
     @pytest.mark.parametrize('language', ['en_US', 'ru_RU', 'multilang'])
-    def test_new_navigation_is_only_available_on_multilingual_media(self, tmp_path, language):
+    @pytest.mark.parametrize('bracketed', [False, True])
+    def test_new_navigation_is_only_available_on_multilingual_media(self, tmp_path, language, bracketed):
         from copy_utils import _process_grub_config, _process_syslinux_config
 
         grub = tmp_path / 'minios' / 'boot' / 'grub'
@@ -116,6 +117,8 @@ class TestGrubConfigProcessing:
             'menuentry "$help_label" --class help --hotkey=f1 --id minios-help {\n'
             ' echo $"F2 changes the menu and system language."\n'
             ' echo $"Saving requires writable storage."\n read answer\n}\n')
+        if bracketed:
+            navigation = navigation.replace('"F2 changes', '"[F2] changes')
         (grub / 'navigation.cfg').write_text(navigation)
         for locale, title, codec in (('en_US', 'Start MiniOS', 'ascii'),
                                      ('ru_RU', 'Запустить MiniOS', 'cp866')):
@@ -137,10 +140,12 @@ class TestGrubConfigProcessing:
             (syslinux / 'lang' / (locale + '.cfg')).write_bytes(config)
             if locale == 'en_US':
                 (syslinux / 'syslinux.multilang.cfg').write_bytes(config)
-            (syslinux / 'help' / ('modes_' + locale + '.txt')).write_bytes(
-                ('{}\nF2 changes the menu and system language, keyboard\n'
+            help_content = ('{}\nF2 changes the menu and system language, keyboard\n'
                  'and time zone defaults.\nTab edits boot parameters.\n\nReturn\n'
-                 ).format(title).encode(codec))
+                 ).format(title).encode(codec)
+            if bracketed:
+                help_content = help_content.replace(b'F2 changes', b'[F2] changes')
+            (syslinux / 'help' / ('modes_' + locale + '.txt')).write_bytes(help_content)
 
         _process_grub_config(str(tmp_path), language, lambda *_: None)
         _process_syslinux_config(str(tmp_path), language, lambda *_: None)
