@@ -21,6 +21,68 @@ gettext.textdomain('minios-installer')
 _ = gettext.gettext
 
 
+def _single_language_boot_payload(payload: bytes, kind: str) -> bytes:
+    """Remove the new menu's language action without decoding legacy fonts."""
+    output = []
+    grub_depth = 0
+    skip_label = False
+    skip_help = False
+    for line in payload.decode('latin-1').splitlines(True):
+        if kind == 'grub':
+            if grub_depth:
+                grub_depth += line.count('{') - line.count('}')
+                continue
+            if (re.match(r'^\s*menuentry\s', line) and
+                    re.search(r'--id(?:=|\s+)minios-language(?:\s|$)', line)):
+                grub_depth = line.count('{') - line.count('}')
+                continue
+            if re.match(r'^\s*echo\s+\$?"F2\s', line):
+                continue
+        elif kind == 'syslinux':
+            label = re.match(r'^\s*LABEL\s+(\S+)', line, re.I)
+            if label:
+                skip_label = label.group(1).lower() == 'minios-language'
+            if skip_label or re.match(
+                    r'^\s*(?:MENU\s+HIDDENKEY\s+F2\s|F2\s)', line, re.I):
+                continue
+        elif kind == 'help':
+            if line.startswith('F2 '):
+                skip_help = True
+            if not line.strip() or 'Tab' in line:
+                skip_help = False
+            if skip_help:
+                continue
+        if kind in ('syslinux', 'theme'):
+            line = re.sub(r'\[F2\][^"\[\r\n]*', '', line)
+        output.append(line)
+    if grub_depth:
+        raise ValueError('Unterminated GRUB language menu entry')
+    return ''.join(output).encode('latin-1')
+
+
+def _make_boot_tree_single_language(directory: str, kind: str) -> None:
+    """Adapt the copied tree, including localized hints and F1 help pages."""
+    for root, unused_dirs, files in os.walk(directory):
+        for name in files:
+            payload_kind = None
+            if name.endswith('.cfg'):
+                payload_kind = kind
+            elif name.endswith('.txt'):
+                if os.path.basename(root) == 'minios-theme':
+                    payload_kind = 'theme'
+                elif os.path.basename(root) == 'help' and name.startswith('modes_'):
+                    payload_kind = 'help'
+            if payload_kind is None:
+                continue
+            path = os.path.join(root, name)
+            with open(path, 'rb') as stream:
+                original = stream.read()
+            adapted = _single_language_boot_payload(original, payload_kind)
+            if adapted != original:
+                with open(path, 'wb') as stream:
+                    stream.write(adapted)
+
+
 def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callable,
                        config_override: Optional[str] = None, boot_config_type: str = "multilang",
                        selected_modules: Optional[Iterable[str]] = None,
@@ -409,6 +471,11 @@ def _generate_localized_grub_config(grub_dir: str, lang_code: str, grub_cfg_path
 
         # Remove live-config parameters (will be in minios/config.conf)
         localized_content = _remove_live_config_params(localized_content)
+        # The shared F1 help uses gettext, independently of the static titles.
+        localized_content = 'set lang={}\nexport lang\n{}'.format(
+            lang_code, localized_content)
+        localized_content = _single_language_boot_payload(
+            localized_content.encode('utf-8'), 'grub').decode('utf-8')
 
         # Write localized config directly to grub.cfg
         with open(grub_cfg_path, 'w', encoding='utf-8') as f:
@@ -494,6 +561,8 @@ def _process_syslinux_config(dst: str, config_type: str, log_cb: Callable) -> No
     else:
         log_cb(_("SYSLINUX lang directory not found, keeping default configuration"))
 
+    _make_boot_tree_single_language(syslinux_dir, 'syslinux')
+
 
 def _process_grub_config(dst: str, config_type: str, log_cb: Callable) -> None:
     """
@@ -538,3 +607,5 @@ def _process_grub_config(dst: str, config_type: str, log_cb: Callable) -> None:
                 log_cb(_("Applied template GRUB boot menu as fallback"))
             else:
                 log_cb(_("Warning: No fallback configuration available, keeping original grub.cfg"))
+
+        _make_boot_tree_single_language(grub_dir, 'grub')

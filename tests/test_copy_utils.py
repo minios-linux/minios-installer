@@ -5,6 +5,7 @@ Tests for copy_utils module.
 """
 
 import os
+import pytest
 
 
 def test_efi_payload_preflight_and_copy_verification(tmp_path):
@@ -90,6 +91,84 @@ class TestGrubConfigProcessing:
         for source, translated in entries.items():
             assert f'menuentry "{translated}"' in result
             assert f'menuentry "{source}"' not in result
+
+    @pytest.mark.parametrize('language', ['en_US', 'ru_RU', 'multilang'])
+    def test_new_navigation_is_only_available_on_multilingual_media(self, tmp_path, language):
+        from copy_utils import _process_grub_config, _process_syslinux_config
+
+        grub = tmp_path / 'minios' / 'boot' / 'grub'
+        syslinux = tmp_path / 'minios' / 'boot' / 'syslinux'
+        (grub / 'po').mkdir(parents=True)
+        (grub / 'minios-theme').mkdir()
+        (syslinux / 'lang').mkdir(parents=True)
+        (syslinux / 'help').mkdir()
+        template = (
+            'set theme=/minios/boot/grub/minios-theme/theme.txt\n'
+            'menuentry "Start MiniOS" --class resume {\n'
+            ' linux /minios/boot/vmlinuz boot=live perchdir=resume\n}\n'
+            'source /minios/boot/grub/navigation.cfg\n')
+        (grub / 'grub.template.cfg').write_text(template)
+        (grub / 'grub.multilang.cfg').write_text(template)
+        navigation = (
+            'menuentry "$language_label" --class locale --hotkey=f2 --id minios-language {\n'
+            ' configfile /minios/boot/grub/languages.cfg\n}\n'
+            'menuentry " " --id minios-separator {\n true\n}\n'
+            'menuentry "$help_label" --class help --hotkey=f1 --id minios-help {\n'
+            ' echo $"F2 changes the menu and system language."\n'
+            ' echo $"Saving requires writable storage."\n read answer\n}\n')
+        (grub / 'navigation.cfg').write_text(navigation)
+        for locale, title, codec in (('en_US', 'Start MiniOS', 'ascii'),
+                                     ('ru_RU', 'Запустить MiniOS', 'cp866')):
+            (grub / 'po' / (locale + '.po')).write_text(
+                'msgid "Start MiniOS"\nmsgstr "{}"\n'.format(title), encoding='utf-8')
+            (grub / 'minios-theme' / ('theme_' + locale + '.txt')).write_text(
+                'desktop-image: "/minios/boot/bootlogo791.png"\n'
+                'text = "[F1] Help  [F2] Language  [E] Edit"\n')
+            config = (
+                'UI minios-menu.c32\nTIMEOUT 100\n'
+                'MENU HIDDENKEY F2 minios-language\n'
+                'MENU TABMSG [F1] Help [F2] Language [Tab] Edit\n'
+                'F1 help/modes_{}.txt zblack.png\n'
+                'LABEL default\nMENU LABEL {}\n'
+                'KERNEL /minios/boot/vmlinuz\n'
+                'APPEND boot=live perchdir=resume locales={}.UTF-8\n'
+                'LABEL minios-language\nMENU HIDE\nCONFIG lang/select_{}.cfg\n'
+            ).format(locale, title, locale, locale).encode(codec)
+            (syslinux / 'lang' / (locale + '.cfg')).write_bytes(config)
+            if locale == 'en_US':
+                (syslinux / 'syslinux.multilang.cfg').write_bytes(config)
+            (syslinux / 'help' / ('modes_' + locale + '.txt')).write_bytes(
+                ('{}\nF2 changes the menu and system language, keyboard\n'
+                 'and time zone defaults.\nTab edits boot parameters.\n\nReturn\n'
+                 ).format(title).encode(codec))
+
+        _process_grub_config(str(tmp_path), language, lambda *_: None)
+        _process_syslinux_config(str(tmp_path), language, lambda *_: None)
+        grub_result = (grub / 'grub.cfg').read_text()
+        nav_result = (grub / 'navigation.cfg').read_text()
+        sys_result = (syslinux / 'syslinux.cfg').read_bytes()
+        assert '--hotkey=f1' in nav_result
+        assert b'F1 help/modes_' in sys_result
+        assert 'perchdir=resume' in grub_result
+        assert b'perchdir=resume' in sys_result
+        if language == 'multilang':
+            assert nav_result == navigation
+            assert b'MENU HIDDENKEY F2' in sys_result
+        else:
+            assert 'set lang=' + language in grub_result
+            assert 'minios-language' not in nav_result
+            assert 'F2' not in nav_result
+            assert b'F2' not in sys_result
+            assert b'CONFIG lang/select_' not in sys_result
+            assert b'locales=' not in sys_result
+            hint = (grub / 'minios-theme' / ('theme_' + language + '.txt')).read_text()
+            assert '[F2]' not in hint
+            assert '[F1]' in hint and '[E]' in hint
+            help_text = (syslinux / 'help' / ('modes_' + language + '.txt')).read_bytes()
+            assert b'F2' not in help_text and b'time zone' not in help_text
+            assert b'Tab edits' in help_text
+            if language == 'ru_RU':
+                assert 'Запустить MiniOS'.encode('cp866') in sys_result
 
 
 class TestSyslinuxConfigProcessing:
