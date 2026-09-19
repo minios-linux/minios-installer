@@ -1,3 +1,9 @@
+minios-installer (3.5.4) unstable; urgency=medium
+
+  * Hide and reject DynBlk/VMDK session storage while UEFI Secure Boot is enabled.
+
+ -- crims0n <crims0n@minios.dev>  Sat, 19 Sep 2026 03:22:29 +0300
+
 minios-installer (3.5.3) unstable; urgency=medium
 
   * Remove bracketed F2 language hints from single-language installed media.

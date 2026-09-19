@@ -1,4 +1,4 @@
-.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.5.3" "User Commands"
+.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.5.4" "User Commands"
 .SH NAME
 minios-deploy \- command-line interface for the MiniOS installer
 .SH SYNOPSIS
@@ -59,13 +59,13 @@ without a session remains available.
 Live installation only. The native persistence choice writes changes directly
 to a POSIX-compatible MiniOS partition; it is unrelated to
 .B --mode native .
-DynBlk is listed only when its userspace, kernel, and initrd capability are
-available. Selected storage is created during installation using minios-session
+DynBlk and VMDK are listed only when their userspace, kernel, and initrd capabilities are
+available. Both are hidden and explicitly rejected before disk changes when UEFI Secure Boot is enabled, because MiniOS does not sign the external DynBlk kernel module. Selected storage is created during installation using minios-session
 in the target partition's minios/changes directory and selected as the boot
 default through session metadata, not kernel parameters.
 .TP
 .B --persistence-encryption none|luks
-Live installation only. Optionally layer LUKS2 over Raw, DynFileFS, or DynBlk.
+Live installation only. Optionally layer LUKS2 over Raw, DynFileFS, DynBlk, or VMDK.
 LUKS is listed only when the running initrd marker contains luks-layer-v1 and
 the selected backend is available. Source initrds are revalidated before disk
 changes. The passphrase is entered and confirmed before disk changes and passed

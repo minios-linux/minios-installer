@@ -56,7 +56,7 @@ The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB ceiling. La
 
 Live installation supports `--persistence-mode dynblk` (native compressed container) and `--persistence-mode vmdk` (standard split sparse VMDK without compression). Both default to 16384 MiB and query their installed driver limits. The GUI presents them separately; only the native format offers compression. LUKS2 is a separate optional layer for both formats.
 
-Creation uses the shared `minios-session` CLI on the target medium, not private installer image-format code. VMDK is offered only with the corresponding runtime capability and rejected before installation when any copied source initrd lacks `vmdk-session-v1`. Old initrds must not be used to boot new VMDK session records. Without the optional session-management package, storage creation controls remain hidden.
+Creation uses the shared `minios-session` CLI on the target medium, not private installer image-format code. VMDK is offered only with the corresponding runtime capability and rejected before installation when any copied source initrd lacks `vmdk-session-v1`. DynBlk and VMDK are hidden and rejected before partitioning when UEFI Secure Boot is enabled, because MiniOS does not sign the external DynBlk kernel module. Old initrds must not be used to boot new VMDK session records. Without the optional session-management package, storage creation controls remain hidden.
 
 ## Usage
 

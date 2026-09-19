@@ -13,7 +13,8 @@ from bootloader_utils import install_bootloader
 from copy_utils import copy_efi_files, copy_minios_files, efi_payload_bytes, find_minios_source, verify_efi_payload
 from disk_utils import resolve_install_device
 from install_state import InstallCanceled, InstallState
-from session_storage import create_live_session, preflight_session_storage
+from session_storage import (create_live_session, preflight_session_storage,
+                             secure_boot_enabled)
 from mount_utils import unmount_partitions
 from network_config import create_live_network_hook, source_supports_live_network
 from module_selection import discover_module_names
@@ -140,6 +141,8 @@ def _marker_has_capability(path: str, capability: str) -> bool:
 
 
 def runtime_supports_dynblk_persistence() -> bool:
+    if secure_boot_enabled():
+        return False
     if not shutil.which("dynblk") or not os.path.isfile(INITRD_DYNBLK_MARKER):
         return False
     if os.path.isdir("/sys/module/dynblk"):
@@ -357,6 +360,10 @@ def _validate_persistence_settings(state: InstallState, source: str) -> None:
         raise RuntimeError(_("Session persistence is available only for live installations."))
     if mode not in ("native", "dynfilefs", "dynblk", "vmdk", "raw"):
         raise RuntimeError(_("Unknown session persistence mode: {mode}").format(mode=mode))
+    if mode in ("dynblk", "vmdk") and secure_boot_enabled():
+        raise RuntimeError(_(
+            "DynBlk and VMDK session storage are unavailable while Secure Boot is enabled."
+        ))
     if encryption == "luks" and mode not in ("raw", "dynfilefs", "dynblk", "vmdk"):
         raise RuntimeError(_("LUKS encryption is unavailable for this session storage mode."))
     if compression != "none" and mode != "dynblk":

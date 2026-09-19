@@ -10,7 +10,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from install_state import InstallCanceled, InstallState
-from session_storage import create_live_session, preflight_session_storage
+from session_storage import (create_live_session, preflight_session_storage,
+                             secure_boot_enabled)
 
 
 @pytest.fixture
@@ -110,6 +111,37 @@ def test_invalid_password_rejected_before_backend_probe(password):
         with pytest.raises(ValueError):
             preflight_session_storage(state)
     run.assert_not_called()
+
+
+def test_secure_boot_efivar_rejects_dynblk_before_backend_probe(tmp_path):
+    efivars = tmp_path / 'efivars'
+    efivars.mkdir()
+    variable = efivars / 'SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c'
+    variable.write_bytes(b'\x07\x00\x00\x00\x01')
+    assert secure_boot_enabled(str(efivars)) is True
+
+    state = InstallState(persistence_mode='dynblk', persistence_size_mib=16384)
+    with patch.dict(os.environ, {'MINIOS_EFIVARS_DIR': str(efivars)}), \
+         patch('session_storage.subprocess.run') as run:
+        with pytest.raises(RuntimeError, match='Secure Boot'):
+            preflight_session_storage(state)
+        run.assert_not_called()
+
+    variable.write_bytes(b'\x07\x00\x00\x00\x00')
+    assert secure_boot_enabled(str(efivars)) is False
+
+
+def test_secure_boot_rejects_dynblk_before_partitioning():
+    from live_deploy import run_live_install
+    state = InstallState(target_device='/dev/test', persistence_mode='dynblk',
+                         persistence_size_mib=16384)
+    with patch('live_deploy.resolve_install_device', return_value='/dev/test'), \
+         patch('live_deploy.find_minios_source', return_value='/source'), \
+         patch('live_deploy.secure_boot_enabled', return_value=True), \
+         patch('live_deploy.execute_plan') as execute:
+        with pytest.raises(RuntimeError, match='Secure Boot'):
+            run_live_install(state, lambda *_: None, lambda *_: None)
+    execute.assert_not_called()
 
 
 def test_preflight_rejects_old_cli_before_partitioning():

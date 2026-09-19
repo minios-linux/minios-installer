@@ -280,7 +280,9 @@ SESSION_STORAGE_HELP_MARKUP = _(
     "  - Compression is not available.\n\n"
     "<b>Raw</b>\n"
     "  + Simple fixed-size ext4 image.\n"
-    "  - The selected size is reserved immediately."
+    "  - The selected size is reserved immediately.\n\n"
+    "<b>Secure Boot</b>\n"
+    "  DynBlk and VMDK are unavailable while Secure Boot is enabled because their external kernel module is not signed by MiniOS."
 )
 
 

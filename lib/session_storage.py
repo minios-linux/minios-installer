@@ -12,6 +12,37 @@ from install_state import InstallCanceled, InstallState
 
 _ = gettext.gettext
 
+_SECURE_BOOT_GUID = "8be4df61-93ca-11d2-aa0d-00e098032b8c"
+
+
+def secure_boot_enabled(efivars_dir: Optional[str] = None) -> bool:
+    """Return whether UEFI Secure Boot is enabled for the running system."""
+    override = efivars_dir or os.environ.get("MINIOS_EFIVARS_DIR")
+    directory = override or "/sys/firmware/efi/efivars"
+    variable = os.path.join(directory, "SecureBoot-" + _SECURE_BOOT_GUID)
+    try:
+        with open(variable, "rb") as stream:
+            data = stream.read(5)
+        if len(data) >= 5:
+            return data[4] == 1
+    except OSError:
+        pass
+    if override:
+        return False
+    mokutil = shutil.which("mokutil")
+    if not mokutil:
+        return False
+    try:
+        env = dict(os.environ)
+        env["LC_ALL"] = "C"
+        result = subprocess.run(
+            [mokutil, "--sb-state"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            timeout=5, check=False, env=env)
+        text = (result.stdout + result.stderr).decode("utf-8", errors="replace")
+        return result.returncode == 0 and "SecureBoot enabled" in text
+    except (OSError, subprocess.SubprocessError):
+        return False
+
 
 def session_creation_available() -> bool:
     """Whether the optional session CLI is installed and executable."""
@@ -58,6 +89,10 @@ def preflight_session_storage(state: InstallState,
     """Check creation support before the installer changes the target disk."""
     if state.persistence_mode == "none":
         return None
+    if state.persistence_mode in ("dynblk", "vmdk") and secure_boot_enabled():
+        raise RuntimeError(_(
+            "DynBlk and VMDK session storage are unavailable while Secure Boot is enabled."
+        ))
     if state.persistence_mode in ("dynblk", "vmdk") and state.persistence_size_mib > runtime_dynblk_max_size_mib(state.persistence_mode):
         raise RuntimeError(_("DynBlk persistence size exceeds the installed backend limit."))
     if state.persistence_encryption == "luks" and require_password:
