@@ -1,3 +1,10 @@
+minios-installer (3.6.0) unstable; urgency=medium
+
+  * Clarify automatic first-boot session setup and add contextual help for
+    DynBlk compression choices.
+
+ -- crims0n <crims0n@minios.dev>  Mon, 21 Sep 2026 18:58:51 +0300
+
 minios-installer (3.5.4) unstable; urgency=medium
 
   * Hide and reject DynBlk/VMDK session storage while UEFI Secure Boot is enabled.

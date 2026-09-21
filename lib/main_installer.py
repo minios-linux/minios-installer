@@ -264,8 +264,8 @@ FILESYSTEM_HELP_MARKUP = _(
 
 
 SESSION_STORAGE_HELP_MARKUP = _(
-    "<b>Do not save changes</b>\n"
-    "  Changes are discarded after restart.\n\n"
+    "<b>Set up automatically on first boot</b>\n"
+    "  The installer does not create session storage. MiniOS creates it automatically when the installed system starts for the first time.\n\n"
     "<b>Save directly on the MiniOS partition</b>\n"
     "  + No container overhead and direct filesystem access.\n"
     "  - Available only when the target filesystem supports native persistence.\n\n"
@@ -294,6 +294,15 @@ SESSION_ENCRYPTION_HELP_MARKUP = _(
     "  + The session password is required to unlock saved changes at boot.\n"
     "  - DynBlk compression is unavailable while LUKS2 is enabled.\n"
     "  - LUKS2 is shown only when the running system and target initrd support it."
+)
+
+
+DYNBLK_COMPRESSION_HELP_MARKUP = _(
+    "Compression reduces the physical space used by DynBlk data at the cost of additional CPU work. "
+    "The selected session size remains its logical maximum capacity.\n\n"
+    "Only codecs supported by both the running system and the installed MiniOS initrd are shown. "
+    "<b>none</b> disables compression.\n\n"
+    "Compression is unavailable when LUKS2 encryption is enabled."
 )
 
 
@@ -3244,7 +3253,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
         adv_grid.attach(encryption_label_box, 0, 4, 1, 1)
         adv_grid.attach(self.persistence_encryption_combo, 1, 4, 1, 1)
 
-        compression_label = Gtk.Label(label=_("DynBlk compression:"), xalign=0)
+        compression_label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        compression_label_box.pack_start(
+            Gtk.Label(label=_("DynBlk compression:"), xalign=0), True, True, 0)
+        compression_info = HelpPopoverButton(
+            _("DynBlk compression:"), summary=DYNBLK_COMPRESSION_HELP_MARKUP,
+            compact=True, markup=True)
+        compression_info.set_valign(Gtk.Align.CENTER)
+        compression_label_box.pack_end(compression_info, False, False, 0)
         self.persistence_compression_combo = Gtk.ComboBoxText()
         for codec in self._available_dynblk_compression_codecs():
             self.persistence_compression_combo.append(codec, codec)
@@ -3258,7 +3274,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         self.persistence_compression_combo.connect(
             "changed", on_persistence_compression_changed)
-        adv_grid.attach(compression_label, 0, 5, 1, 1)
+        adv_grid.attach(compression_label_box, 0, 5, 1, 1)
         adv_grid.attach(self.persistence_compression_combo, 1, 5, 1, 1)
 
         self._persistence_password_widgets = []
@@ -3285,10 +3301,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._persistence_encryption_widgets = (
             encryption_label_box, self.persistence_encryption_combo)
         self._persistence_compression_widgets = (
-            compression_label, self.persistence_compression_combo)
+            compression_label_box, self.persistence_compression_combo)
         self._persistence_widgets = (
             persistence_label_box, persistence_box, encryption_label_box,
-            self.persistence_encryption_combo, compression_label,
+            self.persistence_encryption_combo, compression_label_box,
             self.persistence_compression_combo,
         )
         self._refresh_persistence_choices()
@@ -3350,7 +3366,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.state.persistence_size_mib = 0
             self.state.persistence_password = ""
             self._persistence_password_confirm = ""
-        choices = [("none", _("Do not save changes"))]
+        choices = [("none", _("Set up automatically on first boot"))]
         if available:
             if self.state.filesystem not in ("fat32", "ntfs"):
                 choices.append(("native", _("Save directly on the MiniOS partition")))
