@@ -1,0 +1,150 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH MINIOS\-INSTALLER 1 "Septembre 2026" "Programme d’installation MiniOS" "Commandes utilisateur"
+.SH NOM
+minios\-installer \- Installer MiniOS sur le disque depuis une session live
+.SH SYNOPSIS
+\fBminios\-installer\fP [\fI\-\-help\fP]
+.SH DESCRIPTION
+\fBminios\-installer\fP est un assistant graphique GTK3 permettant d’installer
+MiniOS depuis une session live sur un disque cible. Il prend en charge les
+installations live modulaires ainsi que les installations natives
+classiques. L’assistant détecte la capacité d’installation native à partir
+de l’image amorcée plutôt que de son numéro de version. Les images
+dépourvues des métadonnées kernel format\-1 requises et du contrat
+d’architecture EFI utilisent automatiquement le mode de compatibilité et
+autorisent uniquement l’installation live.
+.PP
+L’installateur crée et valide un plan de partitionnement explicite avant
+toute opération destructive. Les modes de placement incluent : effacer tout,
+utiliser l’espace libre existant, installer à côté d’une partition finale
+prise en charge, et le partitionnement manuel via l’interface graphique
+native.
+.PP
+Nécessite des privilèges administrateur.
+.SH OPTIONS
+.TP
+\fB\-h, \-\-help\fP
+Afficher un court message d’utilisation puis quitter.
+.SH ASSISTANT
+L’assistant configure le mode d’installation, la sécurité, la localisation,
+le réseau filaire, le clavier, les utilisateurs, les modules, le placement
+du stockage et la disposition de l’amorçage avant d’afficher le résumé
+final. Les pages déjà visitées peuvent être réouvertes tant que
+l’installation n’a pas débuté.
+.SH "MODES DE PLACEMENT"
+.TP
+\fBEffacer tout\fP
+Créer une nouvelle table de partitions et détruire toutes les données sur le
+disque cible.
+.TP
+\fBEspace libre\fP
+Créer des partitions MiniOS dans une région non allouée existante.
+.TP
+\fBÀ côté\fP
+Réduire une partition finale ext2, ext3, ext4 ou NTFS éligible et démontée,
+puis utiliser l’espace libéré. Les dispositions non prises en charge ou
+risquées sont refusées.
+.TP
+\fBManuel\fP
+Réservé aux installations graphiques natives. Permet de préparer la
+création, la suppression, la réduction (fin uniquement), le formatage, la
+réutilisation, l’attribution de racine, de points de montage enfants, d’ESP
+et de swap, avec annulation et réinitialisation. Aucune opération
+destructive n’est lancée avant la confirmation finale.
+.SH "SYSTÈMES DE FICHIERS PRIS EN CHARGE"
+.TP
+\fBext4\fP
+Système de fichiers Linux recommandé pour les installations live et natives.
+.TP
+\fBext2\fP
+Système de fichiers Linux sans journalisation, pris en charge pour les
+installations live et natives.
+.TP
+\fBbtrfs\fP
+Système de fichiers Linux pris en charge pour les installations live et
+natives.
+.TP
+\fBFAT32\fP
+Disposition live uniquement ; limité aux fichiers de moins de 4 Gio.
+.TP
+\fBNTFS\fP
+Disposition live uniquement. Un NTFS existant peut également être réduit
+pour un placement à côté.
+.SH "SÉCURITÉ ET RÉSEAU"
+Les profils de sécurité sont : pratique, équilibré et strict. Le mode live
+utilise par défaut le profil pratique ; le mode natif utilise le profil
+équilibré. L’exposition SSH et XRDP se configure indépendamment du profil.
+.PP
+La configuration réseau couvre le nom d’hôte et le DHCP filaire ou l’IPv4
+statique. Les profils Wi\-Fi ne sont ni créés ni modifiés. Le réseau statique
+natif utilise NetworkManager si disponible, sinon bascule sur ifupdown.
+.SH "PERSISTANCE DE SESSION"
+La création de session nécessite \fBminios\-session\fP version 2.2.0 ou
+ultérieure.  Sans son exécutable, l’assistant masque les contrôles de
+stockage de session, de chiffrement, de compression et de mot de passe, et
+efface toute sélection précédente.  L’installation sans création de session
+reste disponible.
+.PP
+Les installations en mode live prennent en charge les répertoires natifs, le
+stockage DynFileFS extensible, le stockage DynBlk fin, ainsi que les images
+brutes à taille fixe. Les formats Raw, DynFileFS et DynBlk peuvent utiliser
+en option le chiffrement LUKS2. Raw et DynFileFS sont par défaut à 4000 Mio
+; DynBlk est par défaut à 16 Gio. Seul Raw est limité à 4000 Mio sur FAT32.
+Pour le stockage DynBlk non chiffré, l'assistant propose uniquement les
+codecs utilisables à la fois par le noyau/initrd en cours (qui crée le
+conteneur) et par chaque noyau/initrd copié sur la cible (qui devra le
+rouvrir ultérieurement). L'installateur vérifie les métadonnées kmod pour le
+fournisseur crypto_comp requis, y compris les fournisseurs intégrés et les
+dépendances de modules ; aucun indicateur de capacité de codec n'est
+utilisé. Les codecs connus sont : none, lz4, lz4hc, lzo, lzo\-rle, zstd,
+deflate et 842 ; les codecs non disponibles sont masqués.
+.PP
+LUKS n'est affiché que si le marqueur initrd en cours contient luks\-layer\-v1
+dans \fI/run/initramfs/etc/minios\-initramfs\-crypt\fP.  Avant toute modification
+du disque, chaque initrd source est extrait et vérifié pour la même capacité
+versionnée et toute capacité DynBlk sélectionnée. L'installateur crée et
+sélectionne une session réelle dans minios/changes sur la partition cible en
+utilisant le backend minios\-session, sans réécrire les paramètres de
+persistance du noyau.  La phrase de passe est saisie et confirmée dans
+l'assistant, puis transmise uniquement via stdin, jamais via les arguments
+de commande, les journaux ou la configuration. Au démarrage, elle est
+utilisée pour déverrouiller la session déjà créée. Ceci ne chiffre pas une
+racine native.
+.SH FICHIERS
+\fI/usr/share/applications/minios\-installer.desktop\fP
+.br
+\fI/usr/share/polkit\-1/actions/org.minios.installer.policy\fP
+.br
+\fI/usr/lib/minios\-installer/\fP
+.SH NOTES
+.PP
+Fonctionne uniquement depuis une session live MiniOS. Le disque live\-media
+en cours d'exécution est exclu de la sélection de la cible. L'option "tout
+effacer" détruit toutes les données sur le disque sélectionné.
+.PP
+L'espace racine requis est calculé à partir des modules sélectionnés, des
+ressources de démarrage, de la persistance et d'une réserve de 25 pour cent
+du système de fichiers. Les espaces ESP et swap natif sont comptabilisés
+séparément.
+.PP
+UEFI est pris en charge sur GPT et MBR principal. BIOS n'est pris en charge
+que sur MBR principal ; BIOS sur GPT et les agencements MBR étendus/logiques
+ne sont pas supportés. Le mode manuel rejette également LVM, RAID, LUKS
+ainsi que le stockage mappé ou imbriqué.
+.PP
+Interface en ligne de commande : \fBminios\-deploy\fP (voir
+\fBminios\-deploy\fP(1)).
+.SH AUTEUR
+crims0n (crims0n@minios.dev)
+.SH BOGUES
+https://github.com/minios\-linux/minios\-installer/issues
+
+.SH "CAPACITÉ DYNBLK"
+La limite DynBlk est obtenue à partir des limites dynblk, et non d'un
+plafond fixe de 512‑GiB. Les grands conteneurs thin nécessitent également de
+l'espace pour les métadonnées de toutes les parties déclarées. Les modes Raw
+et DynFileFS conservent leurs politiques de capacité distinctes.

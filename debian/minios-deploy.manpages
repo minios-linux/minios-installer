@@ -1,1 +1,9 @@
-debian/minios-deploy.1
+manpages/en/minios-deploy.1
+manpages/de/minios-deploy.de.1
+manpages/es/minios-deploy.es.1
+manpages/fr/minios-deploy.fr.1
+manpages/id/minios-deploy.id.1
+manpages/it/minios-deploy.it.1
+manpages/pt/minios-deploy.pt.1
+manpages/pt_BR/minios-deploy.pt_BR.1
+manpages/ru/minios-deploy.ru.1

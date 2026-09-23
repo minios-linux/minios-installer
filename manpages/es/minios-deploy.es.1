@@ -1,0 +1,259 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH MINIOS\-DEPLOY 1 "septiembre de 2026" "Instalador de MiniOS" "Comandos de usuario"
+.SH NOMBRE
+minios\-deploy \- interfaz de línea de comandos para el Instalador de MiniOS
+.SH SINOPSIS
+\fBminios\-deploy\fP COMANDO [\fIOPCIONES\fP]
+.SH DESCRIPCIÓN
+\fBminios\-deploy\fP proporciona una interfaz de línea de comandos scriptable
+para el Instalador de MiniOS. Está pensado para pruebas, automatización y
+sesiones de recuperación donde el asistente gráfico no resulta conveniente.
+.SH COMANDOS
+.TP
+\fBlist\-disks [\-\-json]\fP
+Lista los discos instalables detectados por el instalador.
+.TP
+\fBplan DEVICE [\-\-mode MODE] [\-\-filesystem FS] [\-\-placement MODE] [OPCIONES]\fP
+Muestra el esquema de particionado que se aplicaría a DEVICE.
+.TP
+\fBinstall DEVICE [OPCIONES]\fP
+Ejecuta una instalación en vivo o nativa. Sin \fB\-\-yes\fP el comando se niega a
+escribir en el disco. Utilice \fB\-\-dry\-run\fP para previsualizar los comandos
+sin realizar cambios.
+.SH "OPCIONES DE INSTALACIÓN"
+.TP
+\fB\-\-mode live|native\fP
+Modo de instalación. Por defecto: live. En imágenes live sin los contratos
+de instalación nativa requeridos, solo se acepta live; el modo nativo está
+oculto y se rechaza.
+.TP
+\fB\-\-filesystem FS\fP
+Sistema de archivos raíz. Por defecto: ext4. El modo nativo acepta ext2,
+ext4 y btrfs.
+.TP
+\fB\-\-placement MODE\fP
+Utilice erase_all, free_space o alongside_os. El particionado manual solo
+está disponible en la interfaz gráfica.
+.TP
+\fB\-\-alongside\-size MIB\fP
+Capacidad MiniOS a liberar del candidato de reducción alongside.
+.TP
+\fB\-\-swap\-size MIB\fP
+Solo para instalación nativa. Tamaño de swap. Por defecto: 0.
+.TP
+\fB\-\-boot\-layout LAYOUT\fP
+Utilice auto, bios_mbr, uefi_mbr o uefi_gpt.
+.TP
+\fB\-\-modules LIST\fP
+Nombres de módulos separados por comas. Las capas inferiores requeridas se
+incluyen automáticamente.
+.TP
+\fB\-\-security\-profile PROFILE\fP
+Utilice convenient, balanced o strict. Por defecto es convenient para live y
+balanced para instalaciones nativas.
+.TP
+\fB\-\-persistence\-mode none|native|dynfilefs|dynblk|vmdk|raw\fP
+Requiere minios\-session versión 2.2.0 o superior para modos distintos de
+none.  Si el ejecutable no está disponible, las opciones de persistencia se
+ocultan en la ayuda y el autocompletado.  Las solicitudes explícitas de
+creación se rechazan antes de realizar cambios en el disco; la instalación
+sin sesión sigue estando disponible.
+.br
+Solo instalación en vivo. La opción de persistencia nativa escribe los
+cambios directamente en una partición compatible con POSIX MiniOS; no está
+relacionada con \fB\-\-mode native .\fP DynBlk y VMDK solo se muestran cuando sus
+capacidades en espacio de usuario, kernel e initrd están disponibles. Ambas
+están ocultas y se rechazan explícitamente antes de realizar cambios en el
+disco cuando UEFI Secure Boot está habilitado, porque MiniOS no firma el
+módulo externo del kernel DynBlk. El almacenamiento seleccionado se crea
+durante la instalación usando minios\-session en el directorio minios/changes
+de la partición de destino y se selecciona como predeterminado de arranque
+mediante metadatos de sesión, no por parámetros del kernel.
+.TP
+\fB\-\-persistence\-encryption none|luks\fP
+Solo instalación en vivo. Opcionalmente, superpone LUKS2 sobre Raw,
+DynFileFS, DynBlk o VMDK. LUKS solo aparece cuando el marcador initrd en
+ejecución contiene luks\-layer\-v1 y el backend seleccionado está
+disponible. Los initrd de origen se revalidan antes de realizar cambios en
+el disco. La contraseña se introduce y confirma antes de los cambios en
+disco y se pasa a minios\-session solo por la entrada estándar. El arranque
+desbloquea la sesión existente.
+.TP
+\fB\-\-persistence\-password\-stdin\fP
+Lee la contraseña LUKS y su confirmación desde dos líneas de la entrada
+estándar en lugar de un aviso interactivo. Requiere \-\-persistence\-encryption
+luks. Las contraseñas no se escriben en argumentos, registros ni
+configuración. Las ejecuciones de prueba no leen de la entrada estándar.
+.TP
+\fB\-\-persistence\-compression none|lz4|lz4hc|lzo|lzo\-rle|zstd|deflate|842\fP
+Solo instalación en vivo. Selecciona el códec utilizado al crear un nuevo
+contenedor de persistencia DynBlk. El códec seleccionado debe contar con un
+proveedor crypto_comp en el kernel/initrd en ejecución y en cada initrd de
+origen copiado al destino; el instalador verifica los proveedores integrados
+y modulares a partir de los metadatos de kmod antes de realizar cambios en
+disco. Esta opción solo se aplica a DynBlk y no está disponible cuando se
+selecciona cifrado LUKS. El instalador pasa la selección a minios\-session al
+crear el contenedor.
+.TP
+\fB\-\-persistence\-size MIB\fP
+Solo instalación en vivo. Tamaño de la persistencia del contenedor. Raw y
+DynFileFS tienen un valor predeterminado de 4000 MiB; DynBlk predetermina a
+16 GiB. Raw está limitado a 4000 MiB en FAT32; DynFileFS y DynBlk utilizan
+capacidad virtual delgada.
+.TP
+\fB\-\-download\-packages\fP
+Solo instalación nativa. Permite la descarga de paquetes requeridos. El
+valor predeterminado en la CLI es deshabilitado. La dependencia
+minios\-native\-dracut proporciona una cadena de herramientas dracut initramfs
+convencional incluso cuando la imagen en vivo utiliza livekit\-mos. Sin
+descargas, el borrado total de un solo sistema puede usar EXTLINUX en BIOS o
+la cadena EFI verificada del medio en vivo con una configuración GRUB nativa
+mínima en UEFI.
+.TP
+\fB\-\-boot\-menu LANG\fP
+Solo instalación en vivo. Código de idioma del menú de arranque (por
+ejemplo, ru_RU) o \fBmultilang\fP (predeterminado).
+.TP
+\fB\-\-dry\-run\fP
+Valida e imprime los comandos planificados sin escribir en el disco. Una
+ejecución de prueba no puede garantizar que el entorno de ejecución final
+permanezca sin cambios.
+.TP
+\fB\-\-yes\fP
+Confirma que el disco de destino puede ser borrado.
+.TP
+\fB\-\-config\-file PATH\fP
+Solo instalación en vivo. Archivo base \fIconfig.conf\fP para copiar y fusionar
+con los parámetros de la línea de comandos. Si se omite y se establecen
+parámetros, el sistema en vivo utiliza \fI/etc/live/config.conf\fP como base si
+está presente.
+.SH "CONFIGURACIÓN DEL SISTEMA"
+Las siguientes opciones personalizan el sistema instalado. En modo en vivo
+escriben las mismas claves que \fBminios\-configurator\fP en
+\fIminios/config.conf\fP; en modo nativo, la configuración soportada de
+cuentas, localización, zona horaria, teclado, destino y servicios se aplica
+directamente. Las opciones marcadas solo para modo en vivo se rechazan con
+\fB\-\-mode native .\fP Las opciones booleanas aceptan \fBtrue\fP/\fBfalse\fP (también
+yes/no, on/off, 1/0).
+.SS Usuario
+.TP
+\fB\-\-username NAME\fP
+\fBLIVE_USERNAME\fP
+.TP
+\fB\-\-full\-name NAME\fP
+\fBLIVE_USER_FULLNAME\fP
+.TP
+\fB\-\-user\-groups LIST\fP
+\fBLIVE_USER_DEFAULT_GROUPS\fP
+.TP
+\fB\-\-password PASS\fP
+Contraseña en texto plano; almacenada como \fBLIVE_USER_PASSWORD_CRYPTED\fP
+.TP
+\fB\-\-root\-password PASS\fP
+Contraseña en texto plano; almacenada como \fBLIVE_ROOT_PASSWORD_CRYPTED\fP
+.PP
+Las opciones de contraseña exponen el texto plano al historial del shell y a
+la lista de procesos mientras el comando se está ejecutando. Evítelas en
+entornos compartidos.
+.TP
+\fB\-\-link\-user\-dirs BOOL\fP
+Solo instalación en vivo.  \fBLIVE_LINK_USER_DIRS\fP
+.TP
+\fB\-\-bind\-user\-dirs BOOL\fP
+Solo instalación en vivo.  \fBLIVE_BIND_USER_DIRS\fP
+.TP
+\fB\-\-user\-dirs\-path PATH\fP
+Solo instalación en vivo.  \fBLIVE_USER_DIRS_PATH\fP
+.SS Sistema
+.TP
+\fB\-\-noroot BOOL\fP
+Solo instalación en vivo.  \fBLIVE_CONFIG_NOROOT\fP
+.TP
+\fB\-\-hostname NAME\fP
+\fBLIVE_HOSTNAME\fP
+.TP
+\fB\-\-locale / \-\-locales LIST\fP
+\fBLIVE_LOCALES\fP
+.TP
+\fB\-\-timezone ZONE\fP
+\fBLIVE_TIMEZONE\fP
+.TP
+\fB\-\-default\-target TARGET\fP
+\fBDEFAULT_TARGET\fP (gráfico, multiusuario, rescate o nombres completos de
+unidades)
+.TP
+\fB\-\-enable\-services LIST\fP
+\fBENABLE_SERVICES\fP
+.TP
+\fB\-\-disable\-services LIST\fP
+\fBDISABLE_SERVICES\fP
+.SS Teclado
+.TP
+\fB\-\-keyboard\-model MODEL\fP
+\fBLIVE_KEYBOARD_MODEL\fP
+.TP
+\fB\-\-keyboard / \-\-keyboard\-layouts LIST\fP
+\fBLIVE_KEYBOARD_LAYOUTS\fP
+.TP
+\fB\-\-keyboard\-options OPTS\fP
+\fBLIVE_KEYBOARD_OPTIONS\fP
+.TP
+\fB\-\-keyboard\-variants LIST\fP
+\fBLIVE_KEYBOARD_VARIANTS\fP
+.SS Avanzado
+Las siguientes opciones avanzadas están disponibles solo con \fB\-\-mode live \&.\fP
+.TP
+\fB\-\-module\-mode simple|merged\fP
+\fBLIVE_MODULE_MODE\fP
+.TP
+\fB\-\-live\-config\-cmdline STRING\fP
+\fBLIVE_CONFIG_CMDLINE\fP
+.TP
+\fB\-\-config\-debug BOOL\fP
+\fBLIVE_CONFIG_DEBUG\fP
+.TP
+\fB\-\-export\-logs BOOL\fP
+\fBEXPORT_LOGS\fP
+.SH "MODOS DE UBICACIÓN"
+.TP
+\fBerase_all\fP
+Crear una nueva tabla de particiones y borrar el disco seleccionado.
+.TP
+\fBfree_space\fP
+Crear particiones en el espacio no asignado adecuado sin reducir los
+sistemas de archivos.
+.TP
+\fBalongside_os\fP
+Reducir una partición ext2/ext3/ext4 o NTFS final, no montada y elegible.
+.SH "CAPACIDAD DYNBLK"
+El límite de DynBlk se obtiene de los límites de dynblk, no de un techo fijo
+de 512 GiB. Los contenedores thin grandes también requieren espacio para los
+metadatos de todas las partes declaradas. Raw y DynFileFS mantienen sus
+propias políticas de capacidad por separado.
+.SH "PERMANENCIA VMDK"
+El modo de almacenamiento vmdk utiliza el backend compartido de
+minios\-session y el controlador DynBlk para crear almacenamiento VMDK
+estándar dividido y disperso. No tiene compresión y el valor predeterminado
+es 16384 MiB; los límites se consultan con dynblk limits \-\-format vmdk.
+LUKS2 puede usarse como una capa adicional. El entorno de ejecución y cada
+initrd de origen deben soportar la capacidad vmdk\-session\-v1 versionada.
+.SH LIMITACIONES
+La CLI no dispone de un editor de particiones manual ni de opciones de red
+específicas. El asistente GTK proporciona configuración manual de
+almacenamiento y red cableada interactiva.  BIOS en GPT, MBR extendido o
+lógico preservan los esquemas de particionado, LVM, RAID, raíces nativas
+LUKS y almacenamiento de destino mapeado o anidado no son compatibles.
+.SH EJEMPLOS
+.nf
+minios\-deploy list\-disks
+minios\-deploy plan /dev/sdb \-\-mode native \-\-placement free_space
+minios\-deploy install /dev/sdb \-\-mode native \-\-placement free_space \-\-yes \-\-security\-profile balanced \-\-download\-packages \-\-username alice \-\-password secret \-\-hostname workstation \-\-locale ru_RU.UTF\-8 \-\-timezone Europe/Moscow \-\-keyboard us,ru \-\-keyboard\-options grp:alt_shift_toggle \-\-default\-target graphical \-\-enable\-services ssh
+.fi
+.SH "VÉASE TAMBIÉN"
+\fBminios\-installer\fP(1), \fBminios\-configurator\fP(1), \fBlive\-config\fP(7)
+.SH AUTOR
+crims0n (crims0n@minios.dev)

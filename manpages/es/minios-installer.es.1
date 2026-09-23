@@ -1,0 +1,149 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH MINIOS\-INSTALLER 1 "septiembre de 2026" "Instalador de MiniOS" "Comandos de usuario"
+.SH NOMBRE
+minios\-installer \- Instala MiniOS en el disco desde una sesión en vivo
+.SH SINOPSIS
+\fBminios\-installer\fP [\fI\-\-help\fP]
+.SH DESCRIPCIÓN
+\fBminios\-installer\fP es un asistente gráfico basado en GTK3 para instalar
+MiniOS desde una sesión en vivo a un disco de destino. Soporta instalaciones
+en vivo modulares e instalaciones nativas convencionales. El asistente
+detecta la capacidad de instalación nativa a partir de la imagen arrancada,
+no del número de versión. Las imágenes que no contienen los metadatos de
+kernel formato\-1 requeridos ni el contrato EFI de arquitectura utilizan
+automáticamente el modo de compatibilidad y solo permiten la instalación en
+vivo.
+.PP
+El instalador crea y valida un plan de particionado explícito antes de
+cualquier operación destructiva. Los modos de ubicación incluyen borrar
+todo, espacio libre existente, junto a una partición final soportada y
+particionado manual nativo desde la interfaz gráfica.
+.PP
+Requiere privilegios administrativos.
+.SH OPCIONES
+.TP
+\fB\-h, \-\-help\fP
+Muestra un mensaje breve de uso y termina.
+.SH ASISTENTE
+El asistente configura el modo de instalación, la seguridad, la ubicación,
+la red cableada, el teclado, los usuarios, los módulos, la ubicación del
+almacenamiento y el esquema de arranque antes de mostrar el resumen
+final. Las páginas visitadas previamente pueden ser revisitadas hasta que
+comience la instalación.
+.SH "MODOS DE UBICACIÓN"
+.TP
+\fBBorrar todo\fP
+Crea una nueva tabla de particiones y destruye todos los datos en el disco
+de destino.
+.TP
+\fBEspacio libre\fP
+Crea particiones MiniOS en una región no asignada existente.
+.TP
+\fBJunto a\fP
+Reduce una partición final ext2, ext3, ext4 o NTFS desmontada elegible y
+utiliza el espacio liberado. Se rechazan los esquemas no soportados o
+inseguros.
+.TP
+\fBManual\fP
+Solo para instalaciones nativas con interfaz gráfica. Permite crear,
+eliminar, reducir solo al final, formatear, reutilizar, asignar raíz, punto
+de montaje secundario, ESP y swap por sectores exactos, con opciones de
+deshacer y reiniciar. Ninguna operación destructiva se ejecuta antes de la
+confirmación final.
+.SH "SISTEMAS DE ARCHIVOS SOPORTADOS"
+.TP
+\fBext4\fP
+Sistema de archivos recomendado para Linux en instalaciones en vivo y
+nativas.
+.TP
+\fBext2\fP
+Sistema de archivos Linux sin journaling, soportado para instalaciones en
+vivo y nativas.
+.TP
+\fBbtrfs\fP
+Sistema de archivos Linux soportado para instalaciones en vivo y nativas.
+.TP
+\fBFAT32\fP
+Solo para el esquema en vivo; limitado a archivos menores de 4 GiB.
+.TP
+\fBNTFS\fP
+Solo para el esquema en vivo. Un NTFS existente también puede reducirse para
+ubicar junto a otra partición.
+.SH "SEGURIDAD Y RED"
+Los perfiles de seguridad son conveniente, equilibrado y estricto. El modo
+en vivo utiliza por defecto el perfil conveniente; el modo nativo utiliza el
+equilibrado. La exposición de SSH y XRDP se selecciona por separado del
+perfil.
+.PP
+La configuración de red abarca el nombre de host y DHCP cableado o IPv4
+estática. No se crean ni modifican perfiles Wi\-Fi. La red estática nativa
+utiliza NetworkManager cuando está disponible y recurre a ifupdown como
+alternativa.
+.SH "PERSISTENCIA DE SESIÓN"
+La creación de sesiones requiere minios\-session versión 2.2.0 o
+superior. Sin su ejecutable, el asistente oculta los controles de
+almacenamiento de sesión, cifrado, compresión y contraseña, y borra
+cualquier selección previa. La instalación sin crear una sesión sigue
+estando disponible.
+.PP
+Las instalaciones en vivo admiten directorios nativos, almacenamiento
+DynFileFS expandible, almacenamiento DynBlk delgado y archivos de imagen de
+tamaño fijo. Los formatos Raw, DynFileFS y DynBlk pueden utilizar cifrado
+LUKS2 de forma opcional. Raw y DynFileFS tienen un tamaño predeterminado de
+4000 MiB; DynBlk predetermina a 16 GiB. Solo Raw está limitado a 4000 MiB en
+FAT32. Para almacenamiento DynBlk no cifrado, el asistente solo ofrece
+códecs utilizables tanto por el kernel/initrd en ejecución, que crea el
+contenedor, como por cada kernel/initrd copiado al destino, que debe
+reabrirlo posteriormente. El instalador verifica los metadatos de kmod para
+el proveedor crypto_comp requerido, incluyendo proveedores integrados y
+dependencias de módulos; no se utiliza ningún marcador de capacidad de
+códec. Los códecs conocidos son none, lz4, lz4hc, lzo, lzo\-rle, zstd,
+deflate y 842; los códecs no disponibles se ocultan.
+.PP
+LUKS solo se muestra cuando el marcador initrd en ejecución contiene
+luks\-layer\-v1 en \fI/run/initramfs/etc/minios\-initramfs\-crypt\fP. Antes de
+realizar cambios en el disco, cada initrd de origen se desempaqueta y se
+comprueba para la misma capacidad versionada y cualquier capacidad
+seleccionada de DynBlk. El instalador crea y selecciona una sesión real en
+minios/changes en la partición de destino usando el backend minios\-session,
+sin reescribir los parámetros del kernel de persistencia. La frase de
+contraseña se introduce y confirma en el asistente y solo se pasa por stdin,
+nunca por argumentos de comandos, registros o configuración. Al arrancar, se
+utiliza para desbloquear la sesión ya creada. Esto no cifra una raíz nativa.
+.SH ARCHIVOS
+\fI/usr/share/applications/minios\-installer.desktop\fP
+.br
+\fI/usr/share/polkit\-1/actions/org.minios.installer.policy\fP
+.br
+\fI/usr/lib/minios\-installer/\fP
+.SH NOTAS
+.PP
+Solo funciona desde una sesión en vivo MiniOS. El disco live\-media en
+ejecución se excluye de la selección de destino. La opción borrar\-todo
+destruye todos los datos en el disco seleccionado.
+.PP
+El espacio raíz requerido se calcula a partir de los datos de módulos
+seleccionados, archivos de arranque, persistencia y una reserva del sistema
+de archivos del veinticinco por ciento. El espacio ESP y el swap nativo se
+contabilizan por separado.
+.PP
+UEFI es compatible con GPT y MBR primario. BIOS solo es compatible con MBR
+primario; BIOS sobre GPT y diseños MBR extendidos/lógicos no son
+compatibles. El modo manual también rechaza LVM, RAID, LUKS y almacenamiento
+mapeado o anidado.
+.PP
+Interfaz de línea de comandos: \fBminios\-deploy\fP (ver \fBminios\-deploy\fP(1)).
+.SH AUTOR
+crims0n (crims0n@minios.dev)
+.SH ERRORES
+https://github.com/minios\-linux/minios\-installer/issues
+
+.SH "CAPACIDAD DYNBLK"
+El límite de DynBlk se obtiene de los límites de dynblk, no de un techo fijo
+de 512 GiB. Los contenedores thin grandes también requieren espacio para los
+metadatos de todas las partes declaradas. Raw y DynFileFS mantienen sus
+propias políticas de capacidad por separado.

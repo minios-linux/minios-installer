@@ -1,0 +1,476 @@
+# Indonesian translations for minios-installer package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the minios-installer package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 3.6.1\n"
+"POT-Creation-Date: 2026-09-22 21:45+0300\n"
+"PO-Revision-Date: 2026-09-22 18:47+0000\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: TH
+#: en/minios-installer.1:1
+#, no-wrap
+msgid "MINIOS-INSTALLER"
+msgstr "MINIOS-INSTALLER"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "September 2026"
+msgstr "September 2026"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "MiniOS Installer"
+msgstr "Penginstal MiniOS"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "User Commands"
+msgstr "Perintah Pengguna"
+
+#. type: SH
+#: en/minios-installer.1:2 en/minios-deploy.1:2
+#, no-wrap
+msgid "NAME"
+msgstr "NAMA"
+
+#. type: Plain text
+#: en/minios-installer.1:4
+msgid "minios-installer - Install MiniOS to disk from live session"
+msgstr "minios-installer - Instal MiniOS ke disk dari sesi live"
+
+#. type: SH
+#: en/minios-installer.1:4 en/minios-deploy.1:4
+#, no-wrap
+msgid "SYNOPSIS"
+msgstr "SINOPSIS"
+
+#. type: Plain text
+#: en/minios-installer.1:7
+msgid "B<minios-installer> [I<--help>]"
+msgstr "B<minios-installer> [I<--help>]"
+
+#. type: SH
+#: en/minios-installer.1:7 en/minios-deploy.1:8
+#, no-wrap
+msgid "DESCRIPTION"
+msgstr "DESKRIPSI"
+
+#. type: Plain text
+#: en/minios-installer.1:15
+msgid ""
+"B<minios-installer> is a GTK3 graphical wizard for installing MiniOS from a "
+"live session to a target disk. It supports modular live installations and "
+"conventional native installations. The wizard detects native-install "
+"capability from the booted image rather than its release number. Images "
+"without the required format-1 kernel metadata and EFI architecture contract "
+"automatically use compatibility mode and permit live installation only."
+msgstr ""
+"B<minios-installer> adalah wizard grafis GTK3 untuk menginstal MiniOS dari "
+"sesi live ke disk target. Mendukung instalasi live modular dan instalasi "
+"native konvensional. Wizard ini mendeteksi kemampuan native-install dari "
+"image yang sedang boot, bukan dari nomor rilisnya. Image tanpa metadata "
+"kernel format-1 dan kontrak arsitektur EFI yang diperlukan secara otomatis "
+"menggunakan mode kompatibilitas dan hanya mengizinkan instalasi live."
+
+#. type: Plain text
+#: en/minios-installer.1:19
+msgid ""
+"The installer creates and validates an explicit partition plan before any "
+"destructive operation. Placement modes include erase-all, existing free "
+"space, alongside a supported final partition, and native GUI manual "
+"partitioning."
+msgstr ""
+"Installer membuat dan memvalidasi rencana partisi secara eksplisit sebelum "
+"melakukan operasi destruktif apa pun. Mode penempatan mencakup hapus-semua, "
+"ruang kosong yang ada, berdampingan dengan partisi akhir yang didukung, dan "
+"partisi manual melalui antarmuka GUI native."
+
+#. type: Plain text
+#: en/minios-installer.1:21
+msgid "Requires administrative privileges."
+msgstr "Memerlukan hak administratif."
+
+#. type: SH
+#: en/minios-installer.1:21
+#, no-wrap
+msgid "OPTIONS"
+msgstr "OPSI"
+
+#. type: TP
+#: en/minios-installer.1:22
+#, no-wrap
+msgid "B<-h, --help>"
+msgstr "B<-h, --help>"
+
+#. type: Plain text
+#: en/minios-installer.1:25
+msgid "Show a short usage message and exit."
+msgstr "Tampilkan pesan penggunaan singkat dan keluar."
+
+#. type: SH
+#: en/minios-installer.1:25
+#, no-wrap
+msgid "WIZARD"
+msgstr "WIZARD"
+
+#. type: Plain text
+#: en/minios-installer.1:30
+msgid ""
+"The wizard configures installation mode, security, location, wired network, "
+"keyboard, users, modules, storage placement, and boot layout before showing "
+"the final summary. Previously visited pages can be revisited until "
+"installation starts."
+msgstr ""
+"Wizard mengatur mode instalasi, keamanan, lokasi, jaringan kabel, papan "
+"ketik, pengguna, modul, penempatan penyimpanan, dan tata letak boot sebelum "
+"menampilkan ringkasan akhir. Halaman yang telah dikunjungi sebelumnya dapat "
+"diakses kembali hingga instalasi dimulai."
+
+#. type: SH
+#: en/minios-installer.1:30 en/minios-deploy.1:216
+#, no-wrap
+msgid "PLACEMENT MODES"
+msgstr "MODE PENEMPATAN"
+
+#. type: TP
+#: en/minios-installer.1:31
+#, no-wrap
+msgid "B<Erase all>"
+msgstr "B<Hapus semua>"
+
+#. type: Plain text
+#: en/minios-installer.1:34
+msgid "Create a new partition table and destroy all data on the target disk."
+msgstr "Buat tabel partisi baru dan hapus semua data pada disk target."
+
+#. type: TP
+#: en/minios-installer.1:34
+#, no-wrap
+msgid "B<Free space>"
+msgstr "B<Ruang kosong>"
+
+#. type: Plain text
+#: en/minios-installer.1:37
+msgid "Create MiniOS partitions in an existing unallocated region."
+msgstr "Buat partisi MiniOS pada area yang belum teralokasi."
+
+#. type: TP
+#: en/minios-installer.1:37
+#, no-wrap
+msgid "B<Alongside>"
+msgstr "B<Berdampingan>"
+
+#. type: Plain text
+#: en/minios-installer.1:41
+msgid ""
+"Shrink an eligible unmounted final ext2, ext3, ext4, or NTFS partition and "
+"use the released space. Unsupported or unsafe layouts are refused."
+msgstr ""
+"Perkecil partisi ext2, ext3, ext4, atau NTFS terakhir yang memenuhi syarat "
+"dan tidak ter-mount, lalu gunakan ruang yang dilepaskan. Tata letak yang "
+"tidak didukung atau tidak aman akan ditolak."
+
+#. type: TP
+#: en/minios-installer.1:41
+#, no-wrap
+msgid "B<Manual>"
+msgstr "B<Manual>"
+
+#. type: Plain text
+#: en/minios-installer.1:46
+msgid ""
+"For native GUI installations only. Stage exact-sector create, delete, end-"
+"only shrink, format, reuse, root, child mount-point, ESP, and swap "
+"assignments with undo and reset. No destructive operation runs before final "
+"confirmation."
+msgstr ""
+"Hanya untuk instalasi GUI native. Tahapan pembuatan, penghapusan, perkecil "
+"akhir saja, format, penggunaan ulang, root, mount-point anak, ESP, dan "
+"penugasan swap secara persis sektor dengan fitur undo dan reset. Tidak ada "
+"operasi destruktif yang dijalankan sebelum konfirmasi akhir."
+
+#. type: SH
+#: en/minios-installer.1:46
+#, no-wrap
+msgid "SUPPORTED FILESYSTEMS"
+msgstr "FILESYSTEM YANG DIDUKUNG"
+
+#. type: TP
+#: en/minios-installer.1:47
+#, no-wrap
+msgid "B<ext4>"
+msgstr "B<ext4>"
+
+#. type: Plain text
+#: en/minios-installer.1:50
+msgid "Recommended Linux filesystem for live and native installations."
+msgstr ""
+"Filesystem Linux yang direkomendasikan untuk instalasi live dan native."
+
+#. type: TP
+#: en/minios-installer.1:50
+#, no-wrap
+msgid "B<ext2>"
+msgstr "B<ext2>"
+
+#. type: Plain text
+#: en/minios-installer.1:53
+msgid ""
+"Linux filesystem without journaling, supported for live and native installs."
+msgstr ""
+"Filesystem Linux tanpa journaling, didukung untuk instalasi live dan native."
+
+#. type: TP
+#: en/minios-installer.1:53
+#, no-wrap
+msgid "B<btrfs>"
+msgstr "B<btrfs>"
+
+#. type: Plain text
+#: en/minios-installer.1:56
+msgid "Linux filesystem supported for live and native installs."
+msgstr "Filesystem Linux yang didukung untuk instalasi live dan native."
+
+#. type: TP
+#: en/minios-installer.1:56
+#, no-wrap
+msgid "B<FAT32>"
+msgstr "B<FAT32>"
+
+#. type: Plain text
+#: en/minios-installer.1:59
+msgid "Live layout only; limited to files smaller than 4 GiB."
+msgstr ""
+"Hanya untuk layout live; terbatas pada file berukuran kurang dari 4 GiB."
+
+#. type: TP
+#: en/minios-installer.1:59
+#, no-wrap
+msgid "B<NTFS>"
+msgstr "B<NTFS>"
+
+#. type: Plain text
+#: en/minios-installer.1:62
+msgid ""
+"Live layout only. Existing NTFS may also be shrunk for alongside placement."
+msgstr ""
+"Hanya untuk layout live. NTFS yang sudah ada juga dapat diperkecil untuk "
+"penempatan berdampingan."
+
+#. type: SH
+#: en/minios-installer.1:62
+#, no-wrap
+msgid "SECURITY AND NETWORK"
+msgstr "KEAMANAN DAN JARINGAN"
+
+#. type: Plain text
+#: en/minios-installer.1:66
+msgid ""
+"Security profiles are convenient, balanced, and strict. Live mode defaults "
+"to convenient; native mode defaults to balanced. SSH and XRDP exposure are "
+"selected separately from the profile."
+msgstr ""
+"Profil keamanan tersedia dalam mode nyaman, seimbang, dan ketat. Mode live "
+"secara default menggunakan mode nyaman; mode native menggunakan mode "
+"seimbang. Eksposur SSH dan XRDP dipilih terpisah dari profil."
+
+#. type: Plain text
+#: en/minios-installer.1:70
+msgid ""
+"Network setup covers hostname and wired DHCP or static IPv4. Wi-Fi profiles "
+"are not created or changed. Native static networking uses NetworkManager "
+"when available and falls back to ifupdown."
+msgstr ""
+"Pengaturan jaringan mencakup hostname dan DHCP kabel atau IPv4 statis. "
+"Profil Wi-Fi tidak dibuat atau diubah. Jaringan statis native menggunakan "
+"NetworkManager jika tersedia dan akan menggunakan ifupdown sebagai cadangan."
+
+#. type: SH
+#: en/minios-installer.1:70
+#, no-wrap
+msgid "SESSION PERSISTENCE"
+msgstr "KEBERLANJUTAN SESI"
+
+#. type: Plain text
+#: en/minios-installer.1:75
+msgid ""
+"Session creation requires minios-session version 2.2.0 or newer.  Without "
+"its executable, the wizard hides the session storage, encryption, "
+"compression, and password controls and clears any previous selections.  "
+"Installation without creating a session remains available."
+msgstr ""
+"Pembuatan sesi memerlukan minios-session versi 2.2.0 atau yang lebih baru. "
+"Tanpa berkas eksekusinya, wizard akan menyembunyikan kontrol penyimpanan "
+"sesi, enkripsi, kompresi, dan sandi serta menghapus semua pilihan "
+"sebelumnya. Instalasi tanpa membuat sesi tetap tersedia."
+
+#. type: Plain text
+#: en/minios-installer.1:87
+msgid ""
+"Live installations support native directories, expandable DynFileFS storage, "
+"thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk "
+"may optionally use LUKS2 encryption. Raw and DynFileFS default to 4000 MiB; "
+"DynBlk defaults to 16 GiB. Only Raw is limited to 4000 MiB on FAT32.  For "
+"non-encrypted DynBlk storage the wizard offers only codecs usable by both "
+"the currently running kernel/initrd, which creates the container, and every "
+"kernel/initrd copied to the target, which must reopen it later. The "
+"installer checks kmod metadata for the required crypto_comp provider, "
+"including built-in providers and module dependencies; no codec capability "
+"marker is used. Known codecs are none, lz4, lz4hc, lzo, lzo-rle, zstd, "
+"deflate, and 842; unavailable codecs are hidden."
+msgstr ""
+"Instalasi live mendukung direktori native, penyimpanan DynFileFS yang dapat "
+"diperluas, penyimpanan tipis DynBlk, dan citra raw berukuran tetap. Raw, "
+"DynFileFS, dan DynBlk dapat menggunakan enkripsi LUKS2 secara opsional. Raw "
+"dan DynFileFS secara default berukuran 4000 MiB; DynBlk default 16 GiB. "
+"Hanya Raw yang dibatasi 4000 MiB pada FAT32. Untuk penyimpanan DynBlk yang "
+"tidak dienkripsi, wizard hanya menawarkan codec yang dapat digunakan baik "
+"oleh kernel/initrd yang sedang berjalan (yang membuat kontainer), maupun "
+"setiap kernel/initrd yang disalin ke target (yang harus membukanya kembali "
+"nanti). Installer memeriksa metadata kmod untuk penyedia crypto_comp yang "
+"diperlukan, termasuk penyedia built-in dan dependensi modul; tidak ada "
+"penanda kapabilitas codec yang digunakan. Codec yang dikenal adalah none, "
+"lz4, lz4hc, lzo, lzo-rle, zstd, deflate, dan 842; codec yang tidak tersedia "
+"akan disembunyikan."
+
+#. type: Plain text
+#: en/minios-installer.1:97
+msgid ""
+"LUKS is shown only when the running initrd marker contains luks-layer-v1 at "
+"I</run/initramfs/etc/minios-initramfs-crypt>.  Before disk changes, every "
+"source initrd is unpacked and checked for the same versioned capability and "
+"any selected DynBlk capability. The installer creates and selects a real "
+"session in minios/changes on the target partition using the minios-session "
+"backend, without rewriting persistence kernel parameters.  The passphrase is "
+"entered and confirmed in the wizard and passed only through stdin, never "
+"through command arguments, logs, or configuration. At boot it is used to "
+"unlock the already-created session. This does not encrypt a native root."
+msgstr ""
+"LUKS hanya ditampilkan jika marker initrd yang berjalan berisi luks-layer-v1 "
+"di I</run/initramfs/etc/minios-initramfs-crypt>. Sebelum perubahan disk, "
+"setiap sumber initrd akan diekstrak dan diperiksa untuk kapabilitas versi "
+"yang sama dan setiap kapabilitas DynBlk yang dipilih. Installer membuat dan "
+"memilih sesi nyata di minios/changes pada partisi target menggunakan backend "
+"minios-session, tanpa menulis ulang parameter kernel persistensi. Kata sandi "
+"dimasukkan dan dikonfirmasi di wizard dan hanya diteruskan melalui stdin, "
+"tidak pernah melalui argumen perintah, log, atau konfigurasi. Saat boot, "
+"sandi ini digunakan untuk membuka sesi yang sudah dibuat. Ini tidak "
+"mengenkripsi root native."
+
+#. type: SH
+#: en/minios-installer.1:97
+#, no-wrap
+msgid "FILES"
+msgstr "BERKAS"
+
+#. type: Plain text
+#: en/minios-installer.1:99
+msgid "I</usr/share/applications/minios-installer.desktop>"
+msgstr "I</usr/share/applications/minios-installer.desktop>"
+
+#. type: Plain text
+#: en/minios-installer.1:101
+msgid "I</usr/share/polkit-1/actions/org.minios.installer.policy>"
+msgstr "I</usr/share/polkit-1/actions/org.minios.installer.policy>"
+
+#. type: Plain text
+#: en/minios-installer.1:103
+msgid "I</usr/lib/minios-installer/>"
+msgstr "I</usr/lib/minios-installer/>"
+
+#. type: SH
+#: en/minios-installer.1:103
+#, no-wrap
+msgid "NOTES"
+msgstr "CATATAN"
+
+#. type: Plain text
+#: en/minios-installer.1:107
+msgid ""
+"Only works from a MiniOS live session. The running live-media disk is "
+"excluded from target selection. Erase-all destroys all data on the selected "
+"disk."
+msgstr ""
+"Hanya berfungsi dari sesi live MiniOS. Disk live-media yang sedang berjalan "
+"dikecualikan dari pemilihan target. Erase-all akan menghapus semua data pada "
+"disk yang dipilih."
+
+#. type: Plain text
+#: en/minios-installer.1:111
+msgid ""
+"Required root space is calculated from selected module data, boot assets, "
+"persistence, and 25 percent filesystem reserve. ESP and native swap space "
+"are accounted for separately."
+msgstr ""
+"Ruang root yang dibutuhkan dihitung dari data modul yang dipilih, aset boot, "
+"persistensi, dan 25 persen cadangan sistem berkas. Ruang ESP dan swap native "
+"dihitung secara terpisah."
+
+#. type: Plain text
+#: en/minios-installer.1:115
+msgid ""
+"UEFI is supported on GPT and primary MBR. BIOS is supported only on primary "
+"MBR; BIOS on GPT and extended/logical MBR layouts are unsupported. Manual "
+"mode also rejects LVM, RAID, LUKS, and mapped or nested storage."
+msgstr ""
+"UEFI didukung pada GPT dan MBR primer. BIOS hanya didukung pada MBR primer; "
+"BIOS pada GPT dan tata letak MBR extended/logical tidak didukung. Mode "
+"manual juga menolak LVM, RAID, LUKS, serta penyimpanan mapped atau nested."
+
+#. type: Plain text
+#: en/minios-installer.1:120
+msgid "Command-line frontend: B<minios-deploy> (see B<minios-deploy>(1))."
+msgstr ""
+"Antarmuka baris perintah: B<minios-deploy> (lihat B<minios-deploy>(1))."
+
+#. type: SH
+#: en/minios-installer.1:120 en/minios-deploy.1:251
+#, no-wrap
+msgid "AUTHOR"
+msgstr "PENULIS"
+
+#. type: Plain text
+#: en/minios-installer.1:122 en/minios-deploy.1:252
+msgid "crims0n (crims0n@minios.dev)"
+msgstr "crims0n (crims0n@minios.dev)"
+
+#. type: SH
+#: en/minios-installer.1:122
+#, no-wrap
+msgid "BUGS"
+msgstr "BUG"
+
+#. type: Plain text
+#: en/minios-installer.1:124
+msgid "https://github.com/minios-linux/minios-installer/issues"
+msgstr "https://github.com/minios-linux/minios-installer/issues"
+
+#. type: SH
+#: en/minios-installer.1:125 en/minios-deploy.1:226
+#, no-wrap
+msgid "DYNBLK CAPACITY"
+msgstr "KAPASITAS DYNBLK"
+
+#. type: Plain text
+#: en/minios-installer.1:128 en/minios-deploy.1:230
+msgid ""
+"The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB "
+"ceiling.  Large thin containers also require space for the metadata of all "
+"declared parts.  Raw and DynFileFS retain their separate capacity policies."
+msgstr ""
+"Batas DynBlk diperoleh dari batas dynblk, bukan batas tetap 512-GiB.  "
+"Kontainer tipis berukuran besar juga membutuhkan ruang untuk metadata dari "
+"semua bagian yang dideklarasikan.  Raw dan DynFileFS mempertahankan "
+"kebijakan kapasitasnya masing-masing."

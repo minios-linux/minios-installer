@@ -1,0 +1,480 @@
+# Russian translations for minios-installer package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the minios-installer package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 3.6.1\n"
+"POT-Creation-Date: 2026-09-22 21:45+0300\n"
+"PO-Revision-Date: 2026-09-22 18:47+0000\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#. type: TH
+#: en/minios-installer.1:1
+#, no-wrap
+msgid "MINIOS-INSTALLER"
+msgstr "MINIOS-INSTALLER"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "September 2026"
+msgstr "Сентябрь 2026"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "MiniOS Installer"
+msgstr "Установщик MiniOS"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "User Commands"
+msgstr "Пользовательские команды"
+
+#. type: SH
+#: en/minios-installer.1:2 en/minios-deploy.1:2
+#, no-wrap
+msgid "NAME"
+msgstr "ИМЯ"
+
+#. type: Plain text
+#: en/minios-installer.1:4
+msgid "minios-installer - Install MiniOS to disk from live session"
+msgstr "minios-installer — установка MiniOS на диск из живого сеанса"
+
+#. type: SH
+#: en/minios-installer.1:4 en/minios-deploy.1:4
+#, no-wrap
+msgid "SYNOPSIS"
+msgstr "СИНТАКСИС"
+
+#. type: Plain text
+#: en/minios-installer.1:7
+msgid "B<minios-installer> [I<--help>]"
+msgstr "B<minios-installer> [I<--help>]"
+
+#. type: SH
+#: en/minios-installer.1:7 en/minios-deploy.1:8
+#, no-wrap
+msgid "DESCRIPTION"
+msgstr "ОПИСАНИЕ"
+
+#. type: Plain text
+#: en/minios-installer.1:15
+msgid ""
+"B<minios-installer> is a GTK3 graphical wizard for installing MiniOS from a "
+"live session to a target disk. It supports modular live installations and "
+"conventional native installations. The wizard detects native-install "
+"capability from the booted image rather than its release number. Images "
+"without the required format-1 kernel metadata and EFI architecture contract "
+"automatically use compatibility mode and permit live installation only."
+msgstr ""
+"B<minios-installer> — это графический мастер установки на базе GTK3 для "
+"переноса MiniOS с живого сеанса на целевой диск. Поддерживаются модульные "
+"живые установки и обычные нативные установки. Мастер определяет возможность "
+"нативной установки по загруженному образу, а не по номеру релиза. Образы без "
+"необходимого метаданных ядра формата 1 и контракта архитектуры EFI "
+"автоматически используют режим совместимости и допускают только живую "
+"установку."
+
+#. type: Plain text
+#: en/minios-installer.1:19
+msgid ""
+"The installer creates and validates an explicit partition plan before any "
+"destructive operation. Placement modes include erase-all, existing free "
+"space, alongside a supported final partition, and native GUI manual "
+"partitioning."
+msgstr ""
+"Программа установки создает и проверяет явный план разметки разделов до "
+"выполнения любых разрушающих операций. Режимы размещения включают: очистка "
+"всего, использование существующего свободного пространства, установка рядом "
+"с поддерживаемым последним разделом и ручная разметка через графический "
+"интерфейс."
+
+#. type: Plain text
+#: en/minios-installer.1:21
+msgid "Requires administrative privileges."
+msgstr "Требуются права администратора."
+
+#. type: SH
+#: en/minios-installer.1:21
+#, no-wrap
+msgid "OPTIONS"
+msgstr "ПАРАМЕТРЫ"
+
+#. type: TP
+#: en/minios-installer.1:22
+#, no-wrap
+msgid "B<-h, --help>"
+msgstr "B<-h, --help>"
+
+#. type: Plain text
+#: en/minios-installer.1:25
+msgid "Show a short usage message and exit."
+msgstr "Показать краткую справку по использованию и выйти."
+
+#. type: SH
+#: en/minios-installer.1:25
+#, no-wrap
+msgid "WIZARD"
+msgstr "МАСТЕР"
+
+#. type: Plain text
+#: en/minios-installer.1:30
+msgid ""
+"The wizard configures installation mode, security, location, wired network, "
+"keyboard, users, modules, storage placement, and boot layout before showing "
+"the final summary. Previously visited pages can be revisited until "
+"installation starts."
+msgstr ""
+"Мастер настраивает режим установки, параметры безопасности, местоположение, "
+"проводную сеть, клавиатуру, пользователей, модули, размещение на носителе и "
+"структуру загрузки перед выводом итогового резюме. Ранее посещённые страницы "
+"доступны для повторного просмотра до начала установки."
+
+#. type: SH
+#: en/minios-installer.1:30 en/minios-deploy.1:216
+#, no-wrap
+msgid "PLACEMENT MODES"
+msgstr "РЕЖИМЫ РАЗМЕЩЕНИЯ"
+
+#. type: TP
+#: en/minios-installer.1:31
+#, no-wrap
+msgid "B<Erase all>"
+msgstr "B<Стереть всё>"
+
+#. type: Plain text
+#: en/minios-installer.1:34
+msgid "Create a new partition table and destroy all data on the target disk."
+msgstr ""
+"Создать новую таблицу разделов и уничтожить все данные на целевом диске."
+
+#. type: TP
+#: en/minios-installer.1:34
+#, no-wrap
+msgid "B<Free space>"
+msgstr "B<Свободное пространство>"
+
+#. type: Plain text
+#: en/minios-installer.1:37
+msgid "Create MiniOS partitions in an existing unallocated region."
+msgstr "Создать разделы MiniOS в существующей неразмеченной области."
+
+#. type: TP
+#: en/minios-installer.1:37
+#, no-wrap
+msgid "B<Alongside>"
+msgstr "B<Рядом>"
+
+#. type: Plain text
+#: en/minios-installer.1:41
+msgid ""
+"Shrink an eligible unmounted final ext2, ext3, ext4, or NTFS partition and "
+"use the released space. Unsupported or unsafe layouts are refused."
+msgstr ""
+"Уменьшить подходящий не смонтированный последний раздел ext2, ext3, ext4 или "
+"NTFS и использовать освободившееся пространство. Неподдерживаемые или "
+"небезопасные схемы отклоняются."
+
+#. type: TP
+#: en/minios-installer.1:41
+#, no-wrap
+msgid "B<Manual>"
+msgstr "B<Вручную>"
+
+#. type: Plain text
+#: en/minios-installer.1:46
+msgid ""
+"For native GUI installations only. Stage exact-sector create, delete, end-"
+"only shrink, format, reuse, root, child mount-point, ESP, and swap "
+"assignments with undo and reset. No destructive operation runs before final "
+"confirmation."
+msgstr ""
+"Только для нативных установок через графический интерфейс. Позволяет "
+"поэтапно создавать, удалять, уменьшать только с конца, форматировать, "
+"переиспользовать, назначать корневой, дочерние точки монтирования, ESP и "
+"swap с возможностью отмены и сброса. Разрушающие операции не выполняются до "
+"окончательного подтверждения."
+
+#. type: SH
+#: en/minios-installer.1:46
+#, no-wrap
+msgid "SUPPORTED FILESYSTEMS"
+msgstr "ПОДДЕРЖИВАЕМЫЕ ФАЙЛОВЫЕ СИСТЕМЫ"
+
+#. type: TP
+#: en/minios-installer.1:47
+#, no-wrap
+msgid "B<ext4>"
+msgstr "B<ext4>"
+
+#. type: Plain text
+#: en/minios-installer.1:50
+msgid "Recommended Linux filesystem for live and native installations."
+msgstr "Рекомендуемая файловая система Linux для живых и нативных установок."
+
+#. type: TP
+#: en/minios-installer.1:50
+#, no-wrap
+msgid "B<ext2>"
+msgstr "B<ext2>"
+
+#. type: Plain text
+#: en/minios-installer.1:53
+msgid ""
+"Linux filesystem without journaling, supported for live and native installs."
+msgstr ""
+"Файловая система Linux без журналирования, поддерживается для живых и "
+"нативных установок."
+
+#. type: TP
+#: en/minios-installer.1:53
+#, no-wrap
+msgid "B<btrfs>"
+msgstr "B<btrfs>"
+
+#. type: Plain text
+#: en/minios-installer.1:56
+msgid "Linux filesystem supported for live and native installs."
+msgstr "Файловая система Linux, поддерживаемая для живых и нативных установок."
+
+#. type: TP
+#: en/minios-installer.1:56
+#, no-wrap
+msgid "B<FAT32>"
+msgstr "B<FAT32>"
+
+#. type: Plain text
+#: en/minios-installer.1:59
+msgid "Live layout only; limited to files smaller than 4 GiB."
+msgstr "Только для живой схемы; ограничение на файлы размером менее 4 ГиБ."
+
+#. type: TP
+#: en/minios-installer.1:59
+#, no-wrap
+msgid "B<NTFS>"
+msgstr "B<NTFS>"
+
+#. type: Plain text
+#: en/minios-installer.1:62
+msgid ""
+"Live layout only. Existing NTFS may also be shrunk for alongside placement."
+msgstr ""
+"Только для живой схемы. Существующий NTFS также может быть уменьшен для "
+"размещения рядом."
+
+#. type: SH
+#: en/minios-installer.1:62
+#, no-wrap
+msgid "SECURITY AND NETWORK"
+msgstr "БЕЗОПАСНОСТЬ И СЕТЬ"
+
+#. type: Plain text
+#: en/minios-installer.1:66
+msgid ""
+"Security profiles are convenient, balanced, and strict. Live mode defaults "
+"to convenient; native mode defaults to balanced. SSH and XRDP exposure are "
+"selected separately from the profile."
+msgstr ""
+"Профили безопасности: удобный, сбалансированный и строгий. В живом режиме по "
+"умолчанию выбран удобный; в нативном — сбалансированный. Доступ по SSH и "
+"XRDP настраивается отдельно от профиля."
+
+#. type: Plain text
+#: en/minios-installer.1:70
+msgid ""
+"Network setup covers hostname and wired DHCP or static IPv4. Wi-Fi profiles "
+"are not created or changed. Native static networking uses NetworkManager "
+"when available and falls back to ifupdown."
+msgstr ""
+"Настройка сети охватывает имя хоста и проводной DHCP или статический IPv4. "
+"Профили Wi-Fi не создаются и не изменяются. Для нативной статической сети "
+"используется NetworkManager при наличии, иначе — ifupdown."
+
+#. type: SH
+#: en/minios-installer.1:70
+#, no-wrap
+msgid "SESSION PERSISTENCE"
+msgstr "ПЕРСИСТЕНТНОСТЬ СЕАНСА"
+
+#. type: Plain text
+#: en/minios-installer.1:75
+msgid ""
+"Session creation requires minios-session version 2.2.0 or newer.  Without "
+"its executable, the wizard hides the session storage, encryption, "
+"compression, and password controls and clears any previous selections.  "
+"Installation without creating a session remains available."
+msgstr ""
+"Для создания сеанса требуется minios-session версии 2.2.0 или новее. Если "
+"этот исполняемый файл отсутствует, мастер установки скрывает элементы "
+"управления хранилищем сеансов, шифрованием, сжатием и паролем, а также "
+"сбрасывает все предыдущие выборы. Установка без создания сеанса остаётся "
+"доступной."
+
+#. type: Plain text
+#: en/minios-installer.1:87
+msgid ""
+"Live installations support native directories, expandable DynFileFS storage, "
+"thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk "
+"may optionally use LUKS2 encryption. Raw and DynFileFS default to 4000 MiB; "
+"DynBlk defaults to 16 GiB. Only Raw is limited to 4000 MiB on FAT32.  For "
+"non-encrypted DynBlk storage the wizard offers only codecs usable by both "
+"the currently running kernel/initrd, which creates the container, and every "
+"kernel/initrd copied to the target, which must reopen it later. The "
+"installer checks kmod metadata for the required crypto_comp provider, "
+"including built-in providers and module dependencies; no codec capability "
+"marker is used. Known codecs are none, lz4, lz4hc, lzo, lzo-rle, zstd, "
+"deflate, and 842; unavailable codecs are hidden."
+msgstr ""
+"Live-установки поддерживают собственные каталоги, расширяемое хранилище "
+"DynFileFS, тонкое хранилище DynBlk и образы фиксированного размера в формате "
+"raw. Для raw, DynFileFS и DynBlk возможно опциональное использование "
+"шифрования LUKS2. По умолчанию raw и DynFileFS имеют размер 4000 МиБ; DynBlk "
+"— 16 ГиБ. Только raw ограничен 4000 МиБ на FAT32. Для нешифрованного "
+"хранилища DynBlk мастер предлагает только те кодеки, которые поддерживаются "
+"как текущим ядром/initrd (создающим контейнер), так и всеми ядрами/initrd, "
+"скопированными на целевую систему, которые должны будут открыть его позже. "
+"Установщик проверяет метаданные kmod на наличие необходимого провайдера "
+"crypto_comp, включая встроенные провайдеры и зависимости модулей; маркеры "
+"возможностей кодеков не используются. Известные кодеки: none, lz4, lz4hc, "
+"lzo, lzo-rle, zstd, deflate и 842; недоступные кодеки скрыты."
+
+#. type: Plain text
+#: en/minios-installer.1:97
+msgid ""
+"LUKS is shown only when the running initrd marker contains luks-layer-v1 at "
+"I</run/initramfs/etc/minios-initramfs-crypt>.  Before disk changes, every "
+"source initrd is unpacked and checked for the same versioned capability and "
+"any selected DynBlk capability. The installer creates and selects a real "
+"session in minios/changes on the target partition using the minios-session "
+"backend, without rewriting persistence kernel parameters.  The passphrase is "
+"entered and confirmed in the wizard and passed only through stdin, never "
+"through command arguments, logs, or configuration. At boot it is used to "
+"unlock the already-created session. This does not encrypt a native root."
+msgstr ""
+"LUKS отображается только если в маркере текущего initrd содержится luks-"
+"layer-v1 по пути I</run/initramfs/etc/minios-initramfs-crypt>.  Перед "
+"изменениями на диске каждый исходный initrd распаковывается и проверяется на "
+"наличие такой же версии возможности и любой выбранной возможности DynBlk. "
+"Установщик создаёт и выбирает реальную сессию в minios/changes на целевом "
+"разделе с помощью backend minios-session, без изменения параметров ядра для "
+"постоянства.  Парольная фраза вводится и подтверждается в мастере и "
+"передаётся только через stdin, никогда через аргументы команд, журналы или "
+"конфигурацию. При загрузке она используется для разблокировки уже созданной "
+"сессии. Это не шифрует собственный корень."
+
+#. type: SH
+#: en/minios-installer.1:97
+#, no-wrap
+msgid "FILES"
+msgstr "ФАЙЛЫ"
+
+#. type: Plain text
+#: en/minios-installer.1:99
+msgid "I</usr/share/applications/minios-installer.desktop>"
+msgstr "I</usr/share/applications/minios-installer.desktop>"
+
+#. type: Plain text
+#: en/minios-installer.1:101
+msgid "I</usr/share/polkit-1/actions/org.minios.installer.policy>"
+msgstr "I</usr/share/polkit-1/actions/org.minios.installer.policy>"
+
+#. type: Plain text
+#: en/minios-installer.1:103
+msgid "I</usr/lib/minios-installer/>"
+msgstr "I</usr/lib/minios-installer/>"
+
+#. type: SH
+#: en/minios-installer.1:103
+#, no-wrap
+msgid "NOTES"
+msgstr "ПРИМЕЧАНИЯ"
+
+#. type: Plain text
+#: en/minios-installer.1:107
+msgid ""
+"Only works from a MiniOS live session. The running live-media disk is "
+"excluded from target selection. Erase-all destroys all data on the selected "
+"disk."
+msgstr ""
+"Работает только из live-сессии MiniOS. Диск с текущей live-средой исключён "
+"из выбора цели. Функция erase-all уничтожает все данные на выбранном диске."
+
+#. type: Plain text
+#: en/minios-installer.1:111
+msgid ""
+"Required root space is calculated from selected module data, boot assets, "
+"persistence, and 25 percent filesystem reserve. ESP and native swap space "
+"are accounted for separately."
+msgstr ""
+"Требуемое место на корне рассчитывается на основе выбранных модулей, "
+"загрузочных файлов, постоянства и 25% резерва файловой системы. ESP и "
+"собственный swap учитываются отдельно."
+
+#. type: Plain text
+#: en/minios-installer.1:115
+msgid ""
+"UEFI is supported on GPT and primary MBR. BIOS is supported only on primary "
+"MBR; BIOS on GPT and extended/logical MBR layouts are unsupported. Manual "
+"mode also rejects LVM, RAID, LUKS, and mapped or nested storage."
+msgstr ""
+"UEFI поддерживается на GPT и основном MBR. BIOS поддерживается только на "
+"основном MBR; BIOS на GPT и расширенных/логических схемах MBR не "
+"поддерживается. Вручную также отклоняются LVM, RAID, LUKS и отображаемое или "
+"вложенное хранилище."
+
+#. type: Plain text
+#: en/minios-installer.1:120
+msgid "Command-line frontend: B<minios-deploy> (see B<minios-deploy>(1))."
+msgstr "Фронтенд командной строки: B<minios-deploy> (см. B<minios-deploy>(1))."
+
+#. type: SH
+#: en/minios-installer.1:120 en/minios-deploy.1:251
+#, no-wrap
+msgid "AUTHOR"
+msgstr "АВТОР"
+
+#. type: Plain text
+#: en/minios-installer.1:122 en/minios-deploy.1:252
+msgid "crims0n (crims0n@minios.dev)"
+msgstr "crims0n (crims0n@minios.dev)"
+
+#. type: SH
+#: en/minios-installer.1:122
+#, no-wrap
+msgid "BUGS"
+msgstr "ОШИБКИ"
+
+#. type: Plain text
+#: en/minios-installer.1:124
+msgid "https://github.com/minios-linux/minios-installer/issues"
+msgstr "https://github.com/minios-linux/minios-installer/issues"
+
+#. type: SH
+#: en/minios-installer.1:125 en/minios-deploy.1:226
+#, no-wrap
+msgid "DYNBLK CAPACITY"
+msgstr "ЁМКОСТЬ DYNBLK"
+
+#. type: Plain text
+#: en/minios-installer.1:128 en/minios-deploy.1:230
+msgid ""
+"The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB "
+"ceiling.  Large thin containers also require space for the metadata of all "
+"declared parts.  Raw and DynFileFS retain their separate capacity policies."
+msgstr ""
+"Ограничение DynBlk определяется по лимитам dynblk, а не по фиксированному "
+"порогу 512 ГиБ. Для больших тонких контейнеров также требуется место для "
+"метаданных всех объявленных частей. Raw и DynFileFS сохраняют свои отдельные "
+"политики ёмкости."

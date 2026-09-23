@@ -1,4 +1,4 @@
-.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer 3.6.0" "User Commands"
+.TH MINIOS-DEPLOY 1 "September 2026" "MiniOS Installer" "User Commands"
 .SH NAME
 minios-deploy \- command-line interface for the MiniOS installer
 .SH SYNOPSIS
@@ -51,7 +51,7 @@ Use convenient, balanced, or strict. Defaults to convenient for live and
 balanced for native installations.
 .TP
 .B --persistence-mode none|native|dynfilefs|dynblk|vmdk|raw
-Requires the optional minios-session package (>= 2.2.0) for modes other than none.
+Requires minios-session version 2.2.0 or newer for modes other than none.
 Without its executable, persistence options are hidden from help and completion.
 Explicit creation requests are rejected before disk changes; installation
 without a session remains available.
@@ -223,38 +223,30 @@ Create partitions in suitable unallocated space without shrinking filesystems.
 .TP
 .B alongside_os
 Shrink an eligible unmounted final ext2/ext3/ext4 or NTFS partition.
+.SH DYNBLK CAPACITY
+The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB ceiling.
+Large thin containers also require space for the metadata of all declared parts.
+Raw and DynFileFS retain their separate capacity policies.
+.SH VMDK PERSISTENCE
+The vmdk storage mode uses the shared minios-session backend and the DynBlk
+driver to create standard split sparse VMDK storage. It has no compression and
+defaults to 16384 MiB; limits are queried with dynblk limits --format vmdk.
+LUKS2 may be used as a separate layer. The running environment and every source
+initrd must support the versioned vmdk-session-v1 capability.
 .SH LIMITATIONS
-The CLI does not provide manual partition editing or dedicated network flags.
-Manual storage and interactive wired network configuration are available in
-the GTK wizard. BIOS on GPT, extended/logical MBR preserve layouts, LVM, RAID,
-LUKS native roots, and mapped or nested target storage are unsupported.
+The CLI has no manual partition editor or dedicated network flags. The GTK
+wizard provides manual storage and interactive wired network configuration.
+BIOS on GPT, extended or logical MBR preserve layouts, LVM, RAID, LUKS native
+roots, and mapped or nested target storage are unsupported.
 .SH EXAMPLES
 .nf
 minios-deploy list-disks
 minios-deploy plan /dev/sdb --mode native --placement free_space
-minios-deploy install /dev/sdb --mode native --placement free_space --yes \\
-  --security-profile balanced --download-packages \\
-  --username alice --password secret \\
-  --hostname workstation --locale ru_RU.UTF-8 \\
-  --timezone Europe/Moscow --keyboard us,ru \\
-  --keyboard-options grp:alt_shift_toggle \\
-  --default-target graphical --enable-services ssh
+minios-deploy install /dev/sdb --mode native --placement free_space --yes --security-profile balanced --download-packages --username alice --password secret --hostname workstation --locale ru_RU.UTF-8 --timezone Europe/Moscow --keyboard us,ru --keyboard-options grp:alt_shift_toggle --default-target graphical --enable-services ssh
 .fi
 .SH SEE ALSO
 .BR minios-installer (1),
 .BR minios-configurator (1),
 .BR live-config (7)
 .SH AUTHOR
-crims0n <crims0n@minios.dev>
-
-.SH DYNBLK CAPACITY
-The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB ceiling.
-Large thin containers also require space for the metadata of all declared parts.
-Raw and DynFileFS retain their separate capacity policies.
-
-.SH VMDK PERSISTENCE
-The vmdk storage mode creates standard split sparse VMDK using the DynBlk driver
-and shared minios-session backend. It has no compression and defaults to
-16384 MiB; limits are queried with dynblk limits --format vmdk. LUKS2 may be
-used as a separate layer. The running environment and every source initrd must
-support the versioned vmdk-session-v1 capability.
+crims0n (crims0n@minios.dev)

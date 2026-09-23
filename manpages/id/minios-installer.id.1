@@ -1,0 +1,138 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH MINIOS\-INSTALLER 1 "September 2026" "Penginstal MiniOS" "Perintah Pengguna"
+.SH NAMA
+minios\-installer \- Instal MiniOS ke disk dari sesi live
+.SH SINOPSIS
+\fBminios\-installer\fP [\fI\-\-help\fP]
+.SH DESKRIPSI
+\fBminios\-installer\fP adalah wizard grafis GTK3 untuk menginstal MiniOS dari
+sesi live ke disk target. Mendukung instalasi live modular dan instalasi
+native konvensional. Wizard ini mendeteksi kemampuan native\-install dari
+image yang sedang boot, bukan dari nomor rilisnya. Image tanpa metadata
+kernel format\-1 dan kontrak arsitektur EFI yang diperlukan secara otomatis
+menggunakan mode kompatibilitas dan hanya mengizinkan instalasi live.
+.PP
+Installer membuat dan memvalidasi rencana partisi secara eksplisit sebelum
+melakukan operasi destruktif apa pun. Mode penempatan mencakup hapus\-semua,
+ruang kosong yang ada, berdampingan dengan partisi akhir yang didukung, dan
+partisi manual melalui antarmuka GUI native.
+.PP
+Memerlukan hak administratif.
+.SH OPSI
+.TP
+\fB\-h, \-\-help\fP
+Tampilkan pesan penggunaan singkat dan keluar.
+.SH WIZARD
+Wizard mengatur mode instalasi, keamanan, lokasi, jaringan kabel, papan
+ketik, pengguna, modul, penempatan penyimpanan, dan tata letak boot sebelum
+menampilkan ringkasan akhir. Halaman yang telah dikunjungi sebelumnya dapat
+diakses kembali hingga instalasi dimulai.
+.SH "MODE PENEMPATAN"
+.TP
+\fBHapus semua\fP
+Buat tabel partisi baru dan hapus semua data pada disk target.
+.TP
+\fBRuang kosong\fP
+Buat partisi MiniOS pada area yang belum teralokasi.
+.TP
+\fBBerdampingan\fP
+Perkecil partisi ext2, ext3, ext4, atau NTFS terakhir yang memenuhi syarat
+dan tidak ter\-mount, lalu gunakan ruang yang dilepaskan. Tata letak yang
+tidak didukung atau tidak aman akan ditolak.
+.TP
+\fBManual\fP
+Hanya untuk instalasi GUI native. Tahapan pembuatan, penghapusan, perkecil
+akhir saja, format, penggunaan ulang, root, mount\-point anak, ESP, dan
+penugasan swap secara persis sektor dengan fitur undo dan reset. Tidak ada
+operasi destruktif yang dijalankan sebelum konfirmasi akhir.
+.SH "FILESYSTEM YANG DIDUKUNG"
+.TP
+\fBext4\fP
+Filesystem Linux yang direkomendasikan untuk instalasi live dan native.
+.TP
+\fBext2\fP
+Filesystem Linux tanpa journaling, didukung untuk instalasi live dan native.
+.TP
+\fBbtrfs\fP
+Filesystem Linux yang didukung untuk instalasi live dan native.
+.TP
+\fBFAT32\fP
+Hanya untuk layout live; terbatas pada file berukuran kurang dari 4 GiB.
+.TP
+\fBNTFS\fP
+Hanya untuk layout live. NTFS yang sudah ada juga dapat diperkecil untuk
+penempatan berdampingan.
+.SH "KEAMANAN DAN JARINGAN"
+Profil keamanan tersedia dalam mode nyaman, seimbang, dan ketat. Mode live
+secara default menggunakan mode nyaman; mode native menggunakan mode
+seimbang. Eksposur SSH dan XRDP dipilih terpisah dari profil.
+.PP
+Pengaturan jaringan mencakup hostname dan DHCP kabel atau IPv4
+statis. Profil Wi\-Fi tidak dibuat atau diubah. Jaringan statis native
+menggunakan NetworkManager jika tersedia dan akan menggunakan ifupdown
+sebagai cadangan.
+.SH "KEBERLANJUTAN SESI"
+Pembuatan sesi memerlukan minios\-session versi 2.2.0 atau yang lebih
+baru. Tanpa berkas eksekusinya, wizard akan menyembunyikan kontrol
+penyimpanan sesi, enkripsi, kompresi, dan sandi serta menghapus semua
+pilihan sebelumnya. Instalasi tanpa membuat sesi tetap tersedia.
+.PP
+Instalasi live mendukung direktori native, penyimpanan DynFileFS yang dapat
+diperluas, penyimpanan tipis DynBlk, dan citra raw berukuran tetap. Raw,
+DynFileFS, dan DynBlk dapat menggunakan enkripsi LUKS2 secara opsional. Raw
+dan DynFileFS secara default berukuran 4000 MiB; DynBlk default 16
+GiB. Hanya Raw yang dibatasi 4000 MiB pada FAT32. Untuk penyimpanan DynBlk
+yang tidak dienkripsi, wizard hanya menawarkan codec yang dapat digunakan
+baik oleh kernel/initrd yang sedang berjalan (yang membuat kontainer),
+maupun setiap kernel/initrd yang disalin ke target (yang harus membukanya
+kembali nanti). Installer memeriksa metadata kmod untuk penyedia crypto_comp
+yang diperlukan, termasuk penyedia built\-in dan dependensi modul; tidak ada
+penanda kapabilitas codec yang digunakan. Codec yang dikenal adalah none,
+lz4, lz4hc, lzo, lzo\-rle, zstd, deflate, dan 842; codec yang tidak tersedia
+akan disembunyikan.
+.PP
+LUKS hanya ditampilkan jika marker initrd yang berjalan berisi luks\-layer\-v1
+di \fI/run/initramfs/etc/minios\-initramfs\-crypt\fP. Sebelum perubahan disk,
+setiap sumber initrd akan diekstrak dan diperiksa untuk kapabilitas versi
+yang sama dan setiap kapabilitas DynBlk yang dipilih. Installer membuat dan
+memilih sesi nyata di minios/changes pada partisi target menggunakan backend
+minios\-session, tanpa menulis ulang parameter kernel persistensi. Kata sandi
+dimasukkan dan dikonfirmasi di wizard dan hanya diteruskan melalui stdin,
+tidak pernah melalui argumen perintah, log, atau konfigurasi. Saat boot,
+sandi ini digunakan untuk membuka sesi yang sudah dibuat. Ini tidak
+mengenkripsi root native.
+.SH BERKAS
+\fI/usr/share/applications/minios\-installer.desktop\fP
+.br
+\fI/usr/share/polkit\-1/actions/org.minios.installer.policy\fP
+.br
+\fI/usr/lib/minios\-installer/\fP
+.SH CATATAN
+.PP
+Hanya berfungsi dari sesi live MiniOS. Disk live\-media yang sedang berjalan
+dikecualikan dari pemilihan target. Erase\-all akan menghapus semua data pada
+disk yang dipilih.
+.PP
+Ruang root yang dibutuhkan dihitung dari data modul yang dipilih, aset boot,
+persistensi, dan 25 persen cadangan sistem berkas. Ruang ESP dan swap native
+dihitung secara terpisah.
+.PP
+UEFI didukung pada GPT dan MBR primer. BIOS hanya didukung pada MBR primer;
+BIOS pada GPT dan tata letak MBR extended/logical tidak didukung. Mode
+manual juga menolak LVM, RAID, LUKS, serta penyimpanan mapped atau nested.
+.PP
+Antarmuka baris perintah: \fBminios\-deploy\fP (lihat \fBminios\-deploy\fP(1)).
+.SH PENULIS
+crims0n (crims0n@minios.dev)
+.SH BUG
+https://github.com/minios\-linux/minios\-installer/issues
+
+.SH "KAPASITAS DYNBLK"
+Batas DynBlk diperoleh dari batas dynblk, bukan batas tetap 512\-GiB.
+Kontainer tipis berukuran besar juga membutuhkan ruang untuk metadata dari
+semua bagian yang dideklarasikan.  Raw dan DynFileFS mempertahankan
+kebijakan kapasitasnya masing\-masing.

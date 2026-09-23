@@ -1,4 +1,4 @@
-.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer 3.6.0" "User Commands"
+.TH MINIOS-INSTALLER 1 "September 2026" "MiniOS Installer" "User Commands"
 .SH NAME
 minios-installer \- Install MiniOS to disk from live session
 .SH SYNOPSIS
@@ -68,7 +68,7 @@ Network setup covers hostname and wired DHCP or static IPv4. Wi-Fi profiles are
 not created or changed. Native static networking uses NetworkManager when
 available and falls back to ifupdown.
 .SH SESSION PERSISTENCE
-Session creation requires the optional minios-session package (>= 2.2.0).
+Session creation requires minios-session version 2.2.0 or newer.
 Without its executable, the wizard hides the session storage, encryption,
 compression, and password controls and clears any previous selections.
 Installation without creating a session remains available.
@@ -118,7 +118,7 @@ Command-line frontend:
 (see
 .BR minios-deploy (1)).
 .SH AUTHOR
-crims0n <crims0n@minios.dev>
+crims0n (crims0n@minios.dev)
 .SH BUGS
 https://github.com/minios-linux/minios-installer/issues
 

@@ -1,0 +1,253 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH MINIOS\-DEPLOY 1 "Сентябрь 2026" "Установщик MiniOS" "Пользовательские команды"
+.SH ИМЯ
+minios\-deploy — интерфейс командной строки для Установщика MiniOS
+.SH СИНТАКСИС
+\fBminios\-deploy\fP КОМАНДА [\fIПАРАМЕТРЫ\fP]
+.SH ОПИСАНИЕ
+\fBminios\-deploy\fP предоставляет скриптуемый интерфейс командной строки для
+Установщика MiniOS в режиме backend. Предназначен для тестирования,
+автоматизации и аварийного восстановления, когда графический мастер
+неудобен.
+.SH КОМАНДЫ
+.TP
+\fBlist\-disks [\-\-json]\fP
+Показать установочные диски, обнаруженные установщиком.
+.TP
+\fBplan DEVICE [\-\-mode MODE] [\-\-filesystem FS] [\-\-placement MODE] [ПАРАМЕТРЫ]\fP
+Вывести схему разметки разделов, которая будет применена к DEVICE.
+.TP
+\fBinstall DEVICE [ПАРАМЕТРЫ]\fP
+Выполнить живую или нативную установку. Без \fB\-\-yes\fP команда откажется
+записывать на диск. Используйте \fB\-\-dry\-run\fP для предварительного просмотра
+команд без внесения изменений.
+.SH "ПАРАМЕТРЫ УСТАНОВКИ"
+.TP
+\fB\-\-mode live|native\fP
+Режим установки. По умолчанию: live. В live\-образах без необходимых
+контрактов для нативной установки принимается только live; режим native
+скрыт и отклоняется.
+.TP
+\fB\-\-filesystem FS\fP
+Корневая файловая система. По умолчанию: ext4. В режиме native
+поддерживаются ext2, ext4 и btrfs.
+.TP
+\fB\-\-placement MODE\fP
+Используйте erase_all, free_space или alongside_os. Ручная разметка доступна
+только в графическом интерфейсе.
+.TP
+\fB\-\-alongside\-size MIB\fP
+Ёмкость MiniOS, которую нужно освободить из кандидата на сжатие alongside.
+.TP
+\fB\-\-swap\-size MIB\fP
+Только для нативной установки. Размер swap. По умолчанию: 0.
+.TP
+\fB\-\-boot\-layout LAYOUT\fP
+Используйте auto, bios_mbr, uefi_mbr или uefi_gpt.
+.TP
+\fB\-\-modules LIST\fP
+Названия модулей через запятую. Необходимые нижележащие уровни добавляются
+автоматически.
+.TP
+\fB\-\-security\-profile PROFILE\fP
+Используйте convenient, balanced или strict. По умолчанию convenient для
+live и balanced для нативных установок.
+.TP
+\fB\-\-persistence\-mode none|native|dynfilefs|dynblk|vmdk|raw\fP
+Требуется minios\-session версии 2.2.0 или новее для всех режимов, кроме
+none.  Без этого исполняемого файла параметры постоянства скрыты из справки
+и автодополнения. Явные запросы на создание отклоняются до внесения
+изменений на диск; установка без сессии по\-прежнему доступна.
+.br
+Только для живой установки. При выборе нативной персистентности изменения
+записываются напрямую в POSIX\-совместимый MiniOS раздел; это не связано с
+\fB\-\-mode native .\fP DynBlk и VMDK отображаются только если их поддержка
+присутствует в пользовательском пространстве, ядре и initrd. Оба варианта
+скрыты и явно отклоняются до внесения изменений на диск при включённом UEFI
+Secure Boot, так как MiniOS не подписывает внешний модуль ядра
+DynBlk. Выбранное хранилище создаётся во время установки с помощью
+minios\-session в каталоге minios/changes целевого раздела и выбирается как
+загрузка по умолчанию через метаданные сессии, а не через параметры ядра.
+.TP
+\fB\-\-persistence\-encryption none|luks\fP
+Только для живой установки. При необходимости можно наложить LUKS2 поверх
+Raw, DynFileFS, DynBlk или VMDK. LUKS отображается только если в маркере
+текущего initrd присутствует luks\-layer\-v1 и выбранный бэкенд
+доступен. Исходные initrd проходят повторную проверку перед изменениями на
+диске. Пароль вводится и подтверждается до внесения изменений на диск и
+передаётся minios\-session только через stdin. При загрузке существующая
+сессия разблокируется.
+.TP
+\fB\-\-persistence\-password\-stdin\fP
+Считать пароль LUKS и подтверждение из двух строк стандартного ввода вместо
+интерактивного запроса. Требует \-\-persistence\-encryption luks. Пароли не
+записываются в аргументы, журналы или конфигурацию. Пробный запуск не читает
+stdin.
+.TP
+\fB\-\-persistence\-compression none|lz4|lz4hc|lzo|lzo\-rle|zstd|deflate|842\fP
+Только для живой установки. Выберите кодек, который будет использоваться при
+создании нового контейнера персистентности DynBlk. Выбранный кодек должен
+иметь провайдер crypto_comp в текущем ядре/initrd и во всех исходных initrd,
+копируемых на целевую систему; установщик проверяет наличие встроенных и
+модульных провайдеров по метаданным kmod перед изменениями на диске. Эта
+опция применяется только к DynBlk и недоступна при выборе шифрования
+LUKS. Выбор кодека передаётся minios\-session при создании контейнера.
+.TP
+\fB\-\-persistence\-size MIB\fP
+Только для живой установки. Размер контейнера персистентности. По умолчанию
+для Raw и DynFileFS — 4000 Миб; для DynBlk — 16 Гиб. Raw ограничен 4000 Миб
+на FAT32; DynFileFS и DynBlk используют тонкое виртуальное пространство.
+.TP
+\fB\-\-download\-packages\fP
+Только для нативной установки. Разрешить загрузку необходимых пакетов. По
+умолчанию в CLI отключено. minios\-native\-dracut предоставляет стандартную
+цепочку инструментов dracut initramfs даже если live\-образ использует
+livekit\-mos. Без загрузки пакетов односистемное полное удаление можно
+выполнить с помощью EXTLINUX на BIOS или через проверенную EFI\-цепочку
+live\-носителя с минимальной нативной конфигурацией GRUB на UEFI.
+.TP
+\fB\-\-boot\-menu LANG\fP
+Только для живой установки. Код языка для загрузочного меню (например,
+ru_RU) или \fBmultilang\fP (по умолчанию).
+.TP
+\fB\-\-dry\-run\fP
+Проверить и вывести планируемые команды без записи на диск. Пробный запуск
+не гарантирует, что итоговая среда выполнения останется неизменной.
+.TP
+\fB\-\-yes\fP
+Подтвердить возможность стирания целевого диска.
+.TP
+\fB\-\-config\-file PATH\fP
+Только для живой установки. Базовый \fIconfig.conf\fP для копирования и
+объединения с параметрами CLI. Если не указан и заданы переопределения, в
+качестве базы используется \fI/etc/live/config.conf\fP живой системы, если он
+присутствует.
+.SH "НАСТРОЙКА СИСТЕМЫ"
+Следующие параметры настраивают установленную систему. В живом режиме они
+записывают те же ключи, что и \fBminios\-configurator\fP, в
+\fIminios/config.conf\fP; в нативном режиме поддерживаемые параметры учётных
+записей, локали, часового пояса, клавиатуры, целевой системы и сервисов
+применяются напрямую. Параметры, отмеченные как только для живой системы,
+отклоняются с \fB\-\-mode native .\fP Булевы параметры принимают значения
+\fBtrue\fP/\fBfalse\fP (также yes/no, on/off, 1/0).
+.SS Пользователь
+.TP
+\fB\-\-username NAME\fP
+\fBLIVE_USERNAME\fP
+.TP
+\fB\-\-full\-name NAME\fP
+\fBLIVE_USER_FULLNAME\fP
+.TP
+\fB\-\-user\-groups LIST\fP
+\fBLIVE_USER_DEFAULT_GROUPS\fP
+.TP
+\fB\-\-password PASS\fP
+Обычный пароль; сохраняется как \fBLIVE_USER_PASSWORD_CRYPTED\fP
+.TP
+\fB\-\-root\-password PASS\fP
+Обычный пароль; сохраняется как \fBLIVE_ROOT_PASSWORD_CRYPTED\fP
+.PP
+Параметры пароля передают открытый текст в историю команд оболочки и список
+процессов во время выполнения команды. Не используйте их в общих средах.
+.TP
+\fB\-\-link\-user\-dirs BOOL\fP
+Только для живой установки.  \fBLIVE_LINK_USER_DIRS\fP
+.TP
+\fB\-\-bind\-user\-dirs BOOL\fP
+Только для живой установки.  \fBLIVE_BIND_USER_DIRS\fP
+.TP
+\fB\-\-user\-dirs\-path PATH\fP
+Только для живой установки.  \fBLIVE_USER_DIRS_PATH\fP
+.SS Система
+.TP
+\fB\-\-noroot BOOL\fP
+Только для живой установки.  \fBLIVE_CONFIG_NOROOT\fP
+.TP
+\fB\-\-hostname NAME\fP
+\fBLIVE_HOSTNAME\fP
+.TP
+\fB\-\-locale / \-\-locales LIST\fP
+\fBLIVE_LOCALES\fP
+.TP
+\fB\-\-timezone ZONE\fP
+\fBLIVE_TIMEZONE\fP
+.TP
+\fB\-\-default\-target TARGET\fP
+\fBDEFAULT_TARGET\fP (graphical, multi\-user, rescue или полные имена юнитов)
+.TP
+\fB\-\-enable\-services LIST\fP
+\fBENABLE_SERVICES\fP
+.TP
+\fB\-\-disable\-services LIST\fP
+\fBDISABLE_SERVICES\fP
+.SS Клавиатура
+.TP
+\fB\-\-keyboard\-model MODEL\fP
+\fBLIVE_KEYBOARD_MODEL\fP
+.TP
+\fB\-\-keyboard / \-\-keyboard\-layouts LIST\fP
+\fBLIVE_KEYBOARD_LAYOUTS\fP
+.TP
+\fB\-\-keyboard\-options OPTS\fP
+\fBLIVE_KEYBOARD_OPTIONS\fP
+.TP
+\fB\-\-keyboard\-variants LIST\fP
+\fBLIVE_KEYBOARD_VARIANTS\fP
+.SS Дополнительно
+Следующие расширенные параметры доступны только с \fB\-\-mode live .\fP
+.TP
+\fB\-\-module\-mode simple|merged\fP
+\fBLIVE_MODULE_MODE\fP
+.TP
+\fB\-\-live\-config\-cmdline STRING\fP
+\fBLIVE_CONFIG_CMDLINE\fP
+.TP
+\fB\-\-config\-debug BOOL\fP
+\fBLIVE_CONFIG_DEBUG\fP
+.TP
+\fB\-\-export\-logs BOOL\fP
+\fBEXPORT_LOGS\fP
+.SH "РЕЖИМЫ РАЗМЕЩЕНИЯ"
+.TP
+\fBerase_all\fP
+Создать новую таблицу разделов и стереть выбранный диск.
+.TP
+\fBfree_space\fP
+Создать разделы в подходящем нераспределённом пространстве без уменьшения
+файловых систем.
+.TP
+\fBalongside_os\fP
+Уменьшить подходящий не смонтированный финальный раздел ext2/ext3/ext4 или
+NTFS.
+.SH "ЁМКОСТЬ DYNBLK"
+Ограничение DynBlk определяется по лимитам dynblk, а не по фиксированному
+порогу 512 ГиБ. Для больших тонких контейнеров также требуется место для
+метаданных всех объявленных частей. Raw и DynFileFS сохраняют свои отдельные
+политики ёмкости.
+.SH "ПЕРСИСТЕНТНОСТЬ VMDK"
+Режим хранения vmdk использует общий backend minios\-session и драйвер DynBlk
+для создания стандартного раздельного разрежённого хранилища VMDK. Сжатие
+отсутствует, по умолчанию используется 16384 MiB; ограничения можно узнать с
+помощью dynblk limits \-\-format vmdk.  LUKS2 может использоваться как
+отдельный слой. Рабочая среда и каждый исходный initrd должны поддерживать
+возможность vmdk\-session\-v1 с версией.
+.SH ОГРАНИЧЕНИЯ
+В CLI отсутствует ручный редактор разделов и специальные сетевые
+флаги. Мастер GTK предоставляет ручную настройку хранилища и интерактивную
+конфигурацию проводной сети.  BIOS на GPT, расширенные или логические
+разделы MBR сохраняют разметку, LVM, RAID, LUKS как родные корни, а также
+отображаемое или вложенное целевое хранилище не поддерживаются.
+.SH ПРИМЕРЫ
+.nf
+minios\-deploy list\-disks
+minios\-deploy plan /dev/sdb \-\-mode native \-\-placement free_space
+minios\-deploy install /dev/sdb \-\-mode native \-\-placement free_space \-\-yes \-\-security\-profile balanced \-\-download\-packages \-\-username alice \-\-password secret \-\-hostname workstation \-\-locale ru_RU.UTF\-8 \-\-timezone Europe/Moscow \-\-keyboard us,ru \-\-keyboard\-options grp:alt_shift_toggle \-\-default\-target graphical \-\-enable\-services ssh
+.fi
+.SH "СМ. ТАКЖЕ"
+\fBminios\-installer\fP(1), \fBminios\-configurator\fP(1), \fBlive\-config\fP(7)
+.SH АВТОР
+crims0n (crims0n@minios.dev)

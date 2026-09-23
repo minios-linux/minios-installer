@@ -1,0 +1,250 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH MINIOS\-DEPLOY 1 "September 2026" "Penginstal MiniOS" "Perintah Pengguna"
+.SH NAMA
+minios\-deploy \- antarmuka baris perintah untuk Penginstal MiniOS
+.SH SINOPSIS
+\fBminios\-deploy\fP PERINTAH [\fIOPSI\fP]
+.SH DESKRIPSI
+\fBminios\-deploy\fP menyediakan frontend baris perintah yang dapat diskrip
+untuk backend Penginstal MiniOS. Dirancang untuk pengujian, otomatisasi, dan
+sesi pemulihan di mana wizard grafis tidak praktis.
+.SH PERINTAH
+.TP
+\fBlist\-disks [\-\-json]\fP
+Daftar disk yang dapat diinstal yang terdeteksi oleh penginstal.
+.TP
+\fBplan DEVICE [\-\-mode MODE] [\-\-filesystem FS] [\-\-placement MODE] [OPTIONS]\fP
+Tampilkan rencana partisi yang akan diterapkan ke DEVICE.
+.TP
+\fBinstall DEVICE [OPTIONS]\fP
+Jalankan instalasi live atau native. Tanpa \fB\-\-yes\fP perintah akan menolak
+menulis ke disk. Gunakan \fB\-\-dry\-run\fP untuk melihat pratinjau perintah tanpa
+melakukan perubahan.
+.SH "OPSI INSTALASI"
+.TP
+\fB\-\-mode live|native\fP
+Mode instalasi. Default: live. Pada image live tanpa kontrak instalasi
+native yang diperlukan, hanya live yang diterima; mode native disembunyikan
+dan ditolak.
+.TP
+\fB\-\-filesystem FS\fP
+Filesystem root. Default: ext4. Mode native menerima ext2, ext4, dan btrfs.
+.TP
+\fB\-\-placement MODE\fP
+Gunakan erase_all, free_space, atau alongside_os. Partisi manual hanya
+tersedia di GUI.
+.TP
+\fB\-\-alongside\-size MIB\fP
+Kapasitas MiniOS yang akan dilepas dari kandidat shrink alongside.
+.TP
+\fB\-\-swap\-size MIB\fP
+Hanya untuk instalasi native. Ukuran swap. Default: 0.
+.TP
+\fB\-\-boot\-layout LAYOUT\fP
+Gunakan auto, bios_mbr, uefi_mbr, atau uefi_gpt.
+.TP
+\fB\-\-modules LIST\fP
+Nama modul dipisahkan dengan koma. Lapisan bawah yang diperlukan akan
+otomatis disertakan.
+.TP
+\fB\-\-security\-profile PROFILE\fP
+Gunakan convenient, balanced, atau strict. Default\-nya convenient untuk live
+dan balanced untuk instalasi native.
+.TP
+\fB\-\-persistence\-mode none|native|dynfilefs|dynblk|vmdk|raw\fP
+Membutuhkan minios\-session versi 2.2.0 atau yang lebih baru untuk mode
+selain none.  Tanpa executable tersebut, opsi persistensi tidak ditampilkan
+pada bantuan maupun penyelesaian otomatis. Permintaan pembuatan secara
+eksplisit akan ditolak sebelum ada perubahan pada disk; instalasi tanpa sesi
+tetap tersedia.
+.br
+Hanya untuk instalasi live. Pilihan persistensi native menulis perubahan
+langsung ke partisi MiniOS yang kompatibel dengan POSIX; ini tidak terkait
+dengan \fB\-\-mode native .\fP DynBlk dan VMDK hanya akan ditampilkan jika
+kapabilitas userspace, kernel, dan initrd tersedia. Keduanya disembunyikan
+dan secara eksplisit ditolak sebelum perubahan disk ketika UEFI Secure Boot
+diaktifkan, karena MiniOS tidak menandatangani modul kernel eksternal
+DynBlk. Penyimpanan yang dipilih dibuat selama instalasi menggunakan
+minios\-session di direktori minios/changes pada partisi target dan dipilih
+sebagai default boot melalui metadata sesi, bukan parameter kernel.
+.TP
+\fB\-\-persistence\-encryption none|luks\fP
+Hanya untuk instalasi live. Opsional menumpuk LUKS2 di atas Raw, DynFileFS,
+DynBlk, atau VMDK. LUKS hanya akan ditampilkan jika marker initrd yang
+berjalan berisi luks\-layer\-v1 dan backend yang dipilih tersedia. Sumber
+initrd akan divalidasi ulang sebelum perubahan disk. Kata sandi dimasukkan
+dan dikonfirmasi sebelum perubahan disk dan hanya diteruskan ke
+minios\-session melalui stdin. Proses boot akan membuka sesi yang sudah ada.
+.TP
+\fB\-\-persistence\-password\-stdin\fP
+Baca kata sandi LUKS dan konfirmasi dari dua baris standar input, bukan dari
+prompt interaktif. Memerlukan \-\-persistence\-encryption luks. Kata sandi
+tidak akan ditulis ke argumen, log, atau konfigurasi. Dry run tidak membaca
+stdin.
+.TP
+\fB\-\-persistence\-compression none|lz4|lz4hc|lzo|lzo\-rle|zstd|deflate|842\fP
+Hanya untuk instalasi live. Pilih codec yang digunakan saat kontainer
+persistensi DynBlk baru dibuat. Codec yang dipilih harus memiliki penyedia
+crypto_comp di kernel/initrd yang sedang berjalan dan di setiap initrd
+sumber yang disalin ke target; installer memverifikasi penyedia built\-in dan
+modular dari metadata kmod sebelum perubahan disk. Opsi ini hanya berlaku
+untuk DynBlk dan tidak tersedia jika enkripsi LUKS dipilih. Installer
+meneruskan pilihan ke minios\-session saat membuat kontainer.
+.TP
+\fB\-\-persistence\-size MIB\fP
+Hanya untuk instalasi live. Ukuran kontainer persistensi. Raw dan DynFileFS
+default ke 4000 MiB; DynBlk default ke 16 GiB. Raw dibatasi hingga 4000 MiB
+pada FAT32; DynFileFS dan DynBlk menggunakan kapasitas virtual tipis.
+.TP
+\fB\-\-download\-packages\fP
+Hanya untuk instalasi native. Mengizinkan pengunduhan paket yang
+diperlukan. Default CLI adalah dinonaktifkan. Ketergantungan
+minios\-native\-dracut menyediakan toolchain initramfs dracut konvensional
+meskipun image live menggunakan livekit\-mos. Tanpa pengunduhan, erase\-all
+sistem tunggal dapat menggunakan EXTLINUX pada BIOS atau rantai EFI media
+live yang terverifikasi dengan konfigurasi GRUB native minimal pada UEFI.
+.TP
+\fB\-\-boot\-menu LANG\fP
+Hanya untuk instalasi live. Kode bahasa menu boot (misal: ru_RU) atau
+\fBmultilang\fP (default).
+.TP
+\fB\-\-dry\-run\fP
+Validasi dan tampilkan perintah yang direncanakan tanpa menulis ke disk. Dry
+run tidak dapat menjamin bahwa lingkungan runtime pada akhirnya tetap tidak
+berubah.
+.TP
+\fB\-\-yes\fP
+Konfirmasi bahwa disk target boleh dihapus.
+.TP
+\fB\-\-config\-file PATH\fP
+Hanya untuk instalasi live. Basis \fIconfig.conf\fP untuk disalin dan
+digabungkan dengan override CLI. Jika tidak diisi dan override ditetapkan,
+sistem live akan menggunakan \fI/etc/live/config.conf\fP sebagai basis jika
+tersedia.
+.SH "KONFIGURASI SISTEM"
+Opsi berikut menyesuaikan sistem yang diinstal. Dalam mode live, opsi ini
+menulis kunci yang sama seperti \fBminios\-configurator\fP ke
+\fIminios/config.conf\fP; dalam mode native, pengaturan akun, locale, zona
+waktu, keyboard, target, dan layanan yang didukung diterapkan langsung. Opsi
+yang ditandai hanya untuk live akan ditolak dengan \fB\-\-mode native .\fP Opsi
+boolean menerima \fBtrue\fP/\fBfalse\fP (juga yes/no, on/off, 1/0).
+.SS Pengguna
+.TP
+\fB\-\-username NAME\fP
+\fBLIVE_USERNAME\fP
+.TP
+\fB\-\-full\-name NAME\fP
+\fBLIVE_USER_FULLNAME\fP
+.TP
+\fB\-\-user\-groups LIST\fP
+\fBLIVE_USER_DEFAULT_GROUPS\fP
+.TP
+\fB\-\-password PASS\fP
+Kata sandi polos; disimpan sebagai \fBLIVE_USER_PASSWORD_CRYPTED\fP
+.TP
+\fB\-\-root\-password PASS\fP
+Kata sandi polos; disimpan sebagai \fBLIVE_ROOT_PASSWORD_CRYPTED\fP
+.PP
+Opsi kata sandi mengekspos teks biasa ke riwayat shell dan daftar proses
+selama perintah berjalan. Hindari penggunaan di lingkungan bersama.
+.TP
+\fB\-\-link\-user\-dirs BOOL\fP
+Hanya untuk instalasi live.  \fBLIVE_LINK_USER_DIRS\fP
+.TP
+\fB\-\-bind\-user\-dirs BOOL\fP
+Hanya untuk instalasi live.  \fBLIVE_BIND_USER_DIRS\fP
+.TP
+\fB\-\-user\-dirs\-path PATH\fP
+Hanya untuk instalasi live.  \fBLIVE_USER_DIRS_PATH\fP
+.SS Sistem
+.TP
+\fB\-\-noroot BOOL\fP
+Hanya untuk instalasi live.  \fBLIVE_CONFIG_NOROOT\fP
+.TP
+\fB\-\-hostname NAME\fP
+\fBLIVE_HOSTNAME\fP
+.TP
+\fB\-\-locale / \-\-locales LIST\fP
+\fBLIVE_LOCALES\fP
+.TP
+\fB\-\-timezone ZONE\fP
+\fBLIVE_TIMEZONE\fP
+.TP
+\fB\-\-default\-target TARGET\fP
+\fBDEFAULT_TARGET\fP (grafis, multi\-user, rescue, atau nama unit lengkap)
+.TP
+\fB\-\-enable\-services LIST\fP
+\fBENABLE_SERVICES\fP
+.TP
+\fB\-\-disable\-services LIST\fP
+\fBDISABLE_SERVICES\fP
+.SS Keyboard
+.TP
+\fB\-\-keyboard\-model MODEL\fP
+\fBLIVE_KEYBOARD_MODEL\fP
+.TP
+\fB\-\-keyboard / \-\-keyboard\-layouts LIST\fP
+\fBLIVE_KEYBOARD_LAYOUTS\fP
+.TP
+\fB\-\-keyboard\-options OPTS\fP
+\fBLIVE_KEYBOARD_OPTIONS\fP
+.TP
+\fB\-\-keyboard\-variants LIST\fP
+\fBLIVE_KEYBOARD_VARIANTS\fP
+.SS Lanjutan
+Opsi lanjutan berikut hanya tersedia dengan \fB\-\-mode live .\fP
+.TP
+\fB\-\-module\-mode simple|merged\fP
+\fBLIVE_MODULE_MODE\fP
+.TP
+\fB\-\-live\-config\-cmdline STRING\fP
+\fBLIVE_CONFIG_CMDLINE\fP
+.TP
+\fB\-\-config\-debug BOOL\fP
+\fBLIVE_CONFIG_DEBUG\fP
+.TP
+\fB\-\-export\-logs BOOL\fP
+\fBEXPORT_LOGS\fP
+.SH "MODE PENEMPATAN"
+.TP
+\fBerase_all\fP
+Buat tabel partisi baru dan hapus seluruh data pada disk yang dipilih.
+.TP
+\fBfree_space\fP
+Buat partisi di ruang kosong yang tersedia tanpa mengecilkan filesystem.
+.TP
+\fBalongside_os\fP
+Perkecil partisi ext2/ext3/ext4 atau NTFS yang memenuhi syarat dan tidak
+sedang di\-mount.
+.SH "KAPASITAS DYNBLK"
+Batas DynBlk diperoleh dari batas dynblk, bukan batas tetap 512\-GiB.
+Kontainer tipis berukuran besar juga membutuhkan ruang untuk metadata dari
+semua bagian yang dideklarasikan.  Raw dan DynFileFS mempertahankan
+kebijakan kapasitasnya masing\-masing.
+.SH "PERSISTENSI VMDK"
+Mode penyimpanan vmdk menggunakan backend minios\-session bersama dan driver
+DynBlk untuk membuat penyimpanan VMDK split sparse standar. Tidak ada
+kompresi dan ukuran default adalah 16384 MiB; batas dapat dicek dengan
+dynblk limits \-\-format vmdk.  LUKS2 dapat digunakan sebagai lapisan
+terpisah. Lingkungan yang berjalan dan setiap initrd sumber harus mendukung
+kapabilitas vmdk\-session\-v1 yang ter\-versi.
+.SH BATASAN
+CLI tidak memiliki editor partisi manual atau flag jaringan khusus. Wizard
+GTK menyediakan konfigurasi penyimpanan manual dan jaringan kabel
+interaktif.  BIOS pada GPT, extended atau logical MBR mempertahankan tata
+letak, LVM, RAID, root native LUKS, serta penyimpanan target yang dipetakan
+atau bertingkat tidak didukung.
+.SH CONTOH
+.nf
+minios\-deploy list\-disks
+minios\-deploy plan /dev/sdb \-\-mode native \-\-placement free_space
+minios\-deploy install /dev/sdb \-\-mode native \-\-placement free_space \-\-yes \-\-security\-profile balanced \-\-download\-packages \-\-username alice \-\-password secret \-\-hostname workstation \-\-locale ru_RU.UTF\-8 \-\-timezone Europe/Moscow \-\-keyboard us,ru \-\-keyboard\-options grp:alt_shift_toggle \-\-default\-target graphical \-\-enable\-services ssh
+.fi
+.SH "LIHAT JUGA"
+\fBminios\-installer\fP(1), \fBminios\-configurator\fP(1), \fBlive\-config\fP(7)
+.SH PENULIS
+crims0n (crims0n@minios.dev)

@@ -1,0 +1,489 @@
+# Spanish translations for minios-installer package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the minios-installer package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 3.6.1\n"
+"POT-Creation-Date: 2026-09-22 21:45+0300\n"
+"PO-Revision-Date: 2026-09-22 18:47+0000\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. type: TH
+#: en/minios-installer.1:1
+#, no-wrap
+msgid "MINIOS-INSTALLER"
+msgstr "MINIOS-INSTALLER"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "September 2026"
+msgstr "septiembre de 2026"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "MiniOS Installer"
+msgstr "Instalador de MiniOS"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "User Commands"
+msgstr "Comandos de usuario"
+
+#. type: SH
+#: en/minios-installer.1:2 en/minios-deploy.1:2
+#, no-wrap
+msgid "NAME"
+msgstr "NOMBRE"
+
+#. type: Plain text
+#: en/minios-installer.1:4
+msgid "minios-installer - Install MiniOS to disk from live session"
+msgstr "minios-installer - Instala MiniOS en el disco desde una sesión en vivo"
+
+#. type: SH
+#: en/minios-installer.1:4 en/minios-deploy.1:4
+#, no-wrap
+msgid "SYNOPSIS"
+msgstr "SINOPSIS"
+
+#. type: Plain text
+#: en/minios-installer.1:7
+msgid "B<minios-installer> [I<--help>]"
+msgstr "B<minios-installer> [I<--help>]"
+
+#. type: SH
+#: en/minios-installer.1:7 en/minios-deploy.1:8
+#, no-wrap
+msgid "DESCRIPTION"
+msgstr "DESCRIPCIÓN"
+
+#. type: Plain text
+#: en/minios-installer.1:15
+msgid ""
+"B<minios-installer> is a GTK3 graphical wizard for installing MiniOS from a "
+"live session to a target disk. It supports modular live installations and "
+"conventional native installations. The wizard detects native-install "
+"capability from the booted image rather than its release number. Images "
+"without the required format-1 kernel metadata and EFI architecture contract "
+"automatically use compatibility mode and permit live installation only."
+msgstr ""
+"B<minios-installer> es un asistente gráfico basado en GTK3 para instalar "
+"MiniOS desde una sesión en vivo a un disco de destino. Soporta instalaciones "
+"en vivo modulares e instalaciones nativas convencionales. El asistente "
+"detecta la capacidad de instalación nativa a partir de la imagen arrancada, "
+"no del número de versión. Las imágenes que no contienen los metadatos de "
+"kernel formato-1 requeridos ni el contrato EFI de arquitectura utilizan "
+"automáticamente el modo de compatibilidad y solo permiten la instalación en "
+"vivo."
+
+#. type: Plain text
+#: en/minios-installer.1:19
+msgid ""
+"The installer creates and validates an explicit partition plan before any "
+"destructive operation. Placement modes include erase-all, existing free "
+"space, alongside a supported final partition, and native GUI manual "
+"partitioning."
+msgstr ""
+"El instalador crea y valida un plan de particionado explícito antes de "
+"cualquier operación destructiva. Los modos de ubicación incluyen borrar "
+"todo, espacio libre existente, junto a una partición final soportada y "
+"particionado manual nativo desde la interfaz gráfica."
+
+#. type: Plain text
+#: en/minios-installer.1:21
+msgid "Requires administrative privileges."
+msgstr "Requiere privilegios administrativos."
+
+#. type: SH
+#: en/minios-installer.1:21
+#, no-wrap
+msgid "OPTIONS"
+msgstr "OPCIONES"
+
+#. type: TP
+#: en/minios-installer.1:22
+#, no-wrap
+msgid "B<-h, --help>"
+msgstr "B<-h, --help>"
+
+#. type: Plain text
+#: en/minios-installer.1:25
+msgid "Show a short usage message and exit."
+msgstr "Muestra un mensaje breve de uso y termina."
+
+#. type: SH
+#: en/minios-installer.1:25
+#, no-wrap
+msgid "WIZARD"
+msgstr "ASISTENTE"
+
+#. type: Plain text
+#: en/minios-installer.1:30
+msgid ""
+"The wizard configures installation mode, security, location, wired network, "
+"keyboard, users, modules, storage placement, and boot layout before showing "
+"the final summary. Previously visited pages can be revisited until "
+"installation starts."
+msgstr ""
+"El asistente configura el modo de instalación, la seguridad, la ubicación, "
+"la red cableada, el teclado, los usuarios, los módulos, la ubicación del "
+"almacenamiento y el esquema de arranque antes de mostrar el resumen final. "
+"Las páginas visitadas previamente pueden ser revisitadas hasta que comience "
+"la instalación."
+
+#. type: SH
+#: en/minios-installer.1:30 en/minios-deploy.1:216
+#, no-wrap
+msgid "PLACEMENT MODES"
+msgstr "MODOS DE UBICACIÓN"
+
+#. type: TP
+#: en/minios-installer.1:31
+#, no-wrap
+msgid "B<Erase all>"
+msgstr "B<Borrar todo>"
+
+#. type: Plain text
+#: en/minios-installer.1:34
+msgid "Create a new partition table and destroy all data on the target disk."
+msgstr ""
+"Crea una nueva tabla de particiones y destruye todos los datos en el disco "
+"de destino."
+
+#. type: TP
+#: en/minios-installer.1:34
+#, no-wrap
+msgid "B<Free space>"
+msgstr "B<Espacio libre>"
+
+#. type: Plain text
+#: en/minios-installer.1:37
+msgid "Create MiniOS partitions in an existing unallocated region."
+msgstr "Crea particiones MiniOS en una región no asignada existente."
+
+#. type: TP
+#: en/minios-installer.1:37
+#, no-wrap
+msgid "B<Alongside>"
+msgstr "B<Junto a>"
+
+#. type: Plain text
+#: en/minios-installer.1:41
+msgid ""
+"Shrink an eligible unmounted final ext2, ext3, ext4, or NTFS partition and "
+"use the released space. Unsupported or unsafe layouts are refused."
+msgstr ""
+"Reduce una partición final ext2, ext3, ext4 o NTFS desmontada elegible y "
+"utiliza el espacio liberado. Se rechazan los esquemas no soportados o "
+"inseguros."
+
+#. type: TP
+#: en/minios-installer.1:41
+#, no-wrap
+msgid "B<Manual>"
+msgstr "B<Manual>"
+
+#. type: Plain text
+#: en/minios-installer.1:46
+msgid ""
+"For native GUI installations only. Stage exact-sector create, delete, end-"
+"only shrink, format, reuse, root, child mount-point, ESP, and swap "
+"assignments with undo and reset. No destructive operation runs before final "
+"confirmation."
+msgstr ""
+"Solo para instalaciones nativas con interfaz gráfica. Permite crear, "
+"eliminar, reducir solo al final, formatear, reutilizar, asignar raíz, punto "
+"de montaje secundario, ESP y swap por sectores exactos, con opciones de "
+"deshacer y reiniciar. Ninguna operación destructiva se ejecuta antes de la "
+"confirmación final."
+
+#. type: SH
+#: en/minios-installer.1:46
+#, no-wrap
+msgid "SUPPORTED FILESYSTEMS"
+msgstr "SISTEMAS DE ARCHIVOS SOPORTADOS"
+
+#. type: TP
+#: en/minios-installer.1:47
+#, no-wrap
+msgid "B<ext4>"
+msgstr "B<ext4>"
+
+#. type: Plain text
+#: en/minios-installer.1:50
+msgid "Recommended Linux filesystem for live and native installations."
+msgstr ""
+"Sistema de archivos recomendado para Linux en instalaciones en vivo y "
+"nativas."
+
+#. type: TP
+#: en/minios-installer.1:50
+#, no-wrap
+msgid "B<ext2>"
+msgstr "B<ext2>"
+
+#. type: Plain text
+#: en/minios-installer.1:53
+msgid ""
+"Linux filesystem without journaling, supported for live and native installs."
+msgstr ""
+"Sistema de archivos Linux sin journaling, soportado para instalaciones en "
+"vivo y nativas."
+
+#. type: TP
+#: en/minios-installer.1:53
+#, no-wrap
+msgid "B<btrfs>"
+msgstr "B<btrfs>"
+
+#. type: Plain text
+#: en/minios-installer.1:56
+msgid "Linux filesystem supported for live and native installs."
+msgstr ""
+"Sistema de archivos Linux soportado para instalaciones en vivo y nativas."
+
+#. type: TP
+#: en/minios-installer.1:56
+#, no-wrap
+msgid "B<FAT32>"
+msgstr "B<FAT32>"
+
+#. type: Plain text
+#: en/minios-installer.1:59
+msgid "Live layout only; limited to files smaller than 4 GiB."
+msgstr "Solo para el esquema en vivo; limitado a archivos menores de 4 GiB."
+
+#. type: TP
+#: en/minios-installer.1:59
+#, no-wrap
+msgid "B<NTFS>"
+msgstr "B<NTFS>"
+
+#. type: Plain text
+#: en/minios-installer.1:62
+msgid ""
+"Live layout only. Existing NTFS may also be shrunk for alongside placement."
+msgstr ""
+"Solo para el esquema en vivo. Un NTFS existente también puede reducirse para "
+"ubicar junto a otra partición."
+
+#. type: SH
+#: en/minios-installer.1:62
+#, no-wrap
+msgid "SECURITY AND NETWORK"
+msgstr "SEGURIDAD Y RED"
+
+#. type: Plain text
+#: en/minios-installer.1:66
+msgid ""
+"Security profiles are convenient, balanced, and strict. Live mode defaults "
+"to convenient; native mode defaults to balanced. SSH and XRDP exposure are "
+"selected separately from the profile."
+msgstr ""
+"Los perfiles de seguridad son conveniente, equilibrado y estricto. El modo "
+"en vivo utiliza por defecto el perfil conveniente; el modo nativo utiliza el "
+"equilibrado. La exposición de SSH y XRDP se selecciona por separado del "
+"perfil."
+
+#. type: Plain text
+#: en/minios-installer.1:70
+msgid ""
+"Network setup covers hostname and wired DHCP or static IPv4. Wi-Fi profiles "
+"are not created or changed. Native static networking uses NetworkManager "
+"when available and falls back to ifupdown."
+msgstr ""
+"La configuración de red abarca el nombre de host y DHCP cableado o IPv4 "
+"estática. No se crean ni modifican perfiles Wi-Fi. La red estática nativa "
+"utiliza NetworkManager cuando está disponible y recurre a ifupdown como "
+"alternativa."
+
+#. type: SH
+#: en/minios-installer.1:70
+#, no-wrap
+msgid "SESSION PERSISTENCE"
+msgstr "PERSISTENCIA DE SESIÓN"
+
+#. type: Plain text
+#: en/minios-installer.1:75
+msgid ""
+"Session creation requires minios-session version 2.2.0 or newer.  Without "
+"its executable, the wizard hides the session storage, encryption, "
+"compression, and password controls and clears any previous selections.  "
+"Installation without creating a session remains available."
+msgstr ""
+"La creación de sesiones requiere minios-session versión 2.2.0 o superior. "
+"Sin su ejecutable, el asistente oculta los controles de almacenamiento de "
+"sesión, cifrado, compresión y contraseña, y borra cualquier selección "
+"previa. La instalación sin crear una sesión sigue estando disponible."
+
+#. type: Plain text
+#: en/minios-installer.1:87
+msgid ""
+"Live installations support native directories, expandable DynFileFS storage, "
+"thin DynBlk storage, and fixed-size raw images. Raw, DynFileFS, and DynBlk "
+"may optionally use LUKS2 encryption. Raw and DynFileFS default to 4000 MiB; "
+"DynBlk defaults to 16 GiB. Only Raw is limited to 4000 MiB on FAT32.  For "
+"non-encrypted DynBlk storage the wizard offers only codecs usable by both "
+"the currently running kernel/initrd, which creates the container, and every "
+"kernel/initrd copied to the target, which must reopen it later. The "
+"installer checks kmod metadata for the required crypto_comp provider, "
+"including built-in providers and module dependencies; no codec capability "
+"marker is used. Known codecs are none, lz4, lz4hc, lzo, lzo-rle, zstd, "
+"deflate, and 842; unavailable codecs are hidden."
+msgstr ""
+"Las instalaciones en vivo admiten directorios nativos, almacenamiento "
+"DynFileFS expandible, almacenamiento DynBlk delgado y archivos de imagen de "
+"tamaño fijo. Los formatos Raw, DynFileFS y DynBlk pueden utilizar cifrado "
+"LUKS2 de forma opcional. Raw y DynFileFS tienen un tamaño predeterminado de "
+"4000 MiB; DynBlk predetermina a 16 GiB. Solo Raw está limitado a 4000 MiB en "
+"FAT32. Para almacenamiento DynBlk no cifrado, el asistente solo ofrece "
+"códecs utilizables tanto por el kernel/initrd en ejecución, que crea el "
+"contenedor, como por cada kernel/initrd copiado al destino, que debe "
+"reabrirlo posteriormente. El instalador verifica los metadatos de kmod para "
+"el proveedor crypto_comp requerido, incluyendo proveedores integrados y "
+"dependencias de módulos; no se utiliza ningún marcador de capacidad de "
+"códec. Los códecs conocidos son none, lz4, lz4hc, lzo, lzo-rle, zstd, "
+"deflate y 842; los códecs no disponibles se ocultan."
+
+#. type: Plain text
+#: en/minios-installer.1:97
+msgid ""
+"LUKS is shown only when the running initrd marker contains luks-layer-v1 at "
+"I</run/initramfs/etc/minios-initramfs-crypt>.  Before disk changes, every "
+"source initrd is unpacked and checked for the same versioned capability and "
+"any selected DynBlk capability. The installer creates and selects a real "
+"session in minios/changes on the target partition using the minios-session "
+"backend, without rewriting persistence kernel parameters.  The passphrase is "
+"entered and confirmed in the wizard and passed only through stdin, never "
+"through command arguments, logs, or configuration. At boot it is used to "
+"unlock the already-created session. This does not encrypt a native root."
+msgstr ""
+"LUKS solo se muestra cuando el marcador initrd en ejecución contiene luks-"
+"layer-v1 en I</run/initramfs/etc/minios-initramfs-crypt>. Antes de realizar "
+"cambios en el disco, cada initrd de origen se desempaqueta y se comprueba "
+"para la misma capacidad versionada y cualquier capacidad seleccionada de "
+"DynBlk. El instalador crea y selecciona una sesión real en minios/changes en "
+"la partición de destino usando el backend minios-session, sin reescribir los "
+"parámetros del kernel de persistencia. La frase de contraseña se introduce y "
+"confirma en el asistente y solo se pasa por stdin, nunca por argumentos de "
+"comandos, registros o configuración. Al arrancar, se utiliza para "
+"desbloquear la sesión ya creada. Esto no cifra una raíz nativa."
+
+#. type: SH
+#: en/minios-installer.1:97
+#, no-wrap
+msgid "FILES"
+msgstr "ARCHIVOS"
+
+#. type: Plain text
+#: en/minios-installer.1:99
+msgid "I</usr/share/applications/minios-installer.desktop>"
+msgstr "I</usr/share/applications/minios-installer.desktop>"
+
+#. type: Plain text
+#: en/minios-installer.1:101
+msgid "I</usr/share/polkit-1/actions/org.minios.installer.policy>"
+msgstr "I</usr/share/polkit-1/actions/org.minios.installer.policy>"
+
+#. type: Plain text
+#: en/minios-installer.1:103
+msgid "I</usr/lib/minios-installer/>"
+msgstr "I</usr/lib/minios-installer/>"
+
+#. type: SH
+#: en/minios-installer.1:103
+#, no-wrap
+msgid "NOTES"
+msgstr "NOTAS"
+
+#. type: Plain text
+#: en/minios-installer.1:107
+msgid ""
+"Only works from a MiniOS live session. The running live-media disk is "
+"excluded from target selection. Erase-all destroys all data on the selected "
+"disk."
+msgstr ""
+"Solo funciona desde una sesión en vivo MiniOS. El disco live-media en "
+"ejecución se excluye de la selección de destino. La opción borrar-todo "
+"destruye todos los datos en el disco seleccionado."
+
+#. type: Plain text
+#: en/minios-installer.1:111
+msgid ""
+"Required root space is calculated from selected module data, boot assets, "
+"persistence, and 25 percent filesystem reserve. ESP and native swap space "
+"are accounted for separately."
+msgstr ""
+"El espacio raíz requerido se calcula a partir de los datos de módulos "
+"seleccionados, archivos de arranque, persistencia y una reserva del sistema "
+"de archivos del veinticinco por ciento. El espacio ESP y el swap nativo se "
+"contabilizan por separado."
+
+#. type: Plain text
+#: en/minios-installer.1:115
+msgid ""
+"UEFI is supported on GPT and primary MBR. BIOS is supported only on primary "
+"MBR; BIOS on GPT and extended/logical MBR layouts are unsupported. Manual "
+"mode also rejects LVM, RAID, LUKS, and mapped or nested storage."
+msgstr ""
+"UEFI es compatible con GPT y MBR primario. BIOS solo es compatible con MBR "
+"primario; BIOS sobre GPT y diseños MBR extendidos/lógicos no son "
+"compatibles. El modo manual también rechaza LVM, RAID, LUKS y almacenamiento "
+"mapeado o anidado."
+
+#. type: Plain text
+#: en/minios-installer.1:120
+msgid "Command-line frontend: B<minios-deploy> (see B<minios-deploy>(1))."
+msgstr ""
+"Interfaz de línea de comandos: B<minios-deploy> (ver B<minios-deploy>(1))."
+
+#. type: SH
+#: en/minios-installer.1:120 en/minios-deploy.1:251
+#, no-wrap
+msgid "AUTHOR"
+msgstr "AUTOR"
+
+#. type: Plain text
+#: en/minios-installer.1:122 en/minios-deploy.1:252
+msgid "crims0n (crims0n@minios.dev)"
+msgstr "crims0n (crims0n@minios.dev)"
+
+#. type: SH
+#: en/minios-installer.1:122
+#, no-wrap
+msgid "BUGS"
+msgstr "ERRORES"
+
+#. type: Plain text
+#: en/minios-installer.1:124
+msgid "https://github.com/minios-linux/minios-installer/issues"
+msgstr "https://github.com/minios-linux/minios-installer/issues"
+
+#. type: SH
+#: en/minios-installer.1:125 en/minios-deploy.1:226
+#, no-wrap
+msgid "DYNBLK CAPACITY"
+msgstr "CAPACIDAD DYNBLK"
+
+#. type: Plain text
+#: en/minios-installer.1:128 en/minios-deploy.1:230
+msgid ""
+"The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB "
+"ceiling.  Large thin containers also require space for the metadata of all "
+"declared parts.  Raw and DynFileFS retain their separate capacity policies."
+msgstr ""
+"El límite de DynBlk se obtiene de los límites de dynblk, no de un techo fijo "
+"de 512 GiB. Los contenedores thin grandes también requieren espacio para los "
+"metadatos de todas las partes declaradas. Raw y DynFileFS mantienen sus "
+"propias políticas de capacidad por separado."

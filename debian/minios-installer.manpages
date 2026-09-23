@@ -1,1 +1,9 @@
-debian/minios-installer.1
+manpages/en/minios-installer.1
+manpages/de/minios-installer.de.1
+manpages/es/minios-installer.es.1
+manpages/fr/minios-installer.fr.1
+manpages/id/minios-installer.id.1
+manpages/it/minios-installer.it.1
+manpages/pt/minios-installer.pt.1
+manpages/pt_BR/minios-installer.pt_BR.1
+manpages/ru/minios-installer.ru.1

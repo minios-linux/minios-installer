@@ -1,0 +1,811 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the minios-installer package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: minios-installer 3.6.1\n"
+"POT-Creation-Date: 2026-09-22 21:45+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "September 2026"
+msgstr ""
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "MiniOS Installer"
+msgstr ""
+
+#. type: TH
+#: en/minios-installer.1:1 en/minios-deploy.1:1
+#, no-wrap
+msgid "User Commands"
+msgstr ""
+
+#. type: SH
+#: en/minios-installer.1:2 en/minios-deploy.1:2
+#, no-wrap
+msgid "NAME"
+msgstr ""
+
+#. type: SH
+#: en/minios-installer.1:4 en/minios-deploy.1:4
+#, no-wrap
+msgid "SYNOPSIS"
+msgstr ""
+
+#. type: SH
+#: en/minios-installer.1:7 en/minios-deploy.1:8
+#, no-wrap
+msgid "DESCRIPTION"
+msgstr ""
+
+#. type: SH
+#: en/minios-installer.1:30 en/minios-deploy.1:216
+#, no-wrap
+msgid "PLACEMENT MODES"
+msgstr ""
+
+#. type: SH
+#: en/minios-installer.1:120 en/minios-deploy.1:251
+#, no-wrap
+msgid "AUTHOR"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-installer.1:122 en/minios-deploy.1:252
+msgid "crims0n (crims0n@minios.dev)"
+msgstr ""
+
+#. type: SH
+#: en/minios-installer.1:125 en/minios-deploy.1:226
+#, no-wrap
+msgid "DYNBLK CAPACITY"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-installer.1:128 en/minios-deploy.1:230
+msgid ""
+"The DynBlk limit is obtained from dynblk limits, not a fixed 512-GiB "
+"ceiling.  Large thin containers also require space for the metadata of all "
+"declared parts.  Raw and DynFileFS retain their separate capacity policies."
+msgstr ""
+
+#. type: TH
+#: en/minios-deploy.1:1
+#, no-wrap
+msgid "MINIOS-DEPLOY"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:4
+msgid "minios-deploy - command-line interface for the MiniOS installer"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:8
+msgid "B<minios-deploy> COMMAND [I<OPTIONS>]"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:11
+msgid ""
+"B<minios-deploy> provides a scriptable command-line frontend for the MiniOS "
+"installer backend. It is intended for testing, automation, and recovery "
+"sessions where the graphical wizard is not convenient."
+msgstr ""
+
+#. type: SH
+#: en/minios-deploy.1:11
+#, no-wrap
+msgid "COMMANDS"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:12
+#, no-wrap
+msgid "B<list-disks [--json]>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:15
+msgid "List installable disks detected by the installer."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:15
+#, no-wrap
+msgid "B<plan DEVICE [--mode MODE] [--filesystem FS] [--placement MODE] [OPTIONS]>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:18
+msgid "Print the partition plan that would be applied to DEVICE."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:18
+#, no-wrap
+msgid "B<install DEVICE [OPTIONS]>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:25
+msgid ""
+"Run a live or native installation. Without B<--yes> the command refuses to "
+"write to disk. Use B<--dry-run> to preview commands without making changes."
+msgstr ""
+
+#. type: SH
+#: en/minios-deploy.1:25
+#, no-wrap
+msgid "INSTALL OPTIONS"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:26
+#, no-wrap
+msgid "B<--mode live|native>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:30
+msgid ""
+"Installation mode. Default: live. On live images without the required native "
+"installation contracts, only live is accepted; native mode is hidden and "
+"rejected."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:30
+#, no-wrap
+msgid "B<--filesystem FS>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:33
+msgid ""
+"Root filesystem. Default: ext4. Native mode accepts ext2, ext4, and btrfs."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:33
+#, no-wrap
+msgid "B<--placement MODE>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:36
+msgid ""
+"Use erase_all, free_space, or alongside_os. Manual partitioning is GUI-only."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:36
+#, no-wrap
+msgid "B<--alongside-size MIB>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:39
+msgid "MiniOS capacity to release from the alongside shrink candidate."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:39
+#, no-wrap
+msgid "B<--swap-size MIB>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:42
+msgid "Native installation only. Swap size. Default: 0."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:42
+#, no-wrap
+msgid "B<--boot-layout LAYOUT>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:45
+msgid "Use auto, bios_mbr, uefi_mbr, or uefi_gpt."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:45
+#, no-wrap
+msgid "B<--modules LIST>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:48
+msgid ""
+"Comma-separated module names. Required lower layers are included "
+"automatically."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:48
+#, no-wrap
+msgid "B<--security-profile PROFILE>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:52
+msgid ""
+"Use convenient, balanced, or strict. Defaults to convenient for live and "
+"balanced for native installations."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:52
+#, no-wrap
+msgid "B<--persistence-mode none|native|dynfilefs|dynblk|vmdk|raw>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:58
+msgid ""
+"Requires minios-session version 2.2.0 or newer for modes other than none.  "
+"Without its executable, persistence options are hidden from help and "
+"completion.  Explicit creation requests are rejected before disk changes; "
+"installation without a session remains available."
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:66
+msgid ""
+"Live installation only. The native persistence choice writes changes "
+"directly to a POSIX-compatible MiniOS partition; it is unrelated to B<--mode "
+"native .> DynBlk and VMDK are listed only when their userspace, kernel, and "
+"initrd capabilities are available. Both are hidden and explicitly rejected "
+"before disk changes when UEFI Secure Boot is enabled, because MiniOS does "
+"not sign the external DynBlk kernel module. Selected storage is created "
+"during installation using minios-session in the target partition's minios/"
+"changes directory and selected as the boot default through session metadata, "
+"not kernel parameters."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:66
+#, no-wrap
+msgid "B<--persistence-encryption none|luks>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:73
+msgid ""
+"Live installation only. Optionally layer LUKS2 over Raw, DynFileFS, DynBlk, "
+"or VMDK.  LUKS is listed only when the running initrd marker contains luks-"
+"layer-v1 and the selected backend is available. Source initrds are "
+"revalidated before disk changes. The passphrase is entered and confirmed "
+"before disk changes and passed to minios-session through stdin only. Boot "
+"unlocks the existing session."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:73
+#, no-wrap
+msgid "B<--persistence-password-stdin>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:78
+msgid ""
+"Read the LUKS passphrase and confirmation from two standard-input lines "
+"instead of an interactive prompt. Requires --persistence-encryption luks. "
+"Passwords are not written to arguments, logs, or configuration. Dry runs do "
+"not read stdin."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:78
+#, no-wrap
+msgid "B<--persistence-compression none|lz4|lz4hc|lzo|lzo-rle|zstd|deflate|842>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:87
+msgid ""
+"Live installation only. Select the codec used when a new DynBlk persistence "
+"container is created. The selected codec must have a crypto_comp provider in "
+"the currently running kernel/initrd and in every source initrd copied to the "
+"target; the installer verifies built-in and modular providers from kmod "
+"metadata before disk changes. This option applies only to DynBlk and is "
+"unavailable when LUKS encryption is selected. The installer passes the "
+"selection to minios-session when creating the container."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:87
+#, no-wrap
+msgid "B<--persistence-size MIB>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:92
+msgid ""
+"Live installation only. Container persistence size. Raw and DynFileFS "
+"default to 4000 MiB; DynBlk defaults to 16 GiB. Raw is limited to 4000 MiB "
+"on FAT32; DynFileFS and DynBlk use thin virtual capacity."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:92
+#, no-wrap
+msgid "B<--download-packages>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:99
+msgid ""
+"Native installation only. Allow required package downloads. The CLI default "
+"is disabled.  The minios-native-dracut dependency supplies a conventional "
+"dracut initramfs toolchain even when the live image uses livekit-mos. "
+"Without downloads, single-system erase-all can use EXTLINUX on BIOS or the "
+"verified live-medium EFI chain with a minimal native GRUB configuration on "
+"UEFI."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:99
+#, no-wrap
+msgid "B<--boot-menu LANG>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:104
+msgid ""
+"Live installation only. Boot menu language code (e.g. ru_RU) or B<multilang> "
+"(default)."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:104
+#, no-wrap
+msgid "B<--dry-run>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:108
+msgid ""
+"Validate and print planned commands without writing to disk. A dry run "
+"cannot guarantee that the eventual runtime environment will remain unchanged."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:108
+#, no-wrap
+msgid "B<--yes>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:111
+msgid "Confirm that the target disk may be erased."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:111
+#, no-wrap
+msgid "B<--config-file PATH>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:118
+msgid ""
+"Live installation only. Base I<config.conf> to copy and merge with CLI "
+"overrides. When omitted and overrides are set, the live system I</etc/live/"
+"config.conf> is used as the base if present."
+msgstr ""
+
+#. type: SH
+#: en/minios-deploy.1:118
+#, no-wrap
+msgid "SYSTEM CONFIGURATION"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:131
+msgid ""
+"The following options customize the installed system. In live mode they "
+"write the same keys as B<minios-configurator> into I<minios/config.conf>; in "
+"native mode the supported account, locale, timezone, keyboard, target, and "
+"service settings are applied directly. Options marked live-only are rejected "
+"with B<--mode native .> Boolean options accept B<true>/B<false> (also yes/"
+"no, on/off, 1/0)."
+msgstr ""
+
+#. type: SS
+#: en/minios-deploy.1:131
+#, no-wrap
+msgid "User"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:132
+#, no-wrap
+msgid "B<--username NAME>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:135
+msgid "B<LIVE_USERNAME>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:135
+#, no-wrap
+msgid "B<--full-name NAME>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:138
+msgid "B<LIVE_USER_FULLNAME>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:138
+#, no-wrap
+msgid "B<--user-groups LIST>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:141
+msgid "B<LIVE_USER_DEFAULT_GROUPS>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:141
+#, no-wrap
+msgid "B<--password PASS>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:145
+msgid "Plain password; stored as B<LIVE_USER_PASSWORD_CRYPTED>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:145
+#, no-wrap
+msgid "B<--root-password PASS>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:149
+msgid "Plain password; stored as B<LIVE_ROOT_PASSWORD_CRYPTED>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:152
+msgid ""
+"The password options expose plaintext to shell history and the process list "
+"while the command is running. Avoid them in shared environments."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:152
+#, no-wrap
+msgid "B<--link-user-dirs BOOL>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:156
+msgid "Live installation only.  B<LIVE_LINK_USER_DIRS>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:156
+#, no-wrap
+msgid "B<--bind-user-dirs BOOL>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:160
+msgid "Live installation only.  B<LIVE_BIND_USER_DIRS>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:160
+#, no-wrap
+msgid "B<--user-dirs-path PATH>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:164
+msgid "Live installation only.  B<LIVE_USER_DIRS_PATH>"
+msgstr ""
+
+#. type: SS
+#: en/minios-deploy.1:164
+#, no-wrap
+msgid "System"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:165
+#, no-wrap
+msgid "B<--noroot BOOL>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:169
+msgid "Live installation only.  B<LIVE_CONFIG_NOROOT>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:169
+#, no-wrap
+msgid "B<--hostname NAME>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:172
+msgid "B<LIVE_HOSTNAME>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:172
+#, no-wrap
+msgid "B<--locale / --locales LIST>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:175
+msgid "B<LIVE_LOCALES>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:175
+#, no-wrap
+msgid "B<--timezone ZONE>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:178
+msgid "B<LIVE_TIMEZONE>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:178
+#, no-wrap
+msgid "B<--default-target TARGET>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:182
+msgid "B<DEFAULT_TARGET> (graphical, multi-user, rescue, or full unit names)"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:182
+#, no-wrap
+msgid "B<--enable-services LIST>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:185
+msgid "B<ENABLE_SERVICES>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:185
+#, no-wrap
+msgid "B<--disable-services LIST>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:188
+msgid "B<DISABLE_SERVICES>"
+msgstr ""
+
+#. type: SS
+#: en/minios-deploy.1:188
+#, no-wrap
+msgid "Keyboard"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:189
+#, no-wrap
+msgid "B<--keyboard-model MODEL>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:192
+msgid "B<LIVE_KEYBOARD_MODEL>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:192
+#, no-wrap
+msgid "B<--keyboard / --keyboard-layouts LIST>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:195
+msgid "B<LIVE_KEYBOARD_LAYOUTS>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:195
+#, no-wrap
+msgid "B<--keyboard-options OPTS>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:198
+msgid "B<LIVE_KEYBOARD_OPTIONS>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:198
+#, no-wrap
+msgid "B<--keyboard-variants LIST>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:201
+msgid "B<LIVE_KEYBOARD_VARIANTS>"
+msgstr ""
+
+#. type: SS
+#: en/minios-deploy.1:201
+#, no-wrap
+msgid "Advanced"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:204
+msgid "The following advanced options are available only with B<--mode live .>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:204
+#, no-wrap
+msgid "B<--module-mode simple|merged>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:207
+msgid "B<LIVE_MODULE_MODE>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:207
+#, no-wrap
+msgid "B<--live-config-cmdline STRING>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:210
+msgid "B<LIVE_CONFIG_CMDLINE>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:210
+#, no-wrap
+msgid "B<--config-debug BOOL>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:213
+msgid "B<LIVE_CONFIG_DEBUG>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:213
+#, no-wrap
+msgid "B<--export-logs BOOL>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:216
+msgid "B<EXPORT_LOGS>"
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:217
+#, no-wrap
+msgid "B<erase_all>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:220
+msgid "Create a new partition table and erase the selected disk."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:220
+#, no-wrap
+msgid "B<free_space>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:223
+msgid ""
+"Create partitions in suitable unallocated space without shrinking "
+"filesystems."
+msgstr ""
+
+#. type: TP
+#: en/minios-deploy.1:223
+#, no-wrap
+msgid "B<alongside_os>"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:226
+msgid "Shrink an eligible unmounted final ext2/ext3/ext4 or NTFS partition."
+msgstr ""
+
+#. type: SH
+#: en/minios-deploy.1:230
+#, no-wrap
+msgid "VMDK PERSISTENCE"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:236
+msgid ""
+"The vmdk storage mode uses the shared minios-session backend and the DynBlk "
+"driver to create standard split sparse VMDK storage. It has no compression "
+"and defaults to 16384 MiB; limits are queried with dynblk limits --format "
+"vmdk.  LUKS2 may be used as a separate layer. The running environment and "
+"every source initrd must support the versioned vmdk-session-v1 capability."
+msgstr ""
+
+#. type: SH
+#: en/minios-deploy.1:236
+#, no-wrap
+msgid "LIMITATIONS"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:241
+msgid ""
+"The CLI has no manual partition editor or dedicated network flags. The GTK "
+"wizard provides manual storage and interactive wired network configuration.  "
+"BIOS on GPT, extended or logical MBR preserve layouts, LVM, RAID, LUKS "
+"native roots, and mapped or nested target storage are unsupported."
+msgstr ""
+
+#. type: SH
+#: en/minios-deploy.1:241
+#, no-wrap
+msgid "EXAMPLES"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:246
+#, no-wrap
+msgid ""
+"minios-deploy list-disks\n"
+"minios-deploy plan /dev/sdb --mode native --placement free_space\n"
+"minios-deploy install /dev/sdb --mode native --placement free_space --yes --security-profile balanced --download-packages --username alice --password secret --hostname workstation --locale ru_RU.UTF-8 --timezone Europe/Moscow --keyboard us,ru --keyboard-options grp:alt_shift_toggle --default-target graphical --enable-services ssh\n"
+msgstr ""
+
+#. type: SH
+#: en/minios-deploy.1:247
+#, no-wrap
+msgid "SEE ALSO"
+msgstr ""
+
+#. type: Plain text
+#: en/minios-deploy.1:251
+msgid "B<minios-installer>(1), B<minios-configurator>(1), B<live-config>(7)"
+msgstr ""

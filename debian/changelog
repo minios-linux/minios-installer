@@ -1,4 +1,11 @@
-minios-installer (3.6.0) unstable; urgency=medium
+minios-installer (3.6.1) unstable; urgency=medium
+
+  * Move manuals into the localized manpage source tree and add translated
+    minios-installer and minios-deploy manuals.
+
+ -- crims0n <crims0n@minios.dev>  Wed, 23 Sep 2026 18:09:55 +0300
+
+minios-installer (3.6.1) unstable; urgency=medium
 
   * Clarify automatic first-boot session setup and add contextual help for
     DynBlk compression choices.
