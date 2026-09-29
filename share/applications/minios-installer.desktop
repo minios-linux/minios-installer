@@ -133,6 +133,6 @@ Keywords[de]=installieren;
 Exec=/usr/bin/minios-installer
 Icon=usb-creator-gtk
 Terminal=false
-Categories=GTK;System;
+Categories=GTK;System;X-MiniOS;
 NotShowIn=KDE;
 X-Ayatana-Appmenu-Show-Stubs=False

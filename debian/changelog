@@ -1,3 +1,9 @@
+minios-installer (3.6.2) unstable; urgency=medium
+
+  * Group the Installer launcher in the MiniOS desktop category.
+
+ -- crims0n <crims0n@minios.dev>  Tue, 29 Sep 2026 17:01:24 +0300
+
 minios-installer (3.6.1) unstable; urgency=medium
 
   * Move manuals into the localized manpage source tree and add translated
