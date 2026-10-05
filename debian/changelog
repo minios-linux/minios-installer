@@ -1,3 +1,12 @@
+minios-installer (3.7.1) unstable; urgency=medium
+
+  * Install the BIOS bootloader for MBR Live targets even when the installer
+    runs under UEFI, while preserving the EFI payload for dual-mode boot.
+  * Keep GPT Live targets EFI-only and cover both partition-table choices
+    with regression tests.
+
+ -- crims0n <crims0n@minios.dev>  Tue, 06 Oct 2026 00:03:16 +0300
+
 minios-installer (3.7.0) unstable; urgency=medium
 
   * Use MBR for automatic erase-all Live installs regardless of firmware,

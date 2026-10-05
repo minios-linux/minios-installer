@@ -504,9 +504,10 @@ def run_live_install(
             verify_efi_payload(src, root_mount)
         _raise_if_canceled(state)
 
-        # BIOS/MBR: install SYSLINUX/GRUB-BIOS. UEFI: EFI files already on ESP
-        # (or on FAT32 root marked as ESP when no separate ESP).
-        if not plan.use_efi:
+        # Live installs on an MBR partition table are deliberately dual-boot:
+        # keep the EFI payload and also install the BIOS bootloader, regardless
+        # of whether the installer itself is running under BIOS or UEFI.
+        if not plan.use_gpt:
             progress_cb(98, _("Installing BIOS bootloader..."))
             install_bootloader(
                 state.target_device,
