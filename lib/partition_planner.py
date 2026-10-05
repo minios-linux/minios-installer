@@ -52,24 +52,27 @@ def _part_name(device: str, index: int) -> str:
     return partition_device_path(device, index)
 
 
-def _use_gpt_for_erase(layout: DiskLayout, boot_layout: str = BOOT_LAYOUT_AUTO) -> bool:
+def _use_gpt_for_erase(layout: DiskLayout, boot_layout: str = BOOT_LAYOUT_AUTO, install_mode: str = "live") -> bool:
     """
     Table type for wipe/erase-all installs.
 
     Do not inherit the pre-wipe table: a BIOS session wiping an existing GPT
     disk must still create MBR + install a BIOS bootloader (baseline behavior).
-    GPT only when firmware is UEFI or the disk is >= 2 TiB.
+    Automatic live installs always use MBR. Native installs use GPT when
+    firmware is UEFI or the disk is >= 2 TiB.
     """
     if boot_layout == BOOT_LAYOUT_UEFI_GPT:
         return True
     if boot_layout in (BOOT_LAYOUT_BIOS_MBR, BOOT_LAYOUT_UEFI_MBR):
+        return False
+    if install_mode == "live":
         return False
     if is_uefi_system():
         return True
     return layout.size_mib >= GPT_SIZE_MIB
 
 
-def _use_gpt_for_preserve(layout: DiskLayout, boot_layout: str = BOOT_LAYOUT_AUTO) -> bool:
+def _use_gpt_for_preserve(layout: DiskLayout, boot_layout: str = BOOT_LAYOUT_AUTO, install_mode: str = "live") -> bool:
     """Table type when keeping an existing partition table (future free-space)."""
     if not layout.partition_table:
         raise ValueError(_("No partition table was found. Use erase-all to initialize this disk."))
@@ -84,7 +87,7 @@ def _use_gpt_for_preserve(layout: DiskLayout, boot_layout: str = BOOT_LAYOUT_AUT
         return True
     if boot_layout == BOOT_LAYOUT_UEFI_GPT:
         raise ValueError(_("UEFI/GPT layout cannot be used with existing MBR free space. Choose Automatic/BIOS-MBR or erase the disk."))
-    return _use_gpt_for_erase(layout, boot_layout=boot_layout)
+    return _use_gpt_for_erase(layout, boot_layout=boot_layout, install_mode=install_mode)
 
 
 def _use_efi_for_layout(boot_layout: str = BOOT_LAYOUT_AUTO) -> bool:
@@ -141,8 +144,13 @@ def _needs_esp(filesystem: str, install_mode: str, use_efi: bool) -> bool:
 
 
 def plan_erase_all(layout: DiskLayout, filesystem: str = "ext4", install_mode: str = "live", swap_size_mib: int = 0, boot_layout: str = BOOT_LAYOUT_AUTO, required_root_mib: int = 0, efi_payload_bytes: int = 0) -> PartitionPlan:
-    use_gpt = _use_gpt_for_erase(layout, boot_layout=boot_layout)
+    use_gpt = _use_gpt_for_erase(layout, boot_layout=boot_layout, install_mode=install_mode)
     use_efi = _use_efi_for_layout(boot_layout)
+    if install_mode == "live" and boot_layout == BOOT_LAYOUT_AUTO and layout.size_mib >= GPT_SIZE_MIB:
+        raise ValueError(
+            _("Automatic live installation requires MBR; disks 2 TiB or larger are not supported in this mode. "
+              "Choose UEFI/GPT explicitly or use a smaller disk.")
+        )
     if use_gpt and not use_efi:
         # BIOS + we decided GPT (almost always because size >= 2 TiB).
         # We do not currently install a BIOS bootloader (GRUB bios_grub + core.img) for GPT erase-all.
@@ -227,7 +235,7 @@ def _snapshot_preserve_plan(plan: PartitionPlan, layout: DiskLayout, extent: Fre
 
 
 def plan_free_space(layout: DiskLayout, filesystem: str = "ext4", install_mode: str = "live", swap_size_mib: int = 0, boot_layout: str = BOOT_LAYOUT_AUTO, required_root_mib: int = 0, efi_payload_bytes: int = 0) -> PartitionPlan:
-    use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout)
+    use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout, install_mode=install_mode)
     use_efi = _use_efi_for_layout(boot_layout)
     esp_min_mib = ESP_SIZE_MIB
     esp = next((p for p in layout.partitions if p.role == "esp" and _valid_esp(layout, p)), None) if use_efi else None
@@ -265,13 +273,13 @@ def build_plan(layout: DiskLayout, placement: str, filesystem: str = "ext4", ins
         return plan_erase_all(layout, filesystem, install_mode=install_mode, swap_size_mib=swap_size_mib, boot_layout=boot_layout, required_root_mib=required_root_mib, efi_payload_bytes=efi_payload_bytes)
     if placement == PLACEMENT_FREE_SPACE:
         from format_utils import validate_filesystem_for_plan
-        use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout)
+        use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout, install_mode=install_mode)
         use_efi = _use_efi_for_layout(boot_layout)
         validate_filesystem_for_plan(filesystem, use_gpt, install_mode=install_mode)
         return plan_free_space(layout, filesystem, install_mode=install_mode, swap_size_mib=swap_size_mib, boot_layout=boot_layout, required_root_mib=required_root_mib, efi_payload_bytes=efi_payload_bytes)
     if placement in (PLACEMENT_ALONGSIDE_WINDOWS, PLACEMENT_ALONGSIDE_OS):
         from format_utils import validate_filesystem_for_plan
-        use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout)
+        use_gpt = _use_gpt_for_preserve(layout, boot_layout=boot_layout, install_mode=install_mode)
         use_efi = _use_efi_for_layout(boot_layout)
         validate_filesystem_for_plan(filesystem, use_gpt, install_mode=install_mode)
         esp = next((p for p in layout.partitions if p.role == "esp" and use_efi and _valid_esp(layout, p)), None)

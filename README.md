@@ -9,6 +9,7 @@ GTK3 wizard and command-line backend for installing MiniOS from a live session.
 - Module selection with required lower layers included automatically
 - Required-space calculation from selected data, boot assets, persistence, and a 25 percent filesystem reserve
 - Automatic, BIOS/MBR, UEFI/MBR, and UEFI/GPT boot-layout choices
+- Automatic erase-all uses MBR for Live installs, regardless of firmware; native installs use GPT under UEFI and MBR under BIOS. Live disks of 2 TiB or larger require an explicit UEFI/GPT choice. Free-space and alongside installs keep the existing partition table.
 - Security profiles (`convenient`, `balanced`, `strict`) with independent SSH and XRDP service controls
 - Hostname and wired DHCP or static IPv4 configuration; Wi-Fi profiles are left unchanged
 - Locale, timezone, keyboard, user, password, service, and boot-menu setup

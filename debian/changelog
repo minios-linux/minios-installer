@@ -1,3 +1,13 @@
+minios-installer (4.0.0) unstable; urgency=medium
+
+  * Use MBR for automatic erase-all Live installs regardless of firmware,
+    while keeping native installation and existing partition tables intact.
+  * Require an explicit UEFI/GPT choice for Live disks of 2 TiB or larger
+    instead of automatically selecting GPT.
+  * Clarify UEFI deployment messages and cover the partitioning policy.
+
+ -- crims0n <crims0n@minios.dev>  Mon, 05 Oct 2026 14:05:48 +0300
+
 minios-installer (3.6.2) unstable; urgency=medium
 
   * Group the Installer launcher in the MiniOS desktop category.

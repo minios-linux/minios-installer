@@ -504,7 +504,7 @@ def run_live_install(
             verify_efi_payload(src, root_mount)
         _raise_if_canceled(state)
 
-        # BIOS/MBR: install SYSLINUX/GRUB-BIOS. UEFI/GPT: EFI files already on ESP
+        # BIOS/MBR: install SYSLINUX/GRUB-BIOS. UEFI: EFI files already on ESP
         # (or on FAT32 root marked as ESP when no separate ESP).
         if not plan.use_efi:
             progress_cb(98, _("Installing BIOS bootloader..."))
@@ -518,7 +518,7 @@ def run_live_install(
                 cancel_cb=lambda: state.cancel_requested,
             )
         else:
-            log_cb(_("UEFI/GPT install: EFI files copied; no BIOS bootloader written."))
+            log_cb(_("UEFI install: EFI files copied; no BIOS bootloader written."))
 
         _raise_if_canceled(state)
 

@@ -5,6 +5,8 @@ import os
 import sys
 from unittest.mock import patch
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 
 from partition_models import DiskLayout, PartitionInfo, PLACEMENT_ERASE_ALL, PLACEMENT_FREE_SPACE
@@ -93,12 +95,56 @@ def test_native_uefi_mbr_erase_creates_efi_system_partition():
     assert [part.role for part in plan.partitions] == ["esp", "minios_root"]
 
 
-def test_erase_all_uefi_blank_disk_uses_gpt():
+def test_native_erase_all_uefi_blank_disk_uses_gpt():
     layout = DiskLayout(device="/dev/sdb", size_mib=20480, partition_table="")
     with patch("partition_planner.is_uefi_system", return_value=True):
-        plan = build_plan(layout, PLACEMENT_ERASE_ALL, "ext4")
+        plan = build_plan(layout, PLACEMENT_ERASE_ALL, "ext4", install_mode="native")
     assert plan.use_gpt is True
-    assert plan.partitions[-1].role == "esp"
+    assert plan.partitions[0].role == "esp"
+
+
+@pytest.mark.parametrize("uefi", [False, True])
+@pytest.mark.parametrize("filesystem", ["fat32", "ext4", "ntfs", "btrfs"])
+@pytest.mark.parametrize("table", ["", "msdos", "gpt"])
+def test_live_erase_all_auto_always_uses_mbr(uefi, filesystem, table):
+    layout = DiskLayout(device="/dev/sdb", size_mib=20480, partition_table=table)
+    with patch("partition_planner.is_uefi_system", return_value=uefi):
+        plan = build_plan(layout, PLACEMENT_ERASE_ALL, filesystem, install_mode="live")
+    assert plan.use_gpt is False
+    assert plan.use_efi is uefi
+    assert plan.wipe_disk is True
+    roles = [part.role for part in plan.partitions]
+    assert roles == (["minios_root"] if filesystem == "fat32" else ["minios_root", "esp"])
+
+
+@pytest.mark.parametrize("uefi", [False, True])
+@pytest.mark.parametrize("size_mib", [2_097_152, 3_000_000])
+def test_live_erase_all_auto_rejects_disks_beyond_mbr_limit(uefi, size_mib):
+    layout = DiskLayout(device="/dev/sdb", size_mib=size_mib)
+    with patch("partition_planner.is_uefi_system", return_value=uefi):
+        with pytest.raises(ValueError, match="Automatic live installation requires MBR"):
+            build_plan(layout, PLACEMENT_ERASE_ALL, "ext4")
+
+
+def test_native_erase_all_auto_large_uefi_disk_uses_gpt():
+    layout = DiskLayout(device="/dev/sdb", size_mib=3_000_000)
+    with patch("partition_planner.is_uefi_system", return_value=True):
+        plan = build_plan(layout, PLACEMENT_ERASE_ALL, "ext4", install_mode="native")
+    assert plan.use_gpt is True
+    assert plan.use_efi is True
+
+
+@pytest.mark.parametrize("table", ["msdos", "gpt"])
+def test_live_free_space_auto_preserves_table_under_uefi(table):
+    from partition_models import FreeExtent
+
+    layout = DiskLayout(device="/dev/sdb", size_mib=40960, partition_table=table,
+                        free_extents=[FreeExtent(20000, 40959)])
+    with patch("partition_planner.is_uefi_system", return_value=True):
+        plan = build_plan(layout, PLACEMENT_FREE_SPACE, "ext4")
+    assert plan.use_gpt is (table == "gpt")
+    assert plan.use_efi is True
+    assert plan.wipe_disk is False
 
 
 def test_erase_all_forced_uefi_gpt_uses_gpt_under_bios():
@@ -130,7 +176,7 @@ def test_erase_all_over_2tib_on_bios_is_refused():
     layout = DiskLayout(device="/dev/sdb", size_mib=2_097_152, partition_table="msdos")
     with patch("partition_planner.is_uefi_system", return_value=False):
         try:
-            build_plan(layout, PLACEMENT_ERASE_ALL, "ext4")
+            build_plan(layout, PLACEMENT_ERASE_ALL, "ext4", install_mode="native")
         except ValueError as exc:
             assert "BIOS" in str(exc) or "2 TiB" in str(exc)
         else:
@@ -367,7 +413,7 @@ def test_erase_all_bios_over_2tib_refuses():
     layout = DiskLayout(device="/dev/sda", size_mib=3_000_000, partition_table="gpt")
     with patch("partition_planner.is_uefi_system", return_value=False):
         try:
-            build_plan(layout, PLACEMENT_ERASE_ALL, "ext4")
+            build_plan(layout, PLACEMENT_ERASE_ALL, "ext4", install_mode="native")
         except ValueError as exc:
             assert "BIOS" in str(exc) or "2 TiB" in str(exc)
         else:
