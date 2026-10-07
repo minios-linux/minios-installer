@@ -166,7 +166,26 @@ def required_root_mib(module_bytes: int) -> int:
     return max(1, (required_bytes + MIB - 1) // MIB)
 
 
+def system_module_names(module_names: List[str], minios_source: Optional[str] = None) -> List[str]:
+    """Exclude independent modules/ images from the system layer chain.
+
+    Without a media inventory, retain the historical bundle-only behavior;
+    filenames alone cannot identify where a module came from.
+    """
+    candidates = [minios_source] if minios_source else LIVE_MINIOS_CANDIDATES
+    for source in candidates:
+        if not source:
+            continue
+        paths = module_image_paths(source)
+        if paths:
+            extra = {name for name, path in paths.items()
+                     if os.path.dirname(os.path.relpath(path, source)) not in ('', '.')}
+            return [name for name in module_names if name not in extra]
+    return list(module_names)
+
+
 def required_prefix_count(module_names: List[str]) -> int:
+    module_names = system_module_names(module_names)
     for index, name in enumerate(module_names):
         if "kernel" in name.lower():
             return index + 1
@@ -179,8 +198,9 @@ def parse_module_list(value: Optional[str]) -> List[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-def normalize_selected_modules(module_names: List[str], selected_modules: Optional[Iterable[str]] = None) -> List[str]:
-    """Return a bootable prefix that includes dependencies below selected modules."""
+def normalize_selected_modules(module_names: List[str], selected_modules: Optional[Iterable[str]] = None,
+                               minios_source: Optional[str] = None) -> List[str]:
+    """Include lower system layers, preserving independent modules/ choices."""
     if not module_names:
         return []
     selected = [module_basename(item) for item in (selected_modules or []) if item]
@@ -190,9 +210,14 @@ def normalize_selected_modules(module_names: List[str], selected_modules: Option
     unknown = [name for name in selected if name not in index_by_name]
     if unknown:
         raise ValueError("Unknown module(s): " + ", ".join(unknown))
-    highest = max(index_by_name[name] for name in selected)
-    highest = max(highest, required_prefix_count(module_names) - 1)
-    return module_names[: highest + 1]
+    system = system_module_names(module_names, minios_source)
+    selected_set = set(selected)
+    highest = max((index for index, name in enumerate(system) if name in selected_set), default=-1)
+    mandatory = next((index + 1 for index, name in enumerate(system)
+                      if 'kernel' in name.lower()), 1 if system else 0)
+    highest = max(highest, mandatory - 1)
+    included = selected_set | set(system[:highest + 1])
+    return [name for name in module_names if name in included]
 
 
 def selected_module_set(module_names: List[str], selected_modules: Optional[Iterable[str]] = None) -> set:

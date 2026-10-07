@@ -1,3 +1,13 @@
+minios-installer (3.7.2) unstable; urgency=medium
+
+  * Keep modules from minios/modules independently selectable while cascading
+    dependencies only through the media-root system layers.
+  * Preserve custom-module choices in live copying and native bundle selection,
+    without treating custom kernel filenames as required system layers.
+  * Clarify the module-selection page and test system-only toggle cascades.
+
+ -- crims0n <crims0n@minios.dev>  Wed, 07 Oct 2026 11:56:55 +0300
+
 minios-installer (3.7.1) unstable; urgency=medium
 
   * Install the BIOS bootloader for MBR Live targets even when the installer

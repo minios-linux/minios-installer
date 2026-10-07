@@ -2,10 +2,44 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+import pytest
+
 from main_installer import InstallerWindow, TokenCompletionPopover, _show_stack_child
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.parametrize('index, active, expected', [
+    (3, False, [True, True, True, False, True]),
+    (4, True, [True, True, False, False, True]),
+    (2, False, [True, True, False, True, True]),
+    (2, True, [True, True, True, False, False]),
+    (0, False, [True, True, False, True, True]),
+])
+def test_module_toggles_cascade_only_within_system_layers(index, active, expected):
+    class Button:
+        def __init__(self, active):
+            self.active = active
+
+        def get_active(self):
+            return self.active
+
+        def set_active(self, active):
+            self.active = active
+
+    names = ['00-core.sb', '01-kernel.sb', '05-desktop.sb',
+             'brave-browser.sb', 'microsoft-edge.sb']
+    buttons = [Button(pos < 2 or not active) for pos in range(len(names))]
+    buttons[index].set_active(active)
+    window = SimpleNamespace(
+        available_modules=names, system_modules=names[:3], module_buttons=buttons,
+        _sync_selected_modules_from_buttons=Mock(), _update_modules_count_label=Mock())
+
+    InstallerWindow._on_module_toggled(window, buttons[index], index)
+
+    assert [button.get_active() for button in buttons] == expected
+    window._sync_selected_modules_from_buttons.assert_called_once_with()
 
 
 def test_launcher_elevates_only_non_root_callers():

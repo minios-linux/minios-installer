@@ -94,7 +94,7 @@ def copy_minios_files(src: str, dst: str, progress_cb: Callable, log_cb: Callabl
     # Calculate total size for progress reporting (never zero — avoids ZeroDivisionError
     # when sources are unreadable or only synthetic entries remain).
     module_names = _module_names_in_source(src)
-    selected_module_names = set(normalize_selected_modules(module_names, selected_modules)) if selected_modules else set(module_names)
+    selected_module_names = set(normalize_selected_modules(module_names, selected_modules, minios_source=src)) if selected_modules else set(module_names)
     total = max(_calculate_copy_size(src, selected_module_names), 1)
     copied = 0
 

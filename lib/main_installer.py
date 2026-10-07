@@ -49,6 +49,7 @@ from module_selection import (
     required_prefix_count,
     required_root_mib,
     selected_modules_size_bytes,
+    system_module_names,
 )
 from native_deploy import run_native_install
 from mount_utils import get_mounted_partitions
@@ -2762,7 +2763,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
     def _step_modules(self):
         self._page_title(
             _("Modules"),
-            _("Choose modules to install. Selecting one also includes all lower layers."),
+            _("Choose modules to install. Selecting a system layer also includes all lower system layers. Modules in minios/modules are selected independently."),
         )
         if not self.available_modules:
             note = Gtk.Label(label=_("No MiniOS modules were found in the live media."), xalign=0)
@@ -2778,7 +2779,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 self.available_modules, self.state.selected_modules
             )
 
-        mandatory_count = required_prefix_count(self.available_modules)
+        self.system_modules = system_module_names(self.available_modules)
+        mandatory_count = required_prefix_count(self.system_modules)
+        mandatory_modules = set(self.system_modules[:mandatory_count])
         available_info = Gtk.Label(
             label=_("{required} required layers and {optional} optional layers are available.").format(
                 required=mandatory_count,
@@ -2810,8 +2813,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             button.get_accessible().set_name(
                 _("{role}: {filename}").format(
                     role=role, filename=filename))
-            button.set_active(name in selected or index < mandatory_count)
-            if index < mandatory_count:
+            button.set_active(name in selected or name in mandatory_modules)
+            if name in mandatory_modules:
                 button.set_sensitive(False)
             button.connect("toggled", self._on_module_toggled, index)
             icon = Gtk.Image.new_from_icon_name(
@@ -2820,9 +2823,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
             icon.set_valign(Gtk.Align.CENTER)
             texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
             title = Gtk.Label(xalign=0)
-            if index < mandatory_count:
+            if name in mandatory_modules:
                 tag = _("Required")
-            elif role == _("Custom module"):
+            elif name not in self.system_modules:
                 tag = _("Custom")
             else:
                 tag = _("Optional")
@@ -2891,15 +2894,22 @@ class InstallerWindow(Gtk.ApplicationWindow):
             return
         self._module_toggle_updating = True
         try:
-            if button.get_active():
-                for pos in range(0, index + 1):
-                    self.module_buttons[pos].set_active(True)
-            else:
-                for pos in range(index, len(self.module_buttons)):
-                    self.module_buttons[pos].set_active(False)
-                mandatory_count = required_prefix_count(self.available_modules)
-                for pos in range(0, mandatory_count):
-                    self.module_buttons[pos].set_active(True)
+            # Only media-root layers form an ordered dependency chain.
+            # modules/ images are independent, regardless of their filenames.
+            if self.available_modules[index] in self.system_modules:
+                system = set(self.system_modules)
+                if button.get_active():
+                    for pos in range(0, index + 1):
+                        if self.available_modules[pos] in system:
+                            self.module_buttons[pos].set_active(True)
+                else:
+                    for pos in range(index, len(self.module_buttons)):
+                        if self.available_modules[pos] in system:
+                            self.module_buttons[pos].set_active(False)
+                    mandatory = set(self.system_modules[:required_prefix_count(self.system_modules)])
+                    for name, module_button in zip(self.available_modules, self.module_buttons):
+                        if name in mandatory:
+                            module_button.set_active(True)
         finally:
             self._module_toggle_updating = False
         self._sync_selected_modules_from_buttons()
