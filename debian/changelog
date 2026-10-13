@@ -1,3 +1,9 @@
+minios-installer (3.7.3) unstable; urgency=medium
+
+  * Show the Installer desktop entry in KDE application menus.
+
+ -- crims0n <crims0n@minios.dev>  Tue, 13 Oct 2026 19:56:12 +0300
+
 minios-installer (3.7.2) unstable; urgency=medium
 
   * Keep modules from minios/modules independently selectable while cascading
