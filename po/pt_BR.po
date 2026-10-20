@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: minios-installer 3.7.3\n"
+"Project-Id-Version: minios-installer 3.7.4\n"
 "Report-Msgid-Bugs-To: support@minios.dev\n"
-"POT-Creation-Date: 2026-09-21 03:01+0300\n"
-"PO-Revision-Date: 2026-09-21 00:01+0000\n"
+"POT-Creation-Date: 2026-10-19 11:05+0300\n"
+"PO-Revision-Date: 2026-10-19 08:07+0000\n"
 "Last-Translator: crims0n <crims0n@minios.dev>, 2025.\n"
 "Language-Team: Brazilian Portuguese <ldpbr-translation@lists.sourceforge.net>\n"
 "Language: pt_BR\n"
@@ -591,49 +591,49 @@ msgstr "Copiando arquivos EFI para a ESP..."
 msgid "Copying EFI files to root..."
 msgstr "Copiando arquivos EFI para a raiz..."
 
-#: lib/live_deploy.py:510
+#: lib/live_deploy.py:511
 msgid "Installing BIOS bootloader..."
 msgstr "Instalando bootloader BIOS..."
 
-#: lib/live_deploy.py:521
-msgid "UEFI/GPT install: EFI files copied; no BIOS bootloader written."
-msgstr "Instalação UEFI/GPT: arquivos EFI copiados; bootloader BIOS não gravado."
+#: lib/live_deploy.py:522
+msgid "UEFI install: EFI files copied; no BIOS bootloader written."
+msgstr "Instalação UEFI: arquivos EFI copiados; nenhum bootloader BIOS foi gravado."
 
-#: lib/live_deploy.py:525 lib/native_deploy.py:1498 lib/native_deploy.py:2207
+#: lib/live_deploy.py:526 lib/native_deploy.py:1498 lib/native_deploy.py:2207
 msgid "Unmounting disk..."
 msgstr "Desmontando disco..."
 
-#: lib/live_deploy.py:528 lib/live_deploy.py:542 lib/native_deploy.py:1509
+#: lib/live_deploy.py:529 lib/live_deploy.py:543 lib/native_deploy.py:1509
 #: lib/native_deploy.py:2210 lib/native_deploy.py:2218
 msgid "Cleaned up target mounts."
 msgstr "Montagens do destino limpas."
 
-#: lib/live_deploy.py:531 lib/native_deploy.py:1503 lib/native_deploy.py:2212
+#: lib/live_deploy.py:532 lib/native_deploy.py:1503 lib/native_deploy.py:2212
 msgid "Installation complete!"
 msgstr "Instalação concluída!"
 
-#: lib/live_deploy.py:544 lib/native_deploy.py:1511 lib/native_deploy.py:2220
+#: lib/live_deploy.py:545 lib/native_deploy.py:1511 lib/native_deploy.py:2220
 #, python-brace-format
 msgid "Warning: failed to unmount target: {error}"
 msgstr "Aviso: falha ao desmontar o destino: {error}"
 
-#: lib/main_installer.py:116
+#: lib/main_installer.py:117
 msgid "IPv4 address is not valid."
 msgstr "Endereço IPv4 inválido."
 
-#: lib/main_installer.py:117
+#: lib/main_installer.py:118
 msgid "Network prefix must be between 0 and 32."
 msgstr "O prefixo de rede deve estar entre 0 e 32."
 
-#: lib/main_installer.py:118
+#: lib/main_installer.py:119
 msgid "Gateway is not a valid IPv4 address."
 msgstr "Gateway não é um endereço IPv4 válido."
 
-#: lib/main_installer.py:119
+#: lib/main_installer.py:120
 msgid "DNS server is not a valid IP address."
 msgstr "Servidor DNS não é um endereço IP válido."
 
-#: lib/main_installer.py:241
+#: lib/main_installer.py:242
 msgid ""
 "<b>ext4</b> (best choice)\n"
 "  + Stable and has journaling.\n"
@@ -689,7 +689,7 @@ msgstr ""
 "  + Compatível com Windows e suporta arquivos grandes.\n"
 "  - Requer ferramentas extras em alguns sistemas."
 
-#: lib/main_installer.py:267
+#: lib/main_installer.py:268
 msgid ""
 "<b>Set up automatically on first boot</b>\n"
 "  The installer does not create session storage. MiniOS creates it automatically when the installed system starts for the first time.\n"
@@ -743,7 +743,7 @@ msgstr ""
 "<b>Secure Boot</b>\n"
 "  DynBlk e VMDK não estão disponíveis enquanto o Secure Boot está ativado, pois seu módulo externo do kernel não é assinado por MiniOS."
 
-#: lib/main_installer.py:290
+#: lib/main_installer.py:291
 msgid ""
 "<b>None</b>\n"
 "  Session data is stored without encryption.\n"
@@ -763,7 +763,7 @@ msgstr ""
 "  - A compressão DynBlk não está disponível enquanto o LUKS2 estiver ativado.\n"
 "  - O LUKS2 é exibido apenas quando o sistema em execução e o initrd de destino oferecem suporte."
 
-#: lib/main_installer.py:301
+#: lib/main_installer.py:302
 msgid ""
 "Compression reduces the physical space used by DynBlk data at the cost of additional CPU work. The selected session size remains its logical maximum capacity.\n"
 "\n"
@@ -777,1360 +777,1352 @@ msgstr ""
 "\n"
 "A compactação não está disponível quando a criptografia LUKS2 está ativada."
 
-#: lib/main_installer.py:914
+#: lib/main_installer.py:915
 msgid "Core system"
 msgstr "Sistema principal"
 
-#: lib/main_installer.py:915
+#: lib/main_installer.py:916
 msgid "Kernel and drivers"
 msgstr "Kernel e drivers"
 
-#: lib/main_installer.py:916
+#: lib/main_installer.py:917
 msgid "Hardware firmware"
 msgstr "Firmware de hardware"
 
-#: lib/main_installer.py:917
+#: lib/main_installer.py:918
 msgid "Graphical base"
 msgstr "Base gráfica"
 
-#: lib/main_installer.py:918
+#: lib/main_installer.py:919
 msgid "Desktop environment"
 msgstr "Ambiente de desktop"
 
-#: lib/main_installer.py:919
+#: lib/main_installer.py:920
 msgid "Toolbox utilities"
 msgstr "Utilitários da caixa de ferramentas"
 
-#: lib/main_installer.py:920
+#: lib/main_installer.py:921
 msgid "Ultra applications"
 msgstr "Aplicativos Ultra"
 
-#: lib/main_installer.py:921
+#: lib/main_installer.py:922
 msgid "Application bundle"
 msgstr "Pacote de aplicativos"
 
-#: lib/main_installer.py:922
+#: lib/main_installer.py:923
 msgid "Web browser"
 msgstr "Navegador web"
 
-#: lib/main_installer.py:923 lib/main_installer.py:2825
+#: lib/main_installer.py:924
 msgid "Custom module"
 msgstr "Módulo personalizado"
 
-#: lib/main_installer.py:933
+#: lib/main_installer.py:934
 msgid "Size unavailable"
 msgstr "Tamanho indisponível"
 
-#: lib/main_installer.py:976 lib/main_installer.py:4962
-#: lib/main_installer.py:4963
+#: lib/main_installer.py:977 lib/main_installer.py:4974
+#: lib/main_installer.py:4975
 msgid "Preparing"
 msgstr "Preparando"
 
-#: lib/main_installer.py:978 lib/main_installer.py:997
+#: lib/main_installer.py:979 lib/main_installer.py:998
 msgid "Partitioning"
 msgstr "Particionamento"
 
-#: lib/main_installer.py:980
+#: lib/main_installer.py:981
 msgid "Copying files"
 msgstr "Copiando arquivos"
 
-#: lib/main_installer.py:982
+#: lib/main_installer.py:983
 msgid "Bootloader"
 msgstr "Bootloader"
 
-#: lib/main_installer.py:983
+#: lib/main_installer.py:984
 msgid "Finishing"
 msgstr "Finalizando"
 
-#: lib/main_installer.py:989
+#: lib/main_installer.py:990
 msgid "Welcome"
 msgstr "Bem-vindo"
 
-#: lib/main_installer.py:990
+#: lib/main_installer.py:991
 msgid "Mode"
 msgstr "Modo"
 
-#: lib/main_installer.py:991
+#: lib/main_installer.py:992
 msgid "Security"
 msgstr "Segurança"
 
-#: lib/main_installer.py:992 lib/main_installer.py:1992
+#: lib/main_installer.py:993 lib/main_installer.py:1995
 msgid "Location"
 msgstr "Localização"
 
-#: lib/main_installer.py:993 lib/main_installer.py:2218
+#: lib/main_installer.py:994 lib/main_installer.py:2221
 msgid "Network"
 msgstr "Rede"
 
-#: lib/main_installer.py:994 lib/main_installer.py:2363
+#: lib/main_installer.py:995 lib/main_installer.py:2366
 msgid "Keyboard"
 msgstr "Teclado"
 
-#: lib/main_installer.py:995 lib/main_installer.py:2477
+#: lib/main_installer.py:996 lib/main_installer.py:2480
 msgid "Users"
 msgstr "Usuários"
 
-#: lib/main_installer.py:996 lib/main_installer.py:2764
+#: lib/main_installer.py:997 lib/main_installer.py:2767
 msgid "Modules"
 msgstr "Módulos"
 
-#: lib/main_installer.py:998
+#: lib/main_installer.py:999
 msgid "Summary"
 msgstr "Resumo"
 
-#: lib/main_installer.py:999 lib/main_installer.py:4389
-#: lib/main_installer.py:4952
+#: lib/main_installer.py:1000 lib/main_installer.py:4401
+#: lib/main_installer.py:4964
 msgid "Install"
 msgstr "Instalar"
 
-#: lib/main_installer.py:1003 lib/main_installer.py:1004
+#: lib/main_installer.py:1004 lib/main_installer.py:1005
 #: share/applications/minios-installer.desktop:4
 msgid "MiniOS Installer"
 msgstr "Instalador do MiniOS"
 
-#: lib/main_installer.py:1308
+#: lib/main_installer.py:1309
 msgid "Show password"
 msgstr "Mostrar senha"
 
-#: lib/main_installer.py:1308
+#: lib/main_installer.py:1309
 msgid "Hide password"
 msgstr "Ocultar senha"
 
-#: lib/main_installer.py:1323 lib/main_installer.py:5019
+#: lib/main_installer.py:1324 lib/main_installer.py:5031
 msgid "Cancel installation?"
 msgstr "Cancelar instalação?"
 
-#: lib/main_installer.py:1324 lib/main_installer.py:5020
+#: lib/main_installer.py:1325 lib/main_installer.py:5032
 msgid "Changes already completed on the selected disk will not be rolled back. Canceling may leave the MiniOS installation incomplete."
 msgstr "As alterações já concluídas no disco selecionado não serão desfeitas. Cancelar pode deixar a instalação do MiniOS incompleta."
 
-#: lib/main_installer.py:1327 lib/main_installer.py:5023
+#: lib/main_installer.py:1328 lib/main_installer.py:5035
 msgid "Cancel Install"
 msgstr "Cancelar instalação"
 
-#: lib/main_installer.py:1328 lib/main_installer.py:5024
+#: lib/main_installer.py:1329 lib/main_installer.py:5036
 msgid "Keep Installing"
 msgstr "Continuar instalando"
 
-#: lib/main_installer.py:1331 lib/main_installer.py:5028
+#: lib/main_installer.py:1332 lib/main_installer.py:5040
 msgid "Cancel requested. Waiting for the current step to finish..."
 msgstr "Cancelamento solicitado. Aguardando o término da etapa atual..."
 
-#: lib/main_installer.py:1358
+#: lib/main_installer.py:1359
 #, python-brace-format
 msgid "Go to {step}"
 msgstr "Ir para {step}"
 
-#: lib/main_installer.py:1452
+#: lib/main_installer.py:1453
 msgid "Back"
 msgstr "Voltar"
 
-#: lib/main_installer.py:1462
+#: lib/main_installer.py:1463
 msgid "Next"
 msgstr "Avançar"
 
-#: lib/main_installer.py:1498
+#: lib/main_installer.py:1499
 #: share/polkit/org.minios.installer.policy:8
 msgid "Install MiniOS"
 msgstr "Instalar MiniOS"
 
-#: lib/main_installer.py:1519
+#: lib/main_installer.py:1520
 msgid "Configure MiniOS step by step. Nothing is written to the selected disk until you confirm the installation."
 msgstr "Configure o MiniOS passo a passo. Nada será gravado no disco selecionado até que você confirme a instalação."
 
-#: lib/main_installer.py:1525
-msgid "Choose between a modular live system and a regular Linux installation, then select a security profile."
-msgstr "Escolha entre um sistema live modular e uma instalação Linux convencional, depois selecione um perfil de segurança."
+#: lib/main_installer.py:1526
+msgid "Choose between modular and classic installation, then select a security profile."
+msgstr "Escolha entre instalação modular e clássica e, em seguida, selecione um perfil de segurança."
 
-#: lib/main_installer.py:1527
-msgid "This image supports live installation only; you can still choose the security profile."
-msgstr "Esta imagem suporta apenas instalação live; você ainda pode escolher o perfil de segurança."
+#: lib/main_installer.py:1528
+msgid "This image supports modular installation only; you can still choose the security profile."
+msgstr "Esta imagem suporta apenas instalação modular; você ainda pode escolher o perfil de segurança."
 
-#: lib/main_installer.py:1531
+#: lib/main_installer.py:1532
 msgid "Choose mode and security"
 msgstr "Escolha o modo e a segurança"
 
-#: lib/main_installer.py:1536
+#: lib/main_installer.py:1537
 msgid "Configure the system"
 msgstr "Configure o sistema"
 
-#: lib/main_installer.py:1537
+#: lib/main_installer.py:1538
 msgid "Set language, time zone, network, keyboard, and user accounts."
 msgstr "Defina idioma, fuso horário, rede, teclado e contas de usuário."
 
-#: lib/main_installer.py:1541
+#: lib/main_installer.py:1542
 msgid "Choose content and target disk"
 msgstr "Escolha o conteúdo e o disco de destino"
 
-#: lib/main_installer.py:1542
+#: lib/main_installer.py:1543
 msgid "Select MiniOS modules, disk layout, and how live-system changes should be stored."
 msgstr "Selecione os módulos do MiniOS, o layout do disco e como as alterações do sistema live devem ser armazenadas."
 
-#: lib/main_installer.py:1546
+#: lib/main_installer.py:1547
 msgid "Review before installing"
 msgstr "Revise antes de instalar"
 
-#: lib/main_installer.py:1547
+#: lib/main_installer.py:1548
 msgid "Check the complete configuration and planned disk changes before installation starts."
 msgstr "Confira toda a configuração e as alterações planejadas no disco antes de iniciar a instalação."
 
-#: lib/main_installer.py:1570
-msgid "Choose how MiniOS should work after installation: as a modular live system or as a regular Linux system."
-msgstr "Escolha como o MiniOS deve funcionar após a instalação: como um sistema live modular ou como um sistema Linux convencional."
+#: lib/main_installer.py:1571
+msgid "Choose how MiniOS should work after installation: from compressed modules or unpacked to disk."
+msgstr "Escolha como MiniOS deve funcionar após a instalação: a partir de módulos compactados ou descompactados no disco."
 
-#: lib/main_installer.py:1572
-msgid "This live image supports only live system installation with the current installer."
-msgstr "Esta imagem ao vivo suporta apenas a instalação do sistema ao vivo com o instalador atual."
+#: lib/main_installer.py:1573
+msgid "This image supports only modular installation with the current installer."
+msgstr "Esta imagem suporta apenas instalação modular com o instalador atual."
 
-#: lib/main_installer.py:1574
+#: lib/main_installer.py:1575
 msgid "Installation Mode"
 msgstr "Modo de Instalação"
 
-#: lib/main_installer.py:1587
-msgid "Live system installation"
-msgstr "Instalação do sistema live"
+#: lib/main_installer.py:1588 lib/main_installer.py:4799
+msgid "Modular installation"
+msgstr "Instalação modular"
 
-#: lib/main_installer.py:1589
-msgid "Modular live system: keeps MiniOS modules and can save changes between reboots. Designed for portable installations, especially on USB drives."
-msgstr "Sistema live modular: mantém os módulos do MiniOS e pode salvar alterações entre reinicializações. Projetado para instalações portáteis, especialmente em unidades USB."
+#: lib/main_installer.py:1590
+msgid "The system and applications are stored in compressed modules and take up less disk space. Settings, additionally installed applications, and files are saved separately from the modules, in sessions. You can create sessions for different tasks, including encrypted sessions, and select them at boot."
+msgstr "O sistema e os aplicativos são armazenados em módulos compactados e ocupam menos espaço em disco. Configurações, aplicativos instalados adicionalmente e arquivos são salvos separadamente dos módulos, em sessões. Você pode criar sessões para diferentes tarefas, incluindo sessões criptografadas, e selecioná-las na inicialização."
 
-#: lib/main_installer.py:1595
-msgid "Full installation"
-msgstr "Instalação completa"
+#: lib/main_installer.py:1597 lib/main_installer.py:4799
+msgid "Classic installation"
+msgstr "Instalação clássica"
 
-#: lib/main_installer.py:1597
-msgid "Regular Linux system: MiniOS is unpacked to disk and changes are saved directly. Live modules and separate session storage are not used."
-msgstr "Sistema Linux convencional: o MiniOS é extraído para o disco e as alterações são salvas diretamente. Módulos live e armazenamento de sessão separado não são utilizados."
+#: lib/main_installer.py:1599
+msgid "The contents of the selected modules are unpacked to disk. Applications, settings, and files are saved directly in the installed system. After installation, MiniOS modules and separate sessions are not used."
+msgstr "O conteúdo dos módulos selecionados é descompactado no disco. Aplicativos, configurações e arquivos são salvos diretamente no sistema instalado. Após a instalação, módulos MiniOS e sessões separadas não são utilizados."
 
-#: lib/main_installer.py:1666
-msgid "Full installation is unavailable because this live image does not provide the native-install metadata required by the current installer."
-msgstr "A instalação completa não está disponível porque esta imagem ao vivo não fornece os metadados de instalação nativa exigidos pelo instalador atual."
+#: lib/main_installer.py:1669
+msgid "Classic installation is unavailable because this image does not provide the metadata required by the current installer for this installation mode."
+msgstr "A instalação clássica não está disponível porque esta imagem não fornece os metadados exigidos pelo instalador atual para este modo de instalação."
 
-#: lib/main_installer.py:1677
+#: lib/main_installer.py:1680
 msgid "Boot Settings"
 msgstr "Configurações de Boot"
 
-#: lib/main_installer.py:1690
+#: lib/main_installer.py:1693
 msgid "Multilingual menu"
 msgstr "Menu multilíngue"
 
-#: lib/main_installer.py:1713
+#: lib/main_installer.py:1716
 msgid "Graphical desktop"
 msgstr "Área de trabalho gráfica"
 
-#: lib/main_installer.py:1714
+#: lib/main_installer.py:1717
 msgid "Text console"
 msgstr "Console de texto"
 
-#: lib/main_installer.py:1726 lib/main_installer.py:1734
+#: lib/main_installer.py:1729 lib/main_installer.py:1737
 msgid "Boot menu language:"
 msgstr "Idioma do menu de boot:"
 
-#: lib/main_installer.py:1730
-msgid "Language of the boot menu on the installed system. For a full install this is also used if the installer cannot set up the standard GRUB bootloader."
-msgstr "Idioma do menu de inicialização no sistema instalado. Em uma instalação completa, também será usado caso o instalador não consiga configurar o carregador de boot padrão GRUB."
+#: lib/main_installer.py:1733
+msgid "Language of the boot menu on the installed system. For a classic installation this is also used if the installer cannot set up the standard GRUB bootloader."
+msgstr "Idioma do menu de boot no sistema instalado. Para instalação clássica, também será usado caso o instalador não consiga configurar o bootloader padrão GRUB."
 
-#: lib/main_installer.py:1738
+#: lib/main_installer.py:1741
 msgid "Default startup:"
 msgstr "Inicialização padrão:"
 
-#: lib/main_installer.py:1820
+#: lib/main_installer.py:1823
 msgid "Convenient"
 msgstr "Conveniência"
 
-#: lib/main_installer.py:1821
+#: lib/main_installer.py:1824
 msgid "Balanced"
 msgstr "Equilibrado"
 
-#: lib/main_installer.py:1822
+#: lib/main_installer.py:1825
 msgid "Strict"
 msgstr "Rigoroso"
 
-#: lib/main_installer.py:1831
+#: lib/main_installer.py:1834
 msgid "For a MiniOS live system used on a trusted device. Automatic login remains available, administration does not require a password, and SSH allows password login including root. XRDP can accept network connections."
 msgstr "Para um sistema live MiniOS utilizado em um dispositivo confiável. O login automático permanece disponível, a administração não exige senha e o SSH permite login por senha, inclusive para root. O XRDP pode aceitar conexões de rede."
 
-#: lib/main_installer.py:1836
+#: lib/main_installer.py:1839
 msgid "For a system used on a trusted device. Administration does not require a password, and SSH allows password login, including root if the root account is enabled. XRDP can accept network connections."
 msgstr "Para um sistema usado em um dispositivo confiável. A administração não exige senha e o SSH permite login por senha, inclusive como root se a conta root estiver ativada. O XRDP pode aceitar conexões de rede."
 
-#: lib/main_installer.py:1843
+#: lib/main_installer.py:1846
 msgid "Safer for shared or networked use. Automatic login is disabled, administration requires a password, SSH allows password login for users but blocks root login, and XRDP is limited to local or tunneled connections."
 msgstr "Mais seguro para uso compartilhado ou em rede. O login automático é desativado, a administração exige senha, o SSH permite login por senha apenas para usuários e bloqueia o login como root, e o XRDP é limitado a conexões locais ou tuneladas."
 
-#: lib/main_installer.py:1848
+#: lib/main_installer.py:1851
 msgid "Recommended for a regular installation. Administration requires your password, SSH allows password login for users but blocks root login, and XRDP is limited to local or tunneled connections."
 msgstr "Recomendado para uma instalação comum. A administração exige sua senha, o SSH permite login por senha apenas para usuários e bloqueia o login como root, e o XRDP é limitado a conexões locais ou tuneladas."
 
-#: lib/main_installer.py:1855
+#: lib/main_installer.py:1858
 msgid "For untrusted networks. Automatic login is disabled, administration requires a password, SSH accepts keys only and blocks root login, and XRDP is disabled."
 msgstr "Para redes não confiáveis. O login automático é desativado, a administração exige senha, o SSH aceita apenas chaves e bloqueia o login do root, e o XRDP é desativado."
 
-#: lib/main_installer.py:1859
+#: lib/main_installer.py:1862
 msgid "For higher security. Administration requires your password, SSH accepts keys only and blocks root login, XRDP is disabled, and the user is not added to high-privilege virtualization or container groups."
 msgstr "Para maior segurança. A administração exige sua senha, o SSH aceita apenas chaves e bloqueia o login do root, o XRDP é desativado e o usuário não é adicionado a grupos de virtualização ou containers com privilégios elevados."
 
-#: lib/main_installer.py:1876
+#: lib/main_installer.py:1879
 msgid "Enabled remote access services start automatically. The selected profile still controls which login methods they accept."
 msgstr "Os serviços de acesso remoto ativados iniciam automaticamente. O perfil selecionado ainda controla quais métodos de login são aceitos."
 
-#: lib/main_installer.py:1881
+#: lib/main_installer.py:1884
 msgid "Security Profile"
 msgstr "Perfil de Segurança"
 
-#: lib/main_installer.py:1882
+#: lib/main_installer.py:1885
 msgid "Choose how strictly MiniOS should protect administration, login, and remote access."
 msgstr "Escolha quão rigorosamente o MiniOS deve proteger a administração, o login e o acesso remoto."
 
-#: lib/main_installer.py:1953
+#: lib/main_installer.py:1956
 msgid "Remote access services"
 msgstr "Serviços de acesso remoto"
 
-#: lib/main_installer.py:1993
+#: lib/main_installer.py:1996
 msgid "Choose the system language and time zone for the installed system."
 msgstr "Escolha o idioma do sistema e o fuso horário para o sistema instalado."
 
-#: lib/main_installer.py:2009
+#: lib/main_installer.py:2012
 msgid "Type a language or locale, e.g. Russian or ru_RU"
 msgstr "Digite um idioma ou localidade, por exemplo, Russian ou ru_RU"
 
-#: lib/main_installer.py:2045
+#: lib/main_installer.py:2048
 msgid "System language:"
 msgstr "Idioma do sistema:"
 
-#: lib/main_installer.py:2047
+#: lib/main_installer.py:2050
 msgid "Timezone:"
 msgstr "Fuso horário:"
 
-#: lib/main_installer.py:2053
+#: lib/main_installer.py:2056
 msgid "Detect"
 msgstr "Detectar"
 
-#: lib/main_installer.py:2056
+#: lib/main_installer.py:2059
 msgid "Fill language, timezone, and keyboard. Uses network geolocation when online; otherwise this live session."
 msgstr "Preencha o idioma, fuso horário e teclado. Usa geolocalização pela rede quando online; caso contrário, utiliza esta sessão ao vivo."
 
-#: lib/main_installer.py:2075
+#: lib/main_installer.py:2078
 msgid "Start typing a language name or code. Detect sets language, timezone, and keyboard (network first, then this live session)."
 msgstr "Comece a digitar o nome ou código de um idioma. Detectar define idioma, fuso horário e teclado (primeiro pela rede, depois por esta sessão ao vivo)."
 
-#: lib/main_installer.py:2114
+#: lib/main_installer.py:2117
 msgid "Detecting…"
 msgstr "Detectando…"
 
-#: lib/main_installer.py:2175
+#: lib/main_installer.py:2178
 msgid "Detected via network"
 msgstr "Detectado via rede"
 
-#: lib/main_installer.py:2177
+#: lib/main_installer.py:2180
 #, python-brace-format
 msgid "Detected via network (country {code})"
 msgstr "Detectado via rede (país {code})"
 
-#: lib/main_installer.py:2179
+#: lib/main_installer.py:2182
 msgid "Detected from this live session (offline or no GeoIP result)"
 msgstr "Detectado a partir desta sessão ao vivo (offline ou sem resultado de GeoIP)"
 
-#: lib/main_installer.py:2181
+#: lib/main_installer.py:2184
 msgid "Detected using network and this live session"
 msgstr "Detectado usando a rede e esta sessão ao vivo"
 
-#: lib/main_installer.py:2183
+#: lib/main_installer.py:2186
 msgid "Could not detect language, timezone, or keyboard"
 msgstr "Não foi possível detectar idioma, fuso horário ou teclado"
 
-#: lib/main_installer.py:2187
+#: lib/main_installer.py:2190
 msgid "Could not detect language, timezone, or keyboard. Check the network, or set the values manually."
 msgstr "Não foi possível detectar idioma, fuso horário ou teclado. Verifique a conexão de rede ou defina os valores manualmente."
 
-#: lib/main_installer.py:2219
+#: lib/main_installer.py:2222
 msgid "Set the computer name and optionally configure a wired static IPv4 connection."
 msgstr "Defina o nome do computador e, opcionalmente, configure uma conexão cabeada com IPv4 estático."
 
-#: lib/main_installer.py:2228 lib/main_installer.py:3527
-#: lib/main_installer.py:4838
+#: lib/main_installer.py:2231 lib/main_installer.py:3539
+#: lib/main_installer.py:4850
 msgid "System"
 msgstr "Sistema"
 
-#: lib/main_installer.py:2234
+#: lib/main_installer.py:2237
 msgid "For example: minios-laptop"
 msgstr "Por exemplo: minios-laptop"
 
-#: lib/main_installer.py:2236
+#: lib/main_installer.py:2239
 msgid "Computer name:"
 msgstr "Nome do computador:"
 
-#: lib/main_installer.py:2240
+#: lib/main_installer.py:2243
 msgid "Wired network"
 msgstr "Rede cabeada"
 
-#: lib/main_installer.py:2255
+#: lib/main_installer.py:2258
 msgid "Interface:"
 msgstr "Interface:"
 
-#: lib/main_installer.py:2265
+#: lib/main_installer.py:2268
 #, python-brace-format
 msgid "Detected wired connection: {interface}."
 msgstr "Conexão cabeada detectada: {interface}."
 
-#: lib/main_installer.py:2268
+#: lib/main_installer.py:2271
 msgid "No wired network interface was detected. Wi-Fi profiles are kept unchanged."
 msgstr "Nenhuma interface de rede cabeada foi detectada. Perfis de Wi-Fi permanecem inalterados."
 
-#: lib/main_installer.py:2272
+#: lib/main_installer.py:2275
 msgid "Automatic (DHCP)"
 msgstr "Automático (DHCP)"
 
-#: lib/main_installer.py:2274
+#: lib/main_installer.py:2277
 msgid "Static IPv4"
 msgstr "IPv4 estático"
 
-#: lib/main_installer.py:2289
+#: lib/main_installer.py:2292
 msgid "IPv4 address:"
 msgstr "Endereço IPv4:"
 
-#: lib/main_installer.py:2290
+#: lib/main_installer.py:2293
 msgid "Prefix length:"
 msgstr "Comprimento do prefixo:"
 
-#: lib/main_installer.py:2291
+#: lib/main_installer.py:2294
 msgid "Gateway:"
 msgstr "Gateway:"
 
-#: lib/main_installer.py:2292
+#: lib/main_installer.py:2295
 msgid "DNS servers:"
 msgstr "Servidores DNS:"
 
-#: lib/main_installer.py:2331
+#: lib/main_installer.py:2334
 msgid "Computer name is not valid."
 msgstr "Nome do computador inválido."
 
-#: lib/main_installer.py:2334
+#: lib/main_installer.py:2337
 msgid "Static IPv4 requires NetworkManager or ifupdown in the installed system."
 msgstr "IPv4 estático requer o NetworkManager ou ifupdown no sistema instalado."
 
-#: lib/main_installer.py:2336
+#: lib/main_installer.py:2339
 msgid "Choose a wired network interface for the static connection."
 msgstr "Escolha uma interface de rede cabeada para a conexão estática."
 
-#: lib/main_installer.py:2364
+#: lib/main_installer.py:2367
 msgid "Choose the keyboard layout for the installed system."
 msgstr "Escolha o layout de teclado para o sistema instalado."
 
-#: lib/main_installer.py:2376
+#: lib/main_installer.py:2379
 msgid "e.g. us  or  us,ru"
 msgstr "ex.: us  ou  us,ru"
 
-#: lib/main_installer.py:2389
+#: lib/main_installer.py:2392
 msgid "Switch layout:"
 msgstr "Alternar layout:"
 
-#: lib/main_installer.py:2392
+#: lib/main_installer.py:2395
 msgid "Not needed"
 msgstr "Não necessário"
 
-#: lib/main_installer.py:2393
+#: lib/main_installer.py:2396
 msgid "Alt + Shift"
 msgstr "Alt + Shift"
 
-#: lib/main_installer.py:2394
+#: lib/main_installer.py:2397
 msgid "Ctrl + Shift"
 msgstr "Ctrl + Shift"
 
-#: lib/main_installer.py:2395
+#: lib/main_installer.py:2398
 msgid "Win + Space"
 msgstr "Win + Espaço"
 
-#: lib/main_installer.py:2396
+#: lib/main_installer.py:2399
 msgid "Caps Lock"
 msgstr "Caps Lock"
 
-#: lib/main_installer.py:2406
+#: lib/main_installer.py:2409
 msgid "Keyboard layout:"
 msgstr "Layout do teclado:"
 
-#: lib/main_installer.py:2413
+#: lib/main_installer.py:2416
 msgid "These settings will be applied to the installed system. Use a comma to combine layouts (for example us,ru)."
 msgstr "Essas configurações serão aplicadas ao sistema instalado. Use uma vírgula para combinar layouts (por exemplo, us,ru)."
 
-#: lib/main_installer.py:2457
+#: lib/main_installer.py:2460
 msgid "Choose a shortcut to switch between the selected layouts."
 msgstr "Escolha um atalho para alternar entre os layouts selecionados."
 
-#: lib/main_installer.py:2467
+#: lib/main_installer.py:2470
 msgid "Only one layout is selected — a switch shortcut is not needed."
 msgstr "Apenas um layout está selecionado — não é necessário um atalho de alternância."
 
-#: lib/main_installer.py:2474
+#: lib/main_installer.py:2477
 msgid "Create the main user account. Username and password are required."
 msgstr "Crie a conta principal do usuário. Nome de usuário e senha são obrigatórios."
 
-#: lib/main_installer.py:2476
+#: lib/main_installer.py:2479
 msgid "Create the main user account for the installed system."
 msgstr "Crie a conta principal de usuário para o sistema instalado."
 
-#: lib/main_installer.py:2502
+#: lib/main_installer.py:2505
 msgid "Full name (optional)"
 msgstr "Nome completo (opcional)"
 
-#: lib/main_installer.py:2512
+#: lib/main_installer.py:2515
 msgid "Choose a username"
 msgstr "Escolha um nome de usuário"
 
-#: lib/main_installer.py:2521
+#: lib/main_installer.py:2524
 msgid "User account"
 msgstr "Conta de usuário"
 
-#: lib/main_installer.py:2525
+#: lib/main_installer.py:2528
 msgid "Full name:"
 msgstr "Nome completo:"
 
-#: lib/main_installer.py:2528
+#: lib/main_installer.py:2531
 msgid "Username:"
 msgstr "Nome de usuário:"
 
-#: lib/main_installer.py:2533
+#: lib/main_installer.py:2536
 msgid "Password (required)"
 msgstr "Senha (obrigatório)"
 
-#: lib/main_installer.py:2536
+#: lib/main_installer.py:2539
 msgid "Password is set"
 msgstr "Senha definida"
 
-#: lib/main_installer.py:2538
+#: lib/main_installer.py:2541
 msgid "Leave blank to keep current password"
 msgstr "Deixe em branco para manter a senha atual"
 
-#: lib/main_installer.py:2547 lib/main_installer.py:2582
-#: lib/main_installer.py:2618
+#: lib/main_installer.py:2550 lib/main_installer.py:2585
+#: lib/main_installer.py:2621
 msgid "Password:"
 msgstr "Senha:"
 
-#: lib/main_installer.py:2552
+#: lib/main_installer.py:2555
 msgid "Confirm password"
 msgstr "Confirme a senha"
 
-#: lib/main_installer.py:2557 lib/main_installer.py:2594
-#: lib/main_installer.py:2627
+#: lib/main_installer.py:2560 lib/main_installer.py:2597
+#: lib/main_installer.py:2630
 msgid "Confirm password:"
 msgstr "Confirme a senha:"
 
-#: lib/main_installer.py:2561
+#: lib/main_installer.py:2564
 msgid "Root account"
 msgstr "Conta root"
 
-#: lib/main_installer.py:2567
+#: lib/main_installer.py:2570
 msgid "Allow root login / set root password"
 msgstr "Permitir login como root / definir senha do root"
 
-#: lib/main_installer.py:2573
+#: lib/main_installer.py:2576
 msgid "Root account will be locked; use sudo with your user."
 msgstr "A conta root será bloqueada; use sudo com seu usuário."
 
-#: lib/main_installer.py:2584
+#: lib/main_installer.py:2587
 msgid "Root password"
 msgstr "Senha do root"
 
-#: lib/main_installer.py:2596 lib/main_installer.py:2622
+#: lib/main_installer.py:2599 lib/main_installer.py:2625
 msgid "Confirm root password"
 msgstr "Confirme a senha do root"
 
-#: lib/main_installer.py:2611
+#: lib/main_installer.py:2614
 msgid "Root password is set"
 msgstr "Senha de root definida"
 
-#: lib/main_installer.py:2613
+#: lib/main_installer.py:2616
 msgid "Leave blank to keep current root password"
 msgstr "Deixe em branco para manter a senha de root atual"
 
-#: lib/main_installer.py:2687
+#: lib/main_installer.py:2690
 msgid "Enter a username."
 msgstr "Digite um nome de usuário."
 
-#: lib/main_installer.py:2691 lib/main_installer.py:2717
+#: lib/main_installer.py:2694 lib/main_installer.py:2720
 msgid "Username must be a lowercase Linux login name (not root)."
 msgstr "O nome de usuário deve ser um login Linux em minúsculas (exceto root)."
 
-#: lib/main_installer.py:2695
+#: lib/main_installer.py:2698
 msgid "Enter a password for the user account."
 msgstr "Digite uma senha para a conta do usuário."
 
-#: lib/main_installer.py:2697 lib/main_installer.py:2721
+#: lib/main_installer.py:2700 lib/main_installer.py:2724
 msgid "Passwords do not match."
 msgstr "As senhas não coincidem."
 
-#: lib/main_installer.py:2702
+#: lib/main_installer.py:2705
 msgid "Enter a root password or disable root login."
 msgstr "Digite uma senha para o root ou desative o login como root."
 
-#: lib/main_installer.py:2708 lib/main_installer.py:2726
+#: lib/main_installer.py:2711 lib/main_installer.py:2729
 msgid "Root passwords do not match."
 msgstr "As senhas do root não coincidem."
 
-#: lib/main_installer.py:2765
-msgid "Choose modules to install. Selecting one also includes all lower layers."
-msgstr "Escolha os módulos para instalar. Selecionar um também inclui todas as camadas inferiores."
-
 #: lib/main_installer.py:2768
+msgid "Choose modules to install. Selecting a system layer also includes all lower system layers. Modules in minios/modules are selected independently."
+msgstr "Escolha os módulos a serem instalados. Selecionar uma camada do sistema também inclui todas as camadas inferiores. Módulos em minios/modules são selecionados independentemente."
+
+#: lib/main_installer.py:2771
 msgid "No MiniOS modules were found in the live media."
 msgstr "Nenhum módulo do MiniOS foi encontrado na mídia live."
 
-#: lib/main_installer.py:2783
+#: lib/main_installer.py:2788
 #, python-brace-format
 msgid "{required} required layers and {optional} optional layers are available."
 msgstr "{required} camadas obrigatórias e {optional} camadas opcionais disponíveis."
 
-#: lib/main_installer.py:2811
+#: lib/main_installer.py:2816
 #, python-brace-format
 msgid "{role}: {filename}"
 msgstr "{role}: {filename}"
 
-#: lib/main_installer.py:2824
+#: lib/main_installer.py:2829
 msgid "Required"
 msgstr "Obrigatório"
 
-#: lib/main_installer.py:2826
+#: lib/main_installer.py:2831
 msgid "Custom"
 msgstr "Personalizado"
 
-#: lib/main_installer.py:2828
+#: lib/main_installer.py:2833
 msgid "Optional"
 msgstr "Opcional"
 
-#: lib/main_installer.py:2870
+#: lib/main_installer.py:2875
 msgid "Calculating installation space…"
 msgstr "Calculando espaço de instalação…"
 
-#: lib/main_installer.py:2874
+#: lib/main_installer.py:2879
 #, python-brace-format
-msgid "{selected} of {total} layers selected. Estimated native system data: {size}. Required root space with reserve: {required}."
-msgstr "{selected} de {total} camadas selecionadas. Estimativa de dados nativos do sistema: {size}. Espaço root necessário com reserva: {required}."
+msgid "{selected} of {total} layers selected. Estimated unpacked system data: {size}. Required root space with reserve: {required}."
+msgstr "{selected} de {total} camadas selecionadas. Dados estimados do sistema descompactado: {size}. Espaço root necessário com reserva: {required}."
 
-#: lib/main_installer.py:2878
+#: lib/main_installer.py:2883
 #, python-brace-format
 msgid "{selected} of {total} layers selected. Estimated live module images on target: {size}. Required root space with reserve: {required}."
 msgstr "{selected} de {total} camadas selecionadas. Estimativa de imagens de módulos ao vivo no destino: {size}. Espaço root necessário com reserva: {required}."
 
-#: lib/main_installer.py:2916
+#: lib/main_installer.py:2928
 msgid "Target Disk"
 msgstr "Disco de Destino"
 
-#: lib/main_installer.py:2917
+#: lib/main_installer.py:2929
 msgid "Select the disk MiniOS will be installed to and choose how the target filesystem should be created."
 msgstr "Selecione o disco onde o MiniOS será instalado e escolha como o sistema de arquivos de destino será criado."
 
-#: lib/main_installer.py:2929
+#: lib/main_installer.py:2941
 msgid "No installation disks were found."
 msgstr "Nenhum disco de instalação foi encontrado."
 
-#: lib/main_installer.py:2931
+#: lib/main_installer.py:2943
 msgid "Connect a disk. This page will update automatically when it becomes available."
 msgstr "Conecte um disco. Esta página será atualizada automaticamente quando ele estiver disponível."
 
-#: lib/main_installer.py:2948
+#: lib/main_installer.py:2960
 msgid "Partition layout"
 msgstr "Layout de partição"
 
-#: lib/main_installer.py:2994
+#: lib/main_installer.py:3006
 msgid "Disk Setup"
 msgstr "Configuração do Disco"
 
-#: lib/main_installer.py:3002
+#: lib/main_installer.py:3014
 msgid "Installation type:"
 msgstr "Tipo de instalação:"
 
-#: lib/main_installer.py:3003
+#: lib/main_installer.py:3015
 msgid "Erase disk and install MiniOS"
 msgstr "Apagar disco e instalar o MiniOS"
 
-#: lib/main_installer.py:3004
+#: lib/main_installer.py:3016
 msgid "Install in existing free space"
 msgstr "Instalar no espaço livre existente"
 
-#: lib/main_installer.py:3005
+#: lib/main_installer.py:3017
 msgid "Install alongside another system"
 msgstr "Instalar ao lado de outro sistema"
 
-#: lib/main_installer.py:3006
+#: lib/main_installer.py:3018
 msgid "Manual partitioning"
 msgstr "Particionamento manual"
 
-#: lib/main_installer.py:3013
+#: lib/main_installer.py:3025
 msgid "Deletes all partitions and data on the selected disk. This cannot be undone."
 msgstr "Exclui todas as partições e dados do disco selecionado. Esta ação não pode ser desfeita."
 
-#: lib/main_installer.py:3019 lib/main_installer.py:4038
+#: lib/main_installer.py:3031 lib/main_installer.py:4050
 msgid "Keeps existing partitions and uses free space only. Safer if the disk has other systems."
 msgstr "Mantém as partições existentes e usa apenas o espaço livre. Mais seguro se o disco tiver outros sistemas."
 
-#: lib/main_installer.py:3026
+#: lib/main_installer.py:3038
 msgid "Shrinks the last supported partition and installs MiniOS in the space created."
 msgstr "Reduz a última partição suportada e instala o MiniOS no espaço criado."
 
-#: lib/main_installer.py:3038
+#: lib/main_installer.py:3050
 msgid "Discard staged manual partition changes?"
 msgstr "Descartar as alterações manuais de particionamento em estágio?"
 
-#: lib/main_installer.py:3076
+#: lib/main_installer.py:3088
 msgid "Space for MiniOS:"
 msgstr "Espaço para o MiniOS:"
 
-#: lib/main_installer.py:3084 lib/main_installer.py:3231
+#: lib/main_installer.py:3096 lib/main_installer.py:3243
 msgid "MiB"
 msgstr "MiB"
 
-#: lib/main_installer.py:3087
+#: lib/main_installer.py:3099
 msgid "Install required resize tools"
 msgstr "Instalar as ferramentas necessárias para redimensionamento"
 
-#: lib/main_installer.py:3093
+#: lib/main_installer.py:3105
 msgid "Advanced…"
 msgstr "Avançado…"
 
-#: lib/main_installer.py:3104 lib/main_installer.py:3106
-#: lib/main_installer.py:4230
+#: lib/main_installer.py:3116 lib/main_installer.py:3118
+#: lib/main_installer.py:4242
 msgid "Filesystem:"
 msgstr "Sistema de arquivos:"
 
-#: lib/main_installer.py:3124
+#: lib/main_installer.py:3136
 msgid "Boot layout:"
 msgstr "Layout de boot:"
 
-#: lib/main_installer.py:3127
+#: lib/main_installer.py:3139
 msgid "Automatic (recommended)"
 msgstr "Automático (recomendado)"
 
-#: lib/main_installer.py:3128
+#: lib/main_installer.py:3140
 msgid "BIOS / MBR"
 msgstr "BIOS / MBR"
 
-#: lib/main_installer.py:3129
+#: lib/main_installer.py:3141
 msgid "UEFI / MBR"
 msgstr "UEFI / MBR"
 
-#: lib/main_installer.py:3130
+#: lib/main_installer.py:3142
 msgid "UEFI / GPT"
 msgstr "UEFI / GPT"
 
-#: lib/main_installer.py:3144
+#: lib/main_installer.py:3156
 msgid "Swap:"
 msgstr "Swap:"
 
-#: lib/main_installer.py:3180
-msgid "MiB (native install only)"
-msgstr "MiB (apenas instalação nativa)"
+#: lib/main_installer.py:3192
+msgid "MiB (classic installation only)"
+msgstr "MiB (somente instalação clássica)"
 
-#: lib/main_installer.py:3187 lib/main_installer.py:3189
+#: lib/main_installer.py:3199 lib/main_installer.py:3201
 msgid "Session storage:"
 msgstr "Armazenamento de sessão:"
 
-#: lib/main_installer.py:3235 lib/main_installer.py:3237
+#: lib/main_installer.py:3247 lib/main_installer.py:3249
 msgid "Session encryption:"
 msgstr "Criptografia de sessão:"
 
-#: lib/main_installer.py:3258 lib/main_installer.py:3260
+#: lib/main_installer.py:3270 lib/main_installer.py:3272
 msgid "DynBlk compression:"
 msgstr "Compressão DynBlk:"
 
-#: lib/main_installer.py:3281
+#: lib/main_installer.py:3293
 msgid "Session password:"
 msgstr "Senha da sessão:"
 
-#: lib/main_installer.py:3282
+#: lib/main_installer.py:3294
 msgid "Confirm session password:"
 msgstr "Confirme a senha da sessão:"
 
-#: lib/main_installer.py:3369
+#: lib/main_installer.py:3381
 msgid "Set up automatically on first boot"
 msgstr "Configuração automática na primeira inicialização"
 
-#: lib/main_installer.py:3372
+#: lib/main_installer.py:3384
 msgid "Save directly on the MiniOS partition"
 msgstr "Salvar diretamente na partição MiniOS"
 
-#: lib/main_installer.py:3374
+#: lib/main_installer.py:3386
 msgid "Expandable storage (DynFileFS)"
 msgstr "Armazenamento expansível (DynFileFS)"
 
-#: lib/main_installer.py:3377
+#: lib/main_installer.py:3389
 msgid "Thin block storage (DynBlk)"
 msgstr "Armazenamento em bloco fino (DynBlk)"
 
-#: lib/main_installer.py:3379
+#: lib/main_installer.py:3391
 msgid "Split VMDK storage (DynBlk driver)"
 msgstr "Armazenamento VMDK dividido (driver DynBlk)"
 
-#: lib/main_installer.py:3380
+#: lib/main_installer.py:3392
 msgid "Fixed-size storage (ext4 image)"
 msgstr "Armazenamento de tamanho fixo (imagem ext4)"
 
-#: lib/main_installer.py:3417
+#: lib/main_installer.py:3429
 msgid "None"
 msgstr "Nenhum"
 
-#: lib/main_installer.py:3419
+#: lib/main_installer.py:3431
 msgid "LUKS2"
 msgstr "LUKS2"
 
-#: lib/main_installer.py:3460
+#: lib/main_installer.py:3472
 msgid "Session passwords do not match."
 msgstr "As senhas da sessão não coincidem."
 
-#: lib/main_installer.py:3526
+#: lib/main_installer.py:3538
 msgid "ESP"
 msgstr "ESP"
 
-#: lib/main_installer.py:3528
+#: lib/main_installer.py:3540
 msgid "Swap"
 msgstr "Swap"
 
-#: lib/main_installer.py:3529
+#: lib/main_installer.py:3541
 msgid "MiniOS"
 msgstr "MiniOS"
 
-#: lib/main_installer.py:3530
+#: lib/main_installer.py:3542
 msgid "Free space"
 msgstr "Espaço livre"
 
-#: lib/main_installer.py:3531
+#: lib/main_installer.py:3543
 msgid "Existing"
 msgstr "Existente"
 
-#: lib/main_installer.py:3670
+#: lib/main_installer.py:3682
 msgid "Drag the boundary to choose MiniOS space."
 msgstr "Arraste o limite para escolher o espaço do MiniOS."
 
-#: lib/main_installer.py:3673
+#: lib/main_installer.py:3685
 msgid "Drag the boundary to choose swap space."
 msgstr "Arraste o limite para escolher o espaço de swap."
 
-#: lib/main_installer.py:3831
+#: lib/main_installer.py:3843
 #, python-brace-format
 msgid "Drag the boundary or use Space for MiniOS: {size} MiB."
 msgstr "Arraste o limite ou use Espaço para MiniOS: {size} MiB."
 
-#: lib/main_installer.py:3855
+#: lib/main_installer.py:3867
 #, python-brace-format
 msgid "Drag the System/Swap boundary or use Swap: {size} MiB. The erase layout is editable."
 msgstr "Arraste o limite entre Sistema/Swap ou use Swap: {size} MiB. O layout de apagamento é editável."
 
-#: lib/main_installer.py:3878
+#: lib/main_installer.py:3890
 msgid "Select a disk to preview the partition layout."
 msgstr "Selecione um disco para visualizar o layout das partições."
 
-#: lib/main_installer.py:3887
+#: lib/main_installer.py:3899
 msgid "Manual partitioning has not been initialized."
 msgstr "O particionamento manual não foi inicializado."
 
-#: lib/main_installer.py:3900
+#: lib/main_installer.py:3912
 msgid "Manual view: existing layout with staged mount assignments."
 msgstr "Visualização manual: layout existente com pontos de montagem em estágio."
 
-#: lib/main_installer.py:4015 lib/main_installer.py:4292
+#: lib/main_installer.py:4027 lib/main_installer.py:4304
 msgid "Select a disk first."
 msgstr "Selecione um disco primeiro."
 
-#: lib/main_installer.py:4020
+#: lib/main_installer.py:4032
 msgid "This disk has no partition table. Erase the disk to initialize it."
 msgstr "Este disco não possui tabela de partições. Apague o disco para inicializá-lo."
 
-#: lib/main_installer.py:4042
+#: lib/main_installer.py:4054
 #, python-brace-format
 msgid "Not available: {reason}"
 msgstr "Não disponível: {reason}"
 
-#: lib/main_installer.py:4051
+#: lib/main_installer.py:4063
 msgid "These staged changes have not been written to disk."
 msgstr "Essas alterações em estágio ainda não foram gravadas no disco."
 
-#: lib/main_installer.py:4052
+#: lib/main_installer.py:4064
 msgid "Discard Changes"
 msgstr "Descartar alterações"
 
-#: lib/main_installer.py:4066
+#: lib/main_installer.py:4078
 msgid "Stage exact changes below. No disk commands run until Install."
 msgstr "Defina exatamente as alterações abaixo. Nenhum comando de disco será executado até Instalar."
 
-#: lib/main_installer.py:4070
+#: lib/main_installer.py:4082
 msgid "Select an eligible GPT or primary-MBR disk first."
 msgstr "Selecione primeiro um disco GPT elegível ou MBR primário."
 
-#: lib/main_installer.py:4123
+#: lib/main_installer.py:4135
 #, python-brace-format
 msgid "Free space: {size} sectors"
 msgstr "Espaço livre: {size} setores"
 
-#: lib/main_installer.py:4129
+#: lib/main_installer.py:4141
 #, python-brace-format
 msgid "New partition: {size} sectors"
 msgstr "Nova partição: {size} setores"
 
-#: lib/main_installer.py:4140
+#: lib/main_installer.py:4152
 msgid "Create…"
 msgstr "Criar…"
 
-#: lib/main_installer.py:4140
+#: lib/main_installer.py:4152
 msgid "Edit / Use as…"
 msgstr "Editar / Usar como…"
 
-#: lib/main_installer.py:4141
+#: lib/main_installer.py:4153
 msgid "Resize…"
 msgstr "Redimensionar…"
 
-#: lib/main_installer.py:4141
+#: lib/main_installer.py:4153
 msgid "Delete"
 msgstr "Excluir"
 
-#: lib/main_installer.py:4142
+#: lib/main_installer.py:4154
 msgid "Undo last"
 msgstr "Desfazer última"
 
-#: lib/main_installer.py:4142
+#: lib/main_installer.py:4154
 msgid "Reset staged changes"
 msgstr "Restaurar alterações preparadas"
 
-#: lib/main_installer.py:4152
+#: lib/main_installer.py:4164
 msgid "Valid staged plan.  "
 msgstr "Plano em estágio válido.  "
 
-#: lib/main_installer.py:4166
+#: lib/main_installer.py:4178
 msgid "This only stages the change. Nothing will be written to disk until the final confirmation."
 msgstr "Isso apenas prepara a alteração. Nada será gravado no disco até a confirmação final."
 
-#: lib/main_installer.py:4167
+#: lib/main_installer.py:4179
 msgid "Stage Change"
 msgstr "Preparar alteração"
 
-#: lib/main_installer.py:4173
+#: lib/main_installer.py:4185
 msgid "Select a free-space row first."
 msgstr "Selecione primeiro uma linha de espaço livre."
 
-#: lib/main_installer.py:4175
+#: lib/main_installer.py:4187
 msgid "Select unallocated free space, not a staged partition."
 msgstr "Selecione espaço livre não alocado, não uma partição em estágio."
 
-#: lib/main_installer.py:4180
+#: lib/main_installer.py:4192
 msgid "Create partition"
 msgstr "Criar partição"
 
-#: lib/main_installer.py:4183
+#: lib/main_installer.py:4195
 msgid "Exact aligned size (sectors):"
 msgstr "Tamanho alinhado exato (setores):"
 
-#: lib/main_installer.py:4185 lib/main_installer.py:4212
-#: lib/main_installer.py:4233 lib/main_installer.py:5003
+#: lib/main_installer.py:4197 lib/main_installer.py:4224
+#: lib/main_installer.py:4245 lib/main_installer.py:5015
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: lib/main_installer.py:4186
+#: lib/main_installer.py:4198
 msgid "Stage create"
 msgstr "Colocar criação em estágio"
 
-#: lib/main_installer.py:4191
+#: lib/main_installer.py:4203
 msgid "Stage creation of a new partition?"
 msgstr "Colocar a criação de uma nova partição em estágio?"
 
-#: lib/main_installer.py:4198 lib/main_installer.py:4205
-#: lib/main_installer.py:4224
+#: lib/main_installer.py:4210 lib/main_installer.py:4217
+#: lib/main_installer.py:4236
 msgid "Select an existing partition first."
 msgstr "Selecione primeiro uma partição existente."
 
-#: lib/main_installer.py:4199
+#: lib/main_installer.py:4211
 msgid "Stage deletion of the selected partition?"
 msgstr "Colocar a exclusão da partição selecionada em estágio?"
 
-#: lib/main_installer.py:4206
+#: lib/main_installer.py:4218
 msgid "Resize partition"
 msgstr "Redimensionar partição"
 
-#: lib/main_installer.py:4213
+#: lib/main_installer.py:4225
 msgid "Stage resize"
 msgstr "Colocar redimensionamento em estágio"
 
-#: lib/main_installer.py:4218
+#: lib/main_installer.py:4230
 msgid "Stage resize of the selected partition?"
 msgstr "Colocar o redimensionamento da partição selecionada em estágio?"
 
-#: lib/main_installer.py:4225
+#: lib/main_installer.py:4237
 msgid "Use partition as"
 msgstr "Usar partição como"
 
-#: lib/main_installer.py:4229
+#: lib/main_installer.py:4241
 msgid "Format"
 msgstr "Formatar"
 
-#: lib/main_installer.py:4231
+#: lib/main_installer.py:4243
 msgid "Mountpoint:"
 msgstr "Ponto de montagem:"
 
-#: lib/main_installer.py:4234
+#: lib/main_installer.py:4246
 msgid "Use partition"
 msgstr "Usar partição"
 
-#: lib/main_installer.py:4242
+#: lib/main_installer.py:4254
 msgid "Stage formatting of the selected partition?"
 msgstr "Colocar a formatação da partição selecionada em estágio?"
 
-#: lib/main_installer.py:4249
+#: lib/main_installer.py:4261
 msgid "Reset all staged manual partition changes?"
 msgstr "Restaurar todas as alterações manuais de particionamento em estágio?"
 
-#: lib/main_installer.py:4306
+#: lib/main_installer.py:4318
 #, python-brace-format
 msgid "Not enough space for selected modules (need at least {need} MiB)"
 msgstr "Espaço insuficiente para os módulos selecionados (é necessário pelo menos {need} MiB)"
 
-#: lib/main_installer.py:4318
+#: lib/main_installer.py:4330
 #, python-brace-format
 msgid "Required resize tools are missing: {packages}"
 msgstr "Ferramentas necessárias para redimensionamento ausentes: {packages}"
 
-#: lib/main_installer.py:4331
+#: lib/main_installer.py:4343
 #, python-brace-format
 msgid "Will shrink {path} ({filesystem}) without moving its start."
 msgstr "Será reduzido {path} ({filesystem}) sem mover seu início."
 
-#: lib/main_installer.py:4385
+#: lib/main_installer.py:4397
 msgid "Install required resize tools?"
 msgstr "Instalar as ferramentas necessárias para redimensionamento?"
 
-#: lib/main_installer.py:4386
+#: lib/main_installer.py:4398
 #, python-brace-format
 msgid "The following packages will be downloaded and installed in the live session: {packages}"
 msgstr "Os seguintes pacotes serão baixados e instalados na sessão live: {packages}"
 
-#: lib/main_installer.py:4396
+#: lib/main_installer.py:4408
 #, python-brace-format
 msgid "Could not install resize tools: {error}"
 msgstr "Não foi possível instalar as ferramentas de redimensionamento: {error}"
 
-#: lib/main_installer.py:4437
+#: lib/main_installer.py:4449
 #, python-brace-format
 msgid "Mounted partitions will be unmounted: {points}"
 msgstr "Partições montadas serão desmontadas: {points}"
 
-#: lib/main_installer.py:4480
+#: lib/main_installer.py:4492
 msgid "This disk has mounted partitions. Erase-all will unmount and wipe them."
 msgstr "Este disco possui partições montadas. Apagar tudo irá desmontá-las e apagá-las."
 
-#: lib/main_installer.py:4505
+#: lib/main_installer.py:4517
 msgid "Discard staged manual partition changes and switch disks?"
 msgstr "Descartar as alterações manuais de particionamento em estágio e trocar de disco?"
 
-#: lib/main_installer.py:4542
+#: lib/main_installer.py:4554
 msgid "Installation Error"
 msgstr "Erro de Instalação"
 
-#: lib/main_installer.py:4549
+#: lib/main_installer.py:4561
 msgid "No target disk selected."
 msgstr "Nenhum disco de destino selecionado."
 
-#: lib/main_installer.py:4558 lib/native_deploy.py:1424
+#: lib/main_installer.py:4570 lib/native_deploy.py:1424
 msgid "No validated manual partitioning plan selected."
 msgstr "Nenhum plano manual de particionamento validado foi selecionado."
 
-#: lib/main_installer.py:4560
+#: lib/main_installer.py:4572
 msgid "Manual partition layout changed; return to Partitioning and review it again."
 msgstr "O layout manual de partições foi alterado; volte para Particionamento e revise novamente."
 
-#: lib/main_installer.py:4607
+#: lib/main_installer.py:4619
 #, python-brace-format
 msgid "Remote access services: {services}"
 msgstr "Serviços de acesso remoto: {services}"
 
-#: lib/main_installer.py:4609
+#: lib/main_installer.py:4621
 msgid "Remote access services: none enabled"
 msgstr "Serviços de acesso remoto: nenhum ativado"
 
-#: lib/main_installer.py:4630
+#: lib/main_installer.py:4642
 msgid "This older MiniOS image may not support every setting in the selected security profile."
 msgstr "Esta imagem antiga do MiniOS pode não suportar todas as configurações do perfil de segurança selecionado."
 
-#: lib/main_installer.py:4632
+#: lib/main_installer.py:4644
 msgid "Some settings in the selected security profile are not supported by this MiniOS image."
 msgstr "Algumas configurações do perfil de segurança selecionado não são suportadas por esta imagem do MiniOS."
 
-#: lib/main_installer.py:4637
+#: lib/main_installer.py:4649
 msgid "Review Changes"
 msgstr "Revisar Alterações"
 
-#: lib/main_installer.py:4638
+#: lib/main_installer.py:4650
 msgid "Nothing has been written yet. Confirm the exact disk actions below before continuing."
 msgstr "Nada foi gravado ainda. Confirme as ações exatas no disco abaixo antes de continuar."
 
-#: lib/main_installer.py:4661
+#: lib/main_installer.py:4673
 msgid "Go back to Partitioning and choose a different disk or installation method."
 msgstr "Volte para o particionamento e escolha outro disco ou método de instalação."
 
-#: lib/main_installer.py:4680
+#: lib/main_installer.py:4692
 msgid "WARNING: This action is irreversible!"
 msgstr "AVISO: Esta ação é irreversível!"
 
-#: lib/main_installer.py:4688 lib/main_installer.py:4690
+#: lib/main_installer.py:4700 lib/main_installer.py:4702
 msgid "I understand that all data on this disk will be permanently erased."
 msgstr "Estou ciente de que todos os dados neste disco serão apagados permanentemente."
 
-#: lib/main_installer.py:4727
+#: lib/main_installer.py:4739
 msgid "UEFI/GPT layout (no BIOS bootloader)"
 msgstr "Layout UEFI/GPT (sem bootloader BIOS)"
 
-#: lib/main_installer.py:4729
+#: lib/main_installer.py:4741
 msgid "UEFI/MBR layout (no BIOS bootloader)"
 msgstr "Layout UEFI/MBR (sem bootloader BIOS)"
 
-#: lib/main_installer.py:4731
+#: lib/main_installer.py:4743
 msgid "BIOS/MBR layout with bootloader"
 msgstr "Layout BIOS/MBR com bootloader"
 
-#: lib/main_installer.py:4736
+#: lib/main_installer.py:4748
 msgid "Target disk:"
 msgstr "Disco de destino:"
 
-#: lib/main_installer.py:4741
+#: lib/main_installer.py:4753
 msgid "Target"
 msgstr "Destino"
 
-#: lib/main_installer.py:4750
+#: lib/main_installer.py:4762
 msgid "Existing partition will be resized"
 msgstr "A partição existente será redimensionada"
 
-#: lib/main_installer.py:4752
+#: lib/main_installer.py:4764
 msgid "Back up important data before continuing. This installation shrinks an existing filesystem and changes the partition table. If resizing fails or the installation is interrupted, data may be lost. Installing alongside another system also changes boot configuration, so boot repair may be required."
 msgstr "Faça backup dos dados importantes antes de continuar. Esta instalação reduz o tamanho de um sistema de arquivos existente e altera a tabela de partições. Se o redimensionamento falhar ou a instalação for interrompida, pode haver perda de dados. Instalar ao lado de outro sistema também altera a configuração de boot, então pode ser necessário reparar o boot."
 
-#: lib/main_installer.py:4760 lib/main_installer.py:4761
+#: lib/main_installer.py:4772 lib/main_installer.py:4773
 msgid "I understand that resizing an existing partition can cause data loss."
 msgstr "Entendo que redimensionar uma partição existente pode causar perda de dados."
 
-#: lib/main_installer.py:4783
+#: lib/main_installer.py:4795
 msgid "Partition plan"
 msgstr "Plano de partições"
 
-#: lib/main_installer.py:4787
-msgid "Live system"
-msgstr "Sistema ao vivo"
-
-#: lib/main_installer.py:4787
-msgid "Full (native) installation"
-msgstr "Instalação completa (nativa)"
-
-#: lib/main_installer.py:4789
+#: lib/main_installer.py:4801
 msgid "Installation mode"
 msgstr "Modo de instalação"
 
-#: lib/main_installer.py:4794
+#: lib/main_installer.py:4806
 msgid "Changes will be saved directly on the MiniOS partition."
 msgstr "As alterações serão salvas diretamente na partição do MiniOS."
 
-#: lib/main_installer.py:4795
+#: lib/main_installer.py:4807
 #, python-brace-format
 msgid "Expandable saved changes: up to {size} MiB."
 msgstr "Alterações salvas expansíveis: até {size} MiB."
 
-#: lib/main_installer.py:4796
+#: lib/main_installer.py:4808
 #, python-brace-format
 msgid "Thin block saved changes: up to {size} MiB."
 msgstr "Alterações salvas em bloco fino: até {size} MiB."
 
-#: lib/main_installer.py:4797
+#: lib/main_installer.py:4809
 #, python-brace-format
 msgid "Split VMDK saved changes: up to {size} MiB."
 msgstr "Alterações salvas em VMDK dividido: até {size} MiB."
 
-#: lib/main_installer.py:4798
+#: lib/main_installer.py:4810
 #, python-brace-format
 msgid "Fixed-size saved changes: {size} MiB reserved."
 msgstr "Alterações salvas de tamanho fixo: {size} MiB reservados."
 
-#: lib/main_installer.py:4802
+#: lib/main_installer.py:4814
 #, python-brace-format
 msgid "DynBlk compression: {compression}."
 msgstr "Compressão DynBlk: {compression}."
 
-#: lib/main_installer.py:4805
+#: lib/main_installer.py:4817
 msgid "Encrypted with LUKS2 using the session password entered during installation."
 msgstr "Criptografado com LUKS2 usando a senha da sessão informada durante a instalação."
 
-#: lib/main_installer.py:4808
+#: lib/main_installer.py:4820
 msgid "Session storage"
 msgstr "Armazenamento de sessão"
 
-#: lib/main_installer.py:4810
+#: lib/main_installer.py:4822
 msgid "Security profile"
 msgstr "perfil de segurança"
 
-#: lib/main_installer.py:4818
+#: lib/main_installer.py:4830
 msgid "Root account will be locked."
 msgstr "A conta root será bloqueada."
 
-#: lib/main_installer.py:4820
+#: lib/main_installer.py:4832
 #, python-brace-format
 msgid "Network: static IPv4 on {interface} ({address}/{prefix})"
 msgstr "Rede: IPv4 estático em {interface} ({address}/{prefix})"
 
-#: lib/main_installer.py:4826
+#: lib/main_installer.py:4838
 msgid "Network: automatic (DHCP)"
 msgstr "Rede: automático (DHCP)"
 
-#: lib/main_installer.py:4828
+#: lib/main_installer.py:4840
 #, python-brace-format
 msgid "user {user}, host {host}, locale {locale}, timezone {timezone}, keyboard {keyboard}"
 msgstr "usuário {user}, host {host}, localidade {locale}, fuso horário {timezone}, teclado {keyboard}"
 
-#: lib/main_installer.py:4829 lib/main_installer.py:4830
-#: lib/main_installer.py:4831 lib/main_installer.py:4832
-#: lib/main_installer.py:4833
+#: lib/main_installer.py:4841 lib/main_installer.py:4842
+#: lib/main_installer.py:4843 lib/main_installer.py:4844
+#: lib/main_installer.py:4845
 msgid "unchanged"
 msgstr "sem alterações"
 
-#: lib/main_installer.py:4844
+#: lib/main_installer.py:4856
 #, python-brace-format
 msgid "{selected} of {total}"
 msgstr "{selected} de {total}"
 
-#: lib/main_installer.py:4846
+#: lib/main_installer.py:4858
 msgid "Selected modules"
 msgstr "Módulos selecionados"
 
-#: lib/main_installer.py:4862
+#: lib/main_installer.py:4874
 #, python-brace-format
 msgid "Some packages needed for a standard native bootloader are missing: {packages}"
 msgstr "Alguns pacotes necessários para um bootloader nativo padrão estão ausentes: {packages}"
 
-#: lib/main_installer.py:4868
+#: lib/main_installer.py:4880
 msgid "Download missing packages now (recommended)"
 msgstr "Baixar os pacotes ausentes agora (recomendado)"
 
-#: lib/main_installer.py:4874
+#: lib/main_installer.py:4886
 msgid "Recommended for most users. The installer will download the missing boot packages now, so the installed system starts like a normal Linux system and future kernel updates are handled normally. This requires internet access."
 msgstr "Recomendado para a maioria dos usuários. O instalador irá baixar agora os pacotes de boot ausentes, para que o sistema instalado inicie como um sistema Linux normal e futuras atualizações do kernel sejam feitas normalmente. É necessário acesso à internet."
 
-#: lib/main_installer.py:4878
+#: lib/main_installer.py:4890
 msgid "Use only if you must install without internet. The installer will use a basic fallback setup where possible. The installed system may have limited bootloader and kernel update support. If you are not sure, keep this checked."
 msgstr "Use somente se for necessário instalar sem internet. O instalador utilizará uma configuração básica de fallback quando possível. O sistema instalado pode ter suporte limitado para o bootloader e atualizações do kernel. Se não tiver certeza, mantenha esta opção marcada."
 
-#: lib/main_installer.py:4886
+#: lib/main_installer.py:4898
 msgid "apt-get is not available"
 msgstr "apt-get não está disponível"
 
-#: lib/main_installer.py:4888
+#: lib/main_installer.py:4900
 msgid "internet connection is not available"
 msgstr "conexão com a internet não está disponível"
 
-#: lib/main_installer.py:4891
+#: lib/main_installer.py:4903
 #, python-brace-format
 msgid "not enough free space in APT cache ({free} MiB available, {need} MiB required)"
 msgstr "espaço livre insuficiente no cache do APT ({free} MiB disponíveis, {need} MiB necessários)"
 
-#: lib/main_installer.py:4896
+#: lib/main_installer.py:4908
 msgid "Cannot download yet: "
 msgstr "Ainda não é possível baixar: "
 
-#: lib/main_installer.py:4910
+#: lib/main_installer.py:4922
 msgid "This installation cannot use the offline fallback bootloader."
 msgstr "Esta instalação não pode usar o bootloader offline de contingência."
 
-#: lib/main_installer.py:4911
+#: lib/main_installer.py:4923
 msgid "Enable package download and connect to the internet before modifying the disk."
 msgstr "Ative o download de pacotes e conecte-se à internet antes de modificar o disco."
 
-#: lib/main_installer.py:4921
+#: lib/main_installer.py:4933
 msgid "Cannot continue while package download is selected."
 msgstr "Não é possível continuar enquanto o download de pacotes estiver selecionado."
 
-#: lib/main_installer.py:4923
+#: lib/main_installer.py:4935
 msgid "Fix the download requirements above, or uncheck package download to continue without it."
 msgstr "Corrija os requisitos de download acima ou desmarque o download de pacotes para continuar sem ele."
 
-#: lib/main_installer.py:4929
+#: lib/main_installer.py:4941
 msgid "Required packages"
 msgstr "Pacotes necessários"
 
-#: lib/main_installer.py:4935
+#: lib/main_installer.py:4947
 msgid "I understand that the listed manual actions modify existing partitions and can cause permanent data loss."
 msgstr "Entendo que as ações manuais listadas modificam partições existentes e podem causar perda permanente de dados."
 
-#: lib/main_installer.py:4942
+#: lib/main_installer.py:4954
 msgid "Erase disk and install"
 msgstr "Apagar disco e instalar"
 
-#: lib/main_installer.py:4946
+#: lib/main_installer.py:4958
 msgid "Resize and install"
 msgstr "Redimensionar e instalar"
 
-#: lib/main_installer.py:4950
+#: lib/main_installer.py:4962
 msgid "Apply manual plan"
 msgstr "Aplicar plano manual"
 
-#: lib/main_installer.py:4961
+#: lib/main_installer.py:4973
 msgid "Installing"
 msgstr "Instalando"
 
-#: lib/main_installer.py:4961
+#: lib/main_installer.py:4973
 msgid "Keep this window open until installation finishes."
 msgstr "Mantenha esta janela aberta até o término da instalação."
 
-#: lib/main_installer.py:4964
+#: lib/main_installer.py:4976
 msgid "Preparing..."
 msgstr "Preparando..."
 
-#: lib/main_installer.py:4987
+#: lib/main_installer.py:4999
 msgid "Show Details"
 msgstr "Mostrar detalhes"
 
-#: lib/main_installer.py:5029
+#: lib/main_installer.py:5041
 msgid "Cancel requested by user."
 msgstr "Cancelamento solicitado pelo usuário."
 
-#: lib/main_installer.py:5106
+#: lib/main_installer.py:5118
 msgid "Installation was canceled. You can go back and try again."
 msgstr "A instalação foi cancelada. Você pode voltar e tentar novamente."
 
-#: lib/main_installer.py:5115
+#: lib/main_installer.py:5127
 msgid "Installation failed. Check the log above for details."
 msgstr "A instalação falhou. Verifique o log acima para mais detalhes."
 
-#: lib/main_installer.py:5122
+#: lib/main_installer.py:5134
 msgid "Installation complete. You can keep using this live session, or restart now to boot from the installed system."
 msgstr "Instalação concluída. Você pode continuar usando esta sessão live ou reiniciar agora para inicializar pelo sistema instalado."
 
-#: lib/main_installer.py:5139
+#: lib/main_installer.py:5151
 msgid "Complete"
 msgstr "Concluído"
 
-#: lib/main_installer.py:5139
+#: lib/main_installer.py:5151
 msgid "Failed"
 msgstr "Falhou"
 
-#: lib/main_installer.py:5157
+#: lib/main_installer.py:5169
 msgid "Close"
 msgstr "Fechar"
 
-#: lib/main_installer.py:5162
+#: lib/main_installer.py:5174
 msgid "Restart Now"
 msgstr "Reiniciar agora"
 
-#: lib/main_installer.py:5167
+#: lib/main_installer.py:5179
 msgid "Back to Summary"
 msgstr "Voltar ao Resumo"
 
-#: lib/main_installer.py:5190
+#: lib/main_installer.py:5202
 msgid "Restart now?"
 msgstr "Reiniciar agora?"
 
-#: lib/main_installer.py:5191
+#: lib/main_installer.py:5203
 msgid "Save any open work before restarting."
 msgstr "Salve qualquer trabalho aberto antes de reiniciar."
 
-#: lib/main_installer.py:5192
+#: lib/main_installer.py:5204
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: lib/main_installer.py:5210
+#: lib/main_installer.py:5222
 msgid "Root Privileges Required"
 msgstr "Privilégios de root necessários"
 
-#: lib/main_installer.py:5211
+#: lib/main_installer.py:5223
 msgid "This installer must be run as root."
 msgstr "Este instalador deve ser executado como root."
 
@@ -2921,49 +2913,53 @@ msgstr "Criar partição {role} {fstype}: {start}MiB-{end}MiB ({size}MiB)"
 msgid "The EFI payload does not fit the fixed 100 MiB EFI system partition."
 msgstr "O payload EFI não cabe na partição do sistema EFI fixa de 100 MiB."
 
-#: lib/partition_planner.py:75
+#: lib/partition_planner.py:78
 msgid "No partition table was found. Use erase-all to initialize this disk."
 msgstr "Nenhuma tabela de partição foi encontrada. Use apagar tudo para inicializar este disco."
 
-#: lib/partition_planner.py:78
+#: lib/partition_planner.py:81
 msgid "BIOS/MBR layout cannot be used with existing GPT free space. Choose Automatic/UEFI-GPT or erase the disk."
 msgstr "Layout BIOS/MBR não pode ser usado com espaço livre GPT existente. Escolha Automático/UEFI-GPT ou apague o disco."
 
-#: lib/partition_planner.py:81
+#: lib/partition_planner.py:84
 msgid "Existing GPT free space cannot be used from a BIOS boot without BIOS-on-GPT bootloader support. Boot the installer under UEFI, force UEFI/GPT if you know the target firmware supports it, or erase the disk for BIOS/MBR."
 msgstr "O espaço livre existente na GPT não pode ser usado para boot via BIOS sem suporte ao carregador de boot BIOS-on-GPT. Inicie o instalador em modo UEFI, force UEFI/GPT se souber que o firmware de destino suporta, ou apague o disco para BIOS/MBR."
 
-#: lib/partition_planner.py:86
+#: lib/partition_planner.py:89
 msgid "UEFI/GPT layout cannot be used with existing MBR free space. Choose Automatic/BIOS-MBR or erase the disk."
 msgstr "Layout UEFI/GPT não pode ser usado com espaço livre MBR existente. Escolha Automático/BIOS-MBR ou apague o disco."
 
-#: lib/partition_planner.py:106
+#: lib/partition_planner.py:109
 #, python-brace-format
 msgid "Not enough space for MiniOS root partition (need at least {need} MiB, have {have} MiB)"
 msgstr "Espaço insuficiente para a partição raiz do MiniOS (necessário pelo menos {need} MiB, disponível {have} MiB)"
 
 #: lib/partition_planner.py:151
+msgid "Automatic live installation requires MBR; disks 2 TiB or larger are not supported in this mode. Choose UEFI/GPT explicitly or use a smaller disk."
+msgstr "A instalação automática live requer MBR; discos de 2 TiB ou maiores não são suportados neste modo. Escolha explicitamente UEFI/GPT ou utilize um disco menor."
+
+#: lib/partition_planner.py:159
 msgid "BIOS firmware cannot reliably boot a GPT layout. Erase-all requires MBR on BIOS; disks 2 TiB or larger are not supported in this mode. Use a smaller disk or boot the installer under UEFI."
 msgstr "Firmware BIOS não consegue inicializar um layout GPT de forma confiável. Apagar tudo exige MBR no BIOS; discos de 2 TiB ou mais não são suportados nesse modo. Use um disco menor ou inicie o instalador em UEFI."
 
-#: lib/partition_planner.py:248
+#: lib/partition_planner.py:256
 #, python-brace-format
 msgid "No suitable free space available (need at least {need} MiB)"
 msgstr "Não há espaço livre adequado disponível (é necessário pelo menos {need} MiB)"
 
-#: lib/partition_planner.py:254
+#: lib/partition_planner.py:262
 msgid "Not enough MBR primary partition slots for this free-space install. Use erase-all, remove a partition, or use a GPT/UEFI layout."
 msgstr "Não há slots suficientes de partição primária MBR para esta instalação em espaço livre. Use apagar tudo, remova uma partição ou utilize um layout GPT/UEFI."
 
-#: lib/partition_planner.py:294
+#: lib/partition_planner.py:302
 msgid "The resized free space cannot be represented safely in MiB-aligned partitions."
 msgstr "O espaço livre redimensionado não pode ser representado com segurança em partições alinhadas em MiB."
 
-#: lib/partition_planner.py:306
+#: lib/partition_planner.py:314
 msgid "This placement mode is not implemented yet"
 msgstr "Este modo de alocação ainda não foi implementado"
 
-#: lib/partition_planner.py:307
+#: lib/partition_planner.py:315
 #, python-brace-format
 msgid "Unsupported placement: {placement}"
 msgstr "Alocação não suportada: {placement}"
@@ -3103,3 +3099,52 @@ msgstr "instalar;"
 #: share/polkit/org.minios.installer.policy:17
 msgid "Authentication is required to run MiniOS Installer"
 msgstr "Autenticação é necessária para executar o Instalador do MiniOS"
+
+#~ msgid "UEFI/GPT install: EFI files copied; no BIOS bootloader written."
+#~ msgstr "Instalação UEFI/GPT: arquivos EFI copiados; bootloader BIOS não gravado."
+
+#~ msgid "Choose between a modular live system and a regular Linux installation, then select a security profile."
+#~ msgstr "Escolha entre um sistema live modular e uma instalação Linux convencional, depois selecione um perfil de segurança."
+
+#~ msgid "This image supports live installation only; you can still choose the security profile."
+#~ msgstr "Esta imagem suporta apenas instalação live; você ainda pode escolher o perfil de segurança."
+
+#~ msgid "Choose how MiniOS should work after installation: as a modular live system or as a regular Linux system."
+#~ msgstr "Escolha como o MiniOS deve funcionar após a instalação: como um sistema live modular ou como um sistema Linux convencional."
+
+#~ msgid "This live image supports only live system installation with the current installer."
+#~ msgstr "Esta imagem ao vivo suporta apenas a instalação do sistema ao vivo com o instalador atual."
+
+#~ msgid "Live system installation"
+#~ msgstr "Instalação do sistema live"
+
+#~ msgid "Modular live system: keeps MiniOS modules and can save changes between reboots. Designed for portable installations, especially on USB drives."
+#~ msgstr "Sistema live modular: mantém os módulos do MiniOS e pode salvar alterações entre reinicializações. Projetado para instalações portáteis, especialmente em unidades USB."
+
+#~ msgid "Full installation"
+#~ msgstr "Instalação completa"
+
+#~ msgid "Regular Linux system: MiniOS is unpacked to disk and changes are saved directly. Live modules and separate session storage are not used."
+#~ msgstr "Sistema Linux convencional: o MiniOS é extraído para o disco e as alterações são salvas diretamente. Módulos live e armazenamento de sessão separado não são utilizados."
+
+#~ msgid "Full installation is unavailable because this live image does not provide the native-install metadata required by the current installer."
+#~ msgstr "A instalação completa não está disponível porque esta imagem ao vivo não fornece os metadados de instalação nativa exigidos pelo instalador atual."
+
+#~ msgid "Language of the boot menu on the installed system. For a full install this is also used if the installer cannot set up the standard GRUB bootloader."
+#~ msgstr "Idioma do menu de inicialização no sistema instalado. Em uma instalação completa, também será usado caso o instalador não consiga configurar o carregador de boot padrão GRUB."
+
+#~ msgid "Choose modules to install. Selecting one also includes all lower layers."
+#~ msgstr "Escolha os módulos para instalar. Selecionar um também inclui todas as camadas inferiores."
+
+#, python-brace-format
+#~ msgid "{selected} of {total} layers selected. Estimated native system data: {size}. Required root space with reserve: {required}."
+#~ msgstr "{selected} de {total} camadas selecionadas. Estimativa de dados nativos do sistema: {size}. Espaço root necessário com reserva: {required}."
+
+#~ msgid "MiB (native install only)"
+#~ msgstr "MiB (apenas instalação nativa)"
+
+#~ msgid "Live system"
+#~ msgstr "Sistema ao vivo"
+
+#~ msgid "Full (native) installation"
+#~ msgstr "Instalação completa (nativa)"

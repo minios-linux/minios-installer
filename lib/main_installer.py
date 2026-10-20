@@ -1523,9 +1523,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         )
         card_box.pack_start(lead, False, False, 0)
 
-        mode_intro = _("Choose between a modular live system and a regular Linux installation, then select a security profile.")
+        mode_intro = _("Choose between modular and classic installation, then select a security profile.")
         if not self.native_install_available:
-            mode_intro = _("This image supports live installation only; you can still choose the security profile.")
+            mode_intro = _("This image supports modular installation only; you can still choose the security profile.")
         features = (
             (
                 "system-software-install-symbolic",
@@ -1568,9 +1568,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self._nav(True)
 
     def _step_mode(self):
-        mode_description = _("Choose how MiniOS should work after installation: as a modular live system or as a regular Linux system.")
+        mode_description = _("Choose how MiniOS should work after installation: from compressed modules or unpacked to disk.")
         if not self.native_install_available:
-            mode_description = _("This live image supports only live system installation with the current installer.")
+            mode_description = _("This image supports only modular installation with the current installer.")
         self._page_title(
             _("Installation Mode"),
             mode_description,
@@ -1585,18 +1585,20 @@ class InstallerWindow(Gtk.ApplicationWindow):
         choices = (
             (
                 "live",
-                _("Live system installation"),
+                _("Modular installation"),
                 _(
-                    "Modular live system: keeps MiniOS modules and can save changes between reboots. "
-                    "Designed for portable installations, especially on USB drives."
+                    "The system and applications are stored in compressed modules and take up less disk space. "
+                    "Settings, additionally installed applications, and files are saved separately from the modules, in sessions. "
+                    "You can create sessions for different tasks, including encrypted sessions, and select them at boot."
                 ),
             ),
             (
                 "native",
-                _("Full installation"),
+                _("Classic installation"),
                 _(
-                    "Regular Linux system: MiniOS is unpacked to disk and changes are saved directly. "
-                    "Live modules and separate session storage are not used."
+                    "The contents of the selected modules are unpacked to disk. "
+                    "Applications, settings, and files are saved directly in the installed system. "
+                    "After installation, MiniOS modules and separate sessions are not used."
                 ),
             ),
         )
@@ -1664,7 +1666,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         if not self.native_install_available:
             compatibility_note = Gtk.Label(
-                label=_("Full installation is unavailable because this live image does not provide the native-install metadata required by the current installer."),
+                label=_("Classic installation is unavailable because this image does not provide the metadata required by the current installer for this installation mode."),
                 xalign=0,
             )
             compatibility_note.set_line_wrap(True)
@@ -1729,7 +1731,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         lang_label_box.pack_start(lang_label, True, True, 0)
         boot_lang_help = _(
             "Language of the boot menu on the installed system. "
-            "For a full install this is also used if the installer cannot set up the standard GRUB bootloader."
+            "For a classic installation this is also used if the installer cannot set up the standard GRUB bootloader."
         )
         self.boot_lang_info = HelpPopoverButton(
             _("Boot menu language:"), summary=boot_lang_help,
@@ -2874,7 +2876,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             return
         if self.state.install_mode == "native":
             message = _(
-                "{selected} of {total} layers selected. Estimated native system data: {size}. Required root space with reserve: {required}."
+                "{selected} of {total} layers selected. Estimated unpacked system data: {size}. Required root space with reserve: {required}."
             )
         else:
             message = _(
@@ -3187,7 +3189,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.swap_spin.connect("enter-notify-event", self._on_swap_spin_hover_clamp)
         self.swap_spin.connect("leave-notify-event", self._on_swap_spin_hover_clamp)
         swap_box.pack_start(self.swap_spin, False, False, 0)
-        swap_unit = Gtk.Label(label=_("MiB (native install only)"), xalign=0)
+        swap_unit = Gtk.Label(label=_("MiB (classic installation only)"), xalign=0)
         swap_unit.set_hexpand(False)
         swap_box.pack_start(swap_unit, False, False, 0)
         adv_grid.attach(swap_box, 1, 2, 1, 1)
@@ -4794,7 +4796,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
         mode_label = Gtk.Label(xalign=0)
         mode_label.set_text(
-            _("Live system") if self.state.install_mode != "native" else _("Full (native) installation")
+            _("Modular installation") if self.state.install_mode != "native" else _("Classic installation")
         )
         box.pack_start(self._summary_card(_("Installation mode"), mode_label), False, False, 0)
 

@@ -1,3 +1,13 @@
+minios-installer (3.7.4) unstable; urgency=medium
+
+  * Clarify modular and classic installation choices while retaining the
+    existing backend mode identifiers and deployment behavior.
+  * Explain compressed modules, session storage and unpacked installation in
+    mode descriptions, summaries and related help text.
+  * Refresh translations for all supported languages.
+
+ -- crims0n <crims0n@minios.dev>  Tue, 20 Oct 2026 17:00:34 +0300
+
 minios-installer (3.7.3) unstable; urgency=medium
 
   * Show the Installer desktop entry in KDE application menus.
